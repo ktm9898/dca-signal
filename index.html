@@ -1305,6 +1305,7 @@
       let cycleRound = 0;
       let sharesHeld = 0.0;
       let totalInvested = 0.0;
+      let avgCost = 0.0;
       let cycleStartDate = null;
       let cycleStartIdx = 0;
 
@@ -1325,7 +1326,7 @@
         const lowP = bar.low;
         const closeP = bar.close;
 
-        let avgCost = sharesHeld > 0 ? (totalInvested / sharesHeld) : 0.0;
+        avgCost = sharesHeld > 0 ? (totalInvested / sharesHeld) : 0.0;
 
         // 1. Take Profit Check
         const targetSellPrice = avgCost > 0 ? avgCost * (1.0 + targetProfitPct / 100.0) : 0.0;
