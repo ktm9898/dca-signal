@@ -13,7 +13,7 @@ class DCASimulator:
     def __init__(
         self,
         candles: List[Dict[str, Any]],
-        initial_capital: float = 10000.0,
+        initial_capital: float = 10000000.0,
         portions: int = 40,
         phase_split_round: int = 20,
         first_half_rule: str = "always",       # "always"
@@ -352,7 +352,7 @@ if __name__ == "__main__":
         
         sim = DCASimulator(
             candles=tqqq_data["candles"],
-            initial_capital=10000,
+            initial_capital=10000000,
             portions=40,
             phase_split_round=20,
             second_half_rule="below_threshold",
@@ -361,6 +361,6 @@ if __name__ == "__main__":
         )
         res = sim.run()
         print("=== DCA Simulator (TQQQ 10Y) Test Result ===")
-        print(f"Final Equity: ${res['summary']['final_equity']:,.2f} ({res['summary']['total_return_pct']}%)")
+        print(f"Final Equity: {int(res['summary']['final_equity']):,}원 ({res['summary']['total_return_pct']}%)")
         print(f"CAGR: {res['summary']['cagr_pct']}% | MDD: {res['summary']['max_drawdown_pct']}%")
         print(f"Completed Cycles: {res['summary']['completed_cycles_count']}")
