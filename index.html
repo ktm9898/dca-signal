@@ -1,0 +1,1765 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DCA Signal - 라오어 무한매수법 & 정량 분할(DCA) 퀀트 시뮬레이터</title>
+
+  <!-- Google Fonts & Font Awesome Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <!-- Pre-bundled Data for 100% offline & local file:// support -->
+  <script src="data_bundle.js"></script>
+
+  <style>
+    :root {
+      --bg-base: #0a0e17;
+      --bg-surface: #111827;
+      --bg-card: #162032;
+      --bg-card-hover: #1c2942;
+      --card-border: #1e293b;
+      --card-border-active: #3b82f6;
+      
+      --accent-blue: #3b82f6;
+      --accent-cyan: #06b6d4;
+      --accent-green: #10b981;
+      --accent-emerald: #059669;
+      --accent-red: #ef4444;
+      --accent-rose: #f43f5e;
+      --accent-amber: #f59e0b;
+      --accent-purple: #8b5cf6;
+
+      --text-main: #f8fafc;
+      --text-sub: #94a3b8;
+      --text-muted: #64748b;
+      
+      --badge-cyan: rgba(6, 182, 212, 0.15);
+      --badge-green: rgba(16, 185, 129, 0.15);
+      --badge-red: rgba(239, 68, 68, 0.15);
+      --badge-amber: rgba(245, 158, 11, 0.15);
+
+      --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
+      --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+      --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+    }
+
+    [data-theme="light"] {
+      --bg-base: #f8fafc;
+      --bg-surface: #ffffff;
+      --bg-card: #ffffff;
+      --bg-card-hover: #f1f5f9;
+      --card-border: #e2e8f0;
+      --card-border-active: #2563eb;
+
+      --accent-blue: #2563eb;
+      --accent-cyan: #0891b2;
+      --accent-green: #059669;
+      --accent-emerald: #047857;
+      --accent-red: #dc2626;
+      --accent-rose: #e11d48;
+      --accent-amber: #d97706;
+      --accent-purple: #7c3aed;
+
+      --text-main: #0f172a;
+      --text-sub: #475569;
+      --text-muted: #94a3b8;
+
+      --badge-cyan: rgba(8, 145, 178, 0.12);
+      --badge-green: rgba(5, 150, 105, 0.12);
+      --badge-red: rgba(220, 38, 38, 0.12);
+      --badge-amber: rgba(217, 119, 6, 0.12);
+
+      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      transition: background-color 0.2s, border-color 0.2s;
+    }
+
+    body {
+      font-family: 'Outfit', 'Noto Sans KR', sans-serif;
+      background-color: var(--bg-base);
+      color: var(--text-main);
+      line-height: 1.6;
+      padding: 0;
+      margin: 0;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 24px 20px 60px 20px;
+    }
+
+    /* Top Navigation Header */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 24px;
+      background: var(--bg-surface);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow-md);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .logo-icon {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, #3b82f6, #06b6d4);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 22px;
+      box-shadow: 0 4px 12px rgba(6, 182, 212, 0.35);
+    }
+
+    .brand-text h1 {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      background: linear-gradient(90deg, #38bdf8, #818cf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand-text p {
+      font-size: 13px;
+      color: var(--text-sub);
+      font-weight: 500;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 16px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid var(--card-border);
+      background: var(--bg-card);
+      color: var(--text-main);
+      transition: all 0.2s ease;
+    }
+
+    .btn:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--accent-blue);
+      transform: translateY(-1px);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #2563eb, #0284c7);
+      border: none;
+      color: white;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #1d4ed8, #0369a1);
+      box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4);
+    }
+
+    /* Main Layout Grid */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 24px;
+    }
+
+    @media (max-width: 1080px) {
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Sidebar / Control Panel */
+    .control-panel {
+      background: var(--bg-surface);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: var(--shadow-md);
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+      position: sticky;
+      top: 20px;
+    }
+
+    .panel-section-title {
+      font-size: 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--accent-cyan);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--card-border);
+      margin-bottom: 4px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-sub);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .form-group label span.value-badge {
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--accent-cyan);
+      background: var(--badge-cyan);
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 12px;
+    }
+
+    select, input[type="text"], input[type="number"] {
+      width: 100%;
+      padding: 10px 14px;
+      background: var(--bg-card);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      color: var(--text-main);
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 500;
+      outline: none;
+    }
+
+    select:focus, input:focus {
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 6px;
+      background: var(--card-border);
+      border-radius: 4px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--accent-blue);
+      cursor: pointer;
+      box-shadow: 0 0 8px rgba(59, 130, 246, 0.6);
+      transition: transform 0.1s;
+    }
+
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+
+    .preset-pill-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .preset-pill {
+      padding: 6px 11px;
+      background: var(--bg-card);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-sub);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .preset-pill:hover, .preset-pill.active {
+      background: var(--accent-blue);
+      border-color: var(--accent-blue);
+      color: white;
+    }
+
+    /* Radio Cards */
+    .radio-card-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .radio-card {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 12px;
+      background: var(--bg-card);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.2s;
+    }
+
+    .radio-card:hover {
+      background: var(--bg-card-hover);
+      border-color: rgba(59, 130, 246, 0.4);
+    }
+
+    .radio-card.active {
+      border-color: var(--accent-blue);
+      background: rgba(59, 130, 246, 0.08);
+    }
+
+    .radio-card input {
+      margin-top: 3px;
+      accent-color: var(--accent-blue);
+    }
+
+    .radio-card-desc {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .radio-card-desc strong {
+      color: var(--text-main);
+      font-weight: 600;
+    }
+
+    .radio-card-desc small {
+      color: var(--text-muted);
+      font-size: 11px;
+    }
+
+    /* Right Main Content Area */
+    .main-content {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* Active Cycle Live Alert Banner */
+    .live-cycle-banner {
+      background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.9));
+      border: 1px solid var(--card-border-active);
+      border-radius: 16px;
+      padding: 18px 22px;
+      box-shadow: var(--shadow-md);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      backdrop-filter: blur(8px);
+    }
+
+    .live-cycle-info {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .pulse-dot {
+      width: 14px;
+      height: 14px;
+      background-color: var(--accent-green);
+      border-radius: 50%;
+      box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+      animation: pulse 1.8s infinite;
+    }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+      70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+
+    .live-cycle-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .live-cycle-sub {
+      font-size: 12px;
+      color: var(--text-sub);
+    }
+
+    .live-stats-row {
+      display: flex;
+      gap: 20px;
+    }
+
+    .live-stat-item {
+      text-align: right;
+    }
+
+    .live-stat-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    .live-stat-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    /* KPI Summary Cards Grid */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 14px;
+    }
+
+    .kpi-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 16px 18px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: var(--accent-blue);
+      border-radius: 4px 0 0 4px;
+    }
+
+    .kpi-card.green::before { background: var(--accent-green); }
+    .kpi-card.cyan::before { background: var(--accent-cyan); }
+    .kpi-card.amber::before { background: var(--accent-amber); }
+    .kpi-card.purple::before { background: var(--accent-purple); }
+    .kpi-card.red::before { background: var(--accent-red); }
+
+    .kpi-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-sub);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .kpi-title i {
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+
+    .kpi-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text-main);
+      letter-spacing: -0.5px;
+    }
+
+    .kpi-subtext {
+      font-size: 11px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .val-positive { color: var(--accent-green); }
+    .val-negative { color: var(--accent-red); }
+
+    /* Chart Section */
+    .chart-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 22px;
+      box-shadow: var(--shadow-md);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .chart-title {
+      font-size: 16px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .chart-legend-custom {
+      display: flex;
+      gap: 16px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .legend-color {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+    }
+
+    .chart-container {
+      position: relative;
+      height: 380px;
+      width: 100%;
+    }
+
+    /* Tabs & Tables */
+    .tabs-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 22px;
+      box-shadow: var(--shadow-md);
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .tabs-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 12px;
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 8px;
+    }
+
+    .tab-btn {
+      padding: 8px 16px;
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-sub);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .tab-btn:hover {
+      color: var(--text-main);
+      background: var(--bg-card);
+    }
+
+    .tab-btn.active {
+      color: var(--accent-cyan);
+      background: var(--badge-cyan);
+      border-color: rgba(6, 182, 212, 0.3);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    /* Table Styles */
+    .table-container {
+      overflow-x: auto;
+      max-height: 480px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      text-align: left;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      background: var(--bg-card);
+      color: var(--text-sub);
+      font-weight: 600;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--card-border);
+      white-space: nowrap;
+      z-index: 2;
+    }
+
+    td {
+      padding: 11px 14px;
+      border-bottom: 1px solid var(--card-border);
+      white-space: nowrap;
+      color: var(--text-main);
+    }
+
+    tr:hover td {
+      background: var(--bg-card-hover);
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .badge-green { background: var(--badge-green); color: var(--accent-green); }
+    .badge-red { background: var(--badge-red); color: var(--accent-red); }
+    .badge-cyan { background: var(--badge-cyan); color: var(--accent-cyan); }
+    .badge-amber { background: var(--badge-amber); color: var(--accent-amber); }
+
+    /* Footer */
+    footer {
+      margin-top: 40px;
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header>
+      <div class="brand">
+        <div class="logo-icon">
+          <i class="fa-solid fa-infinity"></i>
+        </div>
+        <div class="brand-text">
+          <h1>DCA Signal <span style="font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 12px; background: rgba(59,130,246,0.15); color: var(--accent-blue); -webkit-text-fill-color: initial;">QUANT ENGINE</span></h1>
+          <p>라오어 무한매수법 & 정량 분할(DCA) 시뮬레이터</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button id="themeToggleBtn" class="btn" title="테마 변경">
+          <i class="fa-solid fa-moon"></i> 테마
+        </button>
+        <button id="exportCsvBtn" class="btn">
+          <i class="fa-solid fa-file-csv"></i> CSV 내보내기
+        </button>
+      </div>
+    </header>
+
+    <div class="dashboard-grid">
+      <!-- Left Control Panel -->
+      <aside class="control-panel">
+        <div class="panel-section-title">
+          <i class="fa-solid fa-sliders"></i> 전략 파라미터 설정
+        </div>
+
+        <!-- Target Ticker -->
+        <div class="form-group">
+          <label for="tickerSelect">대상 종목</label>
+          <select id="tickerSelect">
+            <option value="TQQQ" selected>TQQQ (나스닥 100 3배 레버리지)</option>
+            <option value="SOXL">SOXL (반도체 3배 레버리지)</option>
+            <option value="UPRO">UPRO (S&P 500 3배 레버리지)</option>
+            <option value="QLD">QLD (나스닥 100 2배 레버리지)</option>
+            <option value="QQQ">QQQ (나스닥 100 1배)</option>
+            <option value="SPY">SPY (S&P 500 1배)</option>
+            <option value="122630.KS">122630.KS (KODEX 레버리지 2배)</option>
+          </select>
+        </div>
+
+        <!-- Period Presets -->
+        <div class="form-group">
+          <label>테스트 기간 프리셋</label>
+          <div class="preset-pill-group">
+            <button class="preset-pill active" data-period="all">10년 전체</button>
+            <button class="preset-pill" data-period="5y">최근 5년</button>
+            <button class="preset-pill" data-period="3y">최근 3년</button>
+            <button class="preset-pill" data-period="2022">2022 하락장</button>
+            <button class="preset-pill" data-period="2020">2020 코로나</button>
+          </div>
+        </div>
+
+        <!-- Capital -->
+        <div class="form-group">
+          <label for="initialCapital">
+            총 시드(원금)
+            <span class="value-badge" id="capitalDisplay">$10,000</span>
+          </label>
+          <input type="number" id="initialCapital" value="10000" step="1000" min="1000">
+        </div>
+
+        <!-- Portions (N) -->
+        <div class="form-group">
+          <label for="portionsRange">
+            총 분할 수 (N회차)
+            <span class="value-badge" id="portionsDisplay">40회차</span>
+          </label>
+          <input type="range" id="portionsRange" min="10" max="80" step="5" value="40">
+          <small style="color:var(--text-muted); font-size:11px;">1회 매수 배정액: <span id="portionAmountDisplay" style="color:var(--text-main); font-weight:600;">$250.00</span></small>
+        </div>
+
+        <!-- Phase Split Round (M) -->
+        <div class="form-group">
+          <label for="splitRoundRange">
+            전반부/후반부 전환점
+            <span class="value-badge" id="splitRoundDisplay">20회차</span>
+          </label>
+          <input type="range" id="splitRoundRange" min="5" max="40" step="1" value="20">
+          <small style="color:var(--text-muted); font-size:11px;">1~<span id="firstHalfRangeText">20</span>회: 전반부 / <span id="secondHalfRangeText">21~40</span>회: 후반부</small>
+        </div>
+
+        <!-- First-Half Rule -->
+        <div class="form-group">
+          <label>전반부 매수 룰</label>
+          <div class="radio-card-group">
+            <label class="radio-card active">
+              <input type="radio" name="firstHalfRule" value="always" checked>
+              <div class="radio-card-desc">
+                <strong>매일 1회분 종가 매수</strong>
+                <small>상승장 물량 확보 및 심플 실행</small>
+              </div>
+            </label>
+            <label class="radio-card">
+              <input type="radio" name="firstHalfRule" value="laor_v1_loc">
+              <div class="radio-card-desc">
+                <strong>라오어 V1 LOC 매수</strong>
+                <small>0.5회분 평단가 + 0.5회분 (평단가×1.05)</small>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Second-Half Rule (Crucial User Requirement) -->
+        <div class="form-group">
+          <label>후반부 매수 룰 (하락장 방어)</label>
+          <div class="radio-card-group">
+            <label class="radio-card active">
+              <input type="radio" name="secondHalfRule" value="below_avg" checked>
+              <div class="radio-card-desc">
+                <strong style="color:var(--accent-cyan);"><i class="fa-solid fa-shield-halved"></i> 종가 &lt; 평단가일 때만 매수</strong>
+                <small>평단가 이상이면 매수 스킵 (현금 보존)</small>
+              </div>
+            </label>
+            <label class="radio-card">
+              <input type="radio" name="secondHalfRule" value="below_avg_or_half">
+              <div class="radio-card-desc">
+                <strong>평단가 미만 1회분 / 이상 0.5회분</strong>
+                <small>완전 스킵 대신 축소 매수로 완충</small>
+              </div>
+            </label>
+            <label class="radio-card">
+              <input type="radio" name="secondHalfRule" value="always">
+              <div class="radio-card-desc">
+                <strong>무조건 1회분 종가 매수</strong>
+                <small>기계적 단순 균등 분할</small>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Target Profit % -->
+        <div class="form-group">
+          <label for="targetProfitRange">
+            목표 익절 수익률
+            <span class="value-badge" id="profitDisplay">+10.0%</span>
+          </label>
+          <input type="range" id="targetProfitRange" min="3" max="30" step="1" value="10">
+          <small style="color:var(--text-muted); font-size:11px;">평단가 대비 목표 도달 시 전량 매도 후 1회차 리셋</small>
+        </div>
+
+        <!-- Profit Reinvestment Mode -->
+        <div class="form-group">
+          <label>수익금 운용 방식</label>
+          <div class="radio-card-group">
+            <label class="radio-card active">
+              <input type="radio" name="reinvestProfit" value="false" checked>
+              <div class="radio-card-desc">
+                <strong>단리 운용 (원금 고정)</strong>
+                <small>매 사이클마다 초기 원금으로만 리셋</small>
+              </div>
+            </label>
+            <label class="radio-card">
+              <input type="radio" name="reinvestProfit" value="true">
+              <div class="radio-card-desc">
+                <strong>복리 운용 (수익금 재투자)</strong>
+                <small>익절된 수익금을 다음 사이클 원금에 합산</small>
+              </div>
+            </label>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Right Main Content -->
+      <main class="main-content">
+        <!-- Live Active Cycle Status Card -->
+        <div id="liveCycleBanner" class="live-cycle-banner">
+          <div class="live-cycle-info">
+            <div class="pulse-dot"></div>
+            <div>
+              <div class="live-cycle-title" id="activeCycleTitle">진행 중인 사이클 (Cycle #48)</div>
+              <div class="live-cycle-sub" id="activeCycleSub">2026-09-18 시작 | 현재 5회차 매수 완료</div>
+            </div>
+          </div>
+          <div class="live-stats-row">
+            <div class="live-stat-item">
+              <div class="live-stat-label">투입 원금</div>
+              <div class="live-stat-val" id="activeInvestedVal">$1,250.00</div>
+            </div>
+            <div class="live-stat-item">
+              <div class="live-stat-label">보유 평단가</div>
+              <div class="live-stat-val" id="activeAvgCostVal">$78.40</div>
+            </div>
+            <div class="live-stat-item">
+              <div class="live-stat-label">목표 익절가 (+10%)</div>
+              <div class="live-stat-val" id="activeTargetVal" style="color:var(--accent-green);">$86.24</div>
+            </div>
+            <div class="live-stat-item">
+              <div class="live-stat-label">현재 평가손익</div>
+              <div class="live-stat-val" id="activePnlVal">+2.45%</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- KPI Cards Grid -->
+        <div class="kpi-grid">
+          <div class="kpi-card green">
+            <div class="kpi-title">
+              <span>최종 평가 자산</span>
+              <i class="fa-solid fa-vault"></i>
+            </div>
+            <div class="kpi-value" id="kpiFinalEquity">$36,229</div>
+            <div class="kpi-subtext">
+              <span id="kpiTotalReturn" class="badge badge-green">+262.3%</span>
+              <span>총 누적 수익</span>
+            </div>
+          </div>
+
+          <div class="kpi-card cyan">
+            <div class="kpi-title">
+              <span>연평균 복리 (CAGR)</span>
+              <i class="fa-solid fa-chart-line"></i>
+            </div>
+            <div class="kpi-value" id="kpiCagr">13.7%</div>
+            <div class="kpi-subtext">
+              <span>존버(B&H): </span>
+              <span id="kpiBhCagr" style="font-weight:600;">14.2%</span>
+            </div>
+          </div>
+
+          <div class="kpi-card amber">
+            <div class="kpi-title">
+              <span>최대 낙폭 (MDD)</span>
+              <i class="fa-solid fa-water"></i>
+            </div>
+            <div class="kpi-value" id="kpiMdd">-28.5%</div>
+            <div class="kpi-subtext">
+              <span>2022 대하락장 방어</span>
+            </div>
+          </div>
+
+          <div class="kpi-card purple">
+            <div class="kpi-title">
+              <span>완료된 사이클</span>
+              <i class="fa-solid fa-rotate-right"></i>
+            </div>
+            <div class="kpi-value" id="kpiCycles">47회</div>
+            <div class="kpi-subtext">
+              <span>익절 승률: </span>
+              <span class="badge badge-green">100%</span>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-title">
+              <span>평균 소요 일수</span>
+              <i class="fa-regular fa-clock"></i>
+            </div>
+            <div class="kpi-value" id="kpiAvgDays">52.7일</div>
+            <div class="kpi-subtext">
+              <span>약 2.5개월 / 1사이클</span>
+            </div>
+          </div>
+
+          <div class="kpi-card red">
+            <div class="kpi-title">
+              <span>최장 물림 기간</span>
+              <i class="fa-solid fa-hourglass-half"></i>
+            </div>
+            <div class="kpi-value" id="kpiMaxDays">776일</div>
+            <div class="kpi-subtext">
+              <span>2022 하락장 탈출 소요</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chart Card -->
+        <div class="chart-card">
+          <div class="chart-header">
+            <div class="chart-title">
+              <i class="fa-solid fa-chart-area" style="color:var(--accent-blue);"></i>
+              자산 성장 곡선 (Equity Curve vs Benchmark)
+            </div>
+            <div class="chart-legend-custom">
+              <div class="legend-item">
+                <div class="legend-color" style="background:#3b82f6;"></div>
+                <span>DCA 무한매수 전략</span>
+              </div>
+              <div class="legend-item">
+                <div class="legend-color" style="background:#94a3b8;"></div>
+                <span>단순 보유 (Buy & Hold)</span>
+              </div>
+            </div>
+          </div>
+          <div class="chart-container">
+            <canvas id="equityChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Tabs Section: Yearly Breakdown vs Cycle Log -->
+        <div class="tabs-card">
+          <div class="tabs-header">
+            <div class="nav-tabs">
+              <button class="tab-btn active" data-tab="tab-yearly">
+                <i class="fa-regular fa-calendar"></i> 연도별 성과 분석
+              </button>
+              <button class="tab-btn" data-tab="tab-cycles">
+                <i class="fa-solid fa-list-check"></i> 사이클별 상세 내역 (<span id="cycleCountBadge">47</span>)
+              </button>
+            </div>
+            <div style="font-size: 12px; color: var(--text-muted);">
+              <i class="fa-solid fa-circle-info"></i> 조건 변경 시 즉각 자동 업데이트됩니다.
+            </div>
+          </div>
+
+          <!-- Tab 1: Yearly Breakdown -->
+          <div id="tab-yearly" class="tab-content active">
+            <div class="table-container">
+              <table id="yearlyTable">
+                <thead>
+                  <tr>
+                    <th>연도</th>
+                    <th>기초 자산</th>
+                    <th>기말 자산</th>
+                    <th>연간 수익률</th>
+                    <th>완료 사이클</th>
+                    <th>실현 손익</th>
+                    <th>최대 소진 회차</th>
+                    <th>연간 MDD</th>
+                  </tr>
+                </thead>
+                <tbody id="yearlyTableBody">
+                  <!-- Populated dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Tab 2: Cycle Log -->
+          <div id="tab-cycles" class="tab-content">
+            <div class="table-container">
+              <table id="cyclesTable">
+                <thead>
+                  <tr>
+                    <th>사이클 #</th>
+                    <th>결과</th>
+                    <th>시작일</th>
+                    <th>종료일</th>
+                    <th>소요 일수</th>
+                    <th>최대 회차</th>
+                    <th>총 투입금</th>
+                    <th>평단가</th>
+                    <th>매도가</th>
+                    <th>실현 손익</th>
+                    <th>수익률</th>
+                  </tr>
+                </thead>
+                <tbody id="cyclesTableBody">
+                  <!-- Populated dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <footer>
+      <p>DCA Signal &copy; 2026. Quantitative Infinite Buying Simulator. All Rights Reserved.</p>
+    </footer>
+  </div>
+
+  <script>
+    // State & Config
+    let currentData = null;
+    let equityChartInstance = null;
+    let latestSimResult = null;
+
+    // Default parameters
+    const params = {
+      ticker: "TQQQ",
+      period: "all",
+      initialCapital: 10000,
+      portions: 40,
+      phaseSplitRound: 20,
+      firstHalfRule: "always",
+      secondHalfRule: "below_avg",
+      targetProfitPct: 10.0,
+      reinvestProfit: false,
+      feePct: 0.1,
+      slippagePct: 0.05
+    };
+
+    // Initialize UI on Load
+    document.addEventListener("DOMContentLoaded", () => {
+      initTheme();
+      initEventListeners();
+      loadTickerData(params.ticker);
+    });
+
+    function initTheme() {
+      const savedTheme = localStorage.getItem("dca_theme") || "dark";
+      document.documentElement.setAttribute("data-theme", savedTheme);
+      updateThemeIcon(savedTheme);
+
+      document.getElementById("themeToggleBtn").addEventListener("click", () => {
+        const cur = document.documentElement.getAttribute("data-theme") || "dark";
+        const next = cur === "dark" ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", next);
+        localStorage.setItem("dca_theme", next);
+        updateThemeIcon(next);
+        if (equityChartInstance) updateChartColors(next);
+      });
+    }
+
+    function updateThemeIcon(theme) {
+      const btn = document.getElementById("themeToggleBtn");
+      btn.innerHTML = theme === "dark" ? '<i class="fa-solid fa-sun"></i> 테마' : '<i class="fa-solid fa-moon"></i> 테마';
+    }
+
+    function initEventListeners() {
+      // Ticker select
+      document.getElementById("tickerSelect").addEventListener("change", (e) => {
+        params.ticker = e.target.value;
+        loadTickerData(params.ticker);
+      });
+
+      // Period pills
+      document.querySelectorAll(".preset-pill").forEach(pill => {
+        pill.addEventListener("click", () => {
+          document.querySelectorAll(".preset-pill").forEach(p => p.classList.remove("active"));
+          pill.classList.add("active");
+          params.period = pill.getAttribute("data-period");
+          runSimulation();
+        });
+      });
+
+      // Capital Input
+      const capitalInput = document.getElementById("initialCapital");
+      capitalInput.addEventListener("input", (e) => {
+        params.initialCapital = parseFloat(e.target.value) || 10000;
+        document.getElementById("capitalDisplay").innerText = `$${params.initialCapital.toLocaleString()}`;
+        updatePortionAmountDisplay();
+        runSimulation();
+      });
+
+      // Portions Range
+      const portionsRange = document.getElementById("portionsRange");
+      portionsRange.addEventListener("input", (e) => {
+        params.portions = parseInt(e.target.value);
+        document.getElementById("portionsDisplay").innerText = `${params.portions}회차`;
+        
+        // Auto adjust split round max
+        const splitRoundRange = document.getElementById("splitRoundRange");
+        splitRoundRange.max = params.portions;
+        if (params.phaseSplitRound > params.portions) {
+          params.phaseSplitRound = Math.floor(params.portions / 2);
+          splitRoundRange.value = params.phaseSplitRound;
+        }
+        updateSplitRoundDisplay();
+        updatePortionAmountDisplay();
+        runSimulation();
+      });
+
+      // Split Round Range
+      const splitRoundRange = document.getElementById("splitRoundRange");
+      splitRoundRange.addEventListener("input", (e) => {
+        params.phaseSplitRound = parseInt(e.target.value);
+        updateSplitRoundDisplay();
+        runSimulation();
+      });
+
+      // Radio Groups
+      setupRadioGroup("firstHalfRule", (val) => {
+        params.firstHalfRule = val;
+        runSimulation();
+      });
+
+      setupRadioGroup("secondHalfRule", (val) => {
+        params.secondHalfRule = val;
+        runSimulation();
+      });
+
+      setupRadioGroup("reinvestProfit", (val) => {
+        params.reinvestProfit = (val === "true");
+        runSimulation();
+      });
+
+      // Target Profit Range
+      const targetProfitRange = document.getElementById("targetProfitRange");
+      targetProfitRange.addEventListener("input", (e) => {
+        params.targetProfitPct = parseFloat(e.target.value);
+        document.getElementById("profitDisplay").innerText = `+${params.targetProfitPct.toFixed(1)}%`;
+        runSimulation();
+      });
+
+      // Tab switching
+      document.querySelectorAll(".tab-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+          document.querySelectorAll(".tab-content").forEach(tc => tc.classList.remove("active"));
+          btn.classList.add("active");
+          const targetId = btn.getAttribute("data-tab");
+          document.getElementById(targetId).classList.add("active");
+        });
+      });
+
+      // Export CSV
+      document.getElementById("exportCsvBtn").addEventListener("click", exportCsv);
+    }
+
+    function setupRadioGroup(name, callback) {
+      document.querySelectorAll(`input[name="${name}"]`).forEach(radio => {
+        radio.addEventListener("change", (e) => {
+          document.querySelectorAll(`input[name="${name}"]`).forEach(r => {
+            r.closest(".radio-card").classList.toggle("active", r.checked);
+          });
+          callback(e.target.value);
+        });
+      });
+    }
+
+    function updateSplitRoundDisplay() {
+      document.getElementById("splitRoundDisplay").innerText = `${params.phaseSplitRound}회차`;
+      document.getElementById("firstHalfRangeText").innerText = params.phaseSplitRound;
+      document.getElementById("secondHalfRangeText").innerText = `${params.phaseSplitRound + 1}~${params.portions}`;
+    }
+
+    function updatePortionAmountDisplay() {
+      const pAmt = params.initialCapital / params.portions;
+      const isKrw = params.ticker.includes(".KS");
+      document.getElementById("portionAmountDisplay").innerText = isKrw ? `${Math.round(pAmt).toLocaleString()}원` : `$${pAmt.toFixed(2)}`;
+    }
+
+    function loadTickerData(ticker) {
+      if (window.DCA_PRESETS && window.DCA_PRESETS[ticker]) {
+        currentData = window.DCA_PRESETS[ticker];
+        runSimulation();
+        return;
+      }
+
+      // Fallback to fetch if hosted on web server
+      const filename = `data/${ticker.replace('.', '_')}.json`;
+      fetch(filename)
+        .then(res => res.json())
+        .then(data => {
+          currentData = data;
+          runSimulation();
+        })
+        .catch(err => {
+          console.error("Failed to fetch data:", err);
+          alert(`데이터 로딩 실패: ${ticker}`);
+        });
+    }
+
+    // -------------------------------------------------------------------------
+    // Core Simulation Engine (Pure JavaScript Client-Side)
+    // -------------------------------------------------------------------------
+    function runSimulation() {
+      if (!currentData || !currentData.candles || currentData.candles.length === 0) return;
+
+      const filteredCandles = filterCandlesByPeriod(currentData.candles, params.period);
+      if (filteredCandles.length === 0) return;
+
+      const initialCapital = params.initialCapital;
+      const portions = params.portions;
+      const phaseSplitRound = params.phaseSplitRound;
+      const firstHalfRule = params.firstHalfRule;
+      const secondHalfRule = params.secondHalfRule;
+      const targetProfitPct = params.targetProfitPct;
+      const feePct = params.feePct / 100.0;
+      const slippagePct = params.slippagePct / 100.0;
+      const reinvestProfit = params.reinvestProfit;
+
+      let currentCapitalPool = initialCapital;
+      let cycleBaseCapital = initialCapital;
+
+      let cycleIdx = 1;
+      let cycleRound = 0;
+      let sharesHeld = 0.0;
+      let totalInvested = 0.0;
+      let cycleStartDate = null;
+      let cycleStartIdx = 0;
+
+      const completedCycles = [];
+      const equityCurve = [];
+
+      const bhShares = initialCapital / (filteredCandles[0].open * (1 + feePct + slippagePct));
+      let realizedPnlTotal = 0.0;
+      let peakEquity = initialCapital;
+      let maxDrawdownPct = 0.0;
+      let maxCycleDays = 0;
+
+      for (let idx = 0; idx < filteredCandles.length; idx++) {
+        const bar = filteredCandles[idx];
+        const date = bar.date;
+        const openP = bar.open;
+        const highP = bar.high;
+        const lowP = bar.low;
+        const closeP = bar.close;
+
+        let avgCost = sharesHeld > 0 ? (totalInvested / sharesHeld) : 0.0;
+
+        // 1. Take Profit Check
+        const targetSellPrice = avgCost > 0 ? avgCost * (1.0 + targetProfitPct / 100.0) : 0.0;
+        let isTakeProfit = false;
+        let exitPrice = 0.0;
+
+        if (sharesHeld > 0 && targetSellPrice > 0) {
+          if (highP >= targetSellPrice) {
+            isTakeProfit = true;
+            const executedP = openP >= targetSellPrice ? openP : targetSellPrice;
+            exitPrice = executedP * (1.0 - slippagePct);
+          }
+        }
+
+        if (isTakeProfit) {
+          const grossRevenue = sharesHeld * exitPrice;
+          const fee = grossRevenue * feePct;
+          const netRevenue = grossRevenue - fee;
+          const netProfit = netRevenue - totalInvested;
+          const returnPct = (netProfit / totalInvested) * 100.0;
+
+          const durationDays = idx - cycleStartIdx + 1;
+          if (durationDays > maxCycleDays) maxCycleDays = durationDays;
+          realizedPnlTotal += netProfit;
+
+          completedCycles.push({
+            cycleNum: cycleIdx,
+            status: "PROFIT",
+            startDate: cycleStartDate,
+            endDate: date,
+            durationDays: durationDays,
+            maxRoundsUsed: cycleRound,
+            totalInvested: totalInvested,
+            grossRevenue: grossRevenue,
+            netProfit: netProfit,
+            returnPct: returnPct,
+            avgCost: avgCost,
+            exitPrice: exitPrice
+          });
+
+          if (reinvestProfit) {
+            currentCapitalPool += netProfit;
+            cycleBaseCapital = currentCapitalPool;
+          }
+
+          // Reset cycle
+          cycleIdx++;
+          cycleRound = 0;
+          sharesHeld = 0.0;
+          totalInvested = 0.0;
+          avgCost = 0.0;
+          cycleStartDate = null;
+        }
+
+        // 2. Daily Buy Check
+        const portionSize = cycleBaseCapital / portions;
+        const fundsLeft = cycleBaseCapital - totalInvested;
+        const canBuyMore = (cycleRound < portions);
+
+        if (canBuyMore && fundsLeft >= (portionSize * 0.1)) {
+          const isFirstHalf = (cycleRound < phaseSplitRound);
+          let budgetToday = 0.0;
+          const orderFillPrice = closeP * (1.0 + slippagePct);
+
+          if (isFirstHalf) {
+            if (firstHalfRule === "always") {
+              budgetToday = Math.min(portionSize, fundsLeft);
+            } else if (firstHalfRule === "laor_v1_loc") {
+              if (avgCost === 0) {
+                budgetToday = Math.min(portionSize, fundsLeft);
+              } else {
+                let b = 0.0;
+                if (closeP <= avgCost) b += portionSize * 0.5;
+                if (closeP <= avgCost * 1.05) b += portionSize * 0.5;
+                budgetToday = Math.min(b, fundsLeft);
+              }
+            }
+          } else {
+            // Second Half Rules
+            if (secondHalfRule === "below_avg") {
+              // Buy ONLY when close < average cost!
+              if (avgCost === 0 || closeP < avgCost) {
+                budgetToday = Math.min(portionSize, fundsLeft);
+              } else {
+                budgetToday = 0.0; // Pass & save cash
+              }
+            } else if (secondHalfRule === "below_avg_or_half") {
+              if (avgCost === 0 || closeP < avgCost) {
+                budgetToday = Math.min(portionSize, fundsLeft);
+              } else {
+                budgetToday = Math.min(portionSize * 0.5, fundsLeft);
+              }
+            } else if (secondHalfRule === "always") {
+              budgetToday = Math.min(portionSize, fundsLeft);
+            }
+          }
+
+          if (budgetToday > 0 && orderFillPrice > 0) {
+            const boughtShares = (budgetToday * (1.0 - feePct)) / orderFillPrice;
+            if (boughtShares > 0) {
+              if (cycleStartDate === null) {
+                cycleStartDate = date;
+                cycleStartIdx = idx;
+              }
+              sharesHeld += boughtShares;
+              totalInvested += budgetToday;
+              cycleRound++;
+              avgCost = totalInvested / sharesHeld;
+            }
+          }
+        }
+
+        // 3. Mark to Market Equity
+        const currentSharesVal = sharesHeld * closeP;
+        const cashInHand = (cycleBaseCapital - totalInvested) + (currentCapitalPool - cycleBaseCapital) + realizedPnlTotal;
+        const totalEquity = cashInHand + currentSharesVal;
+        const bhEquity = bhShares * closeP;
+
+        if (totalEquity > peakEquity) peakEquity = totalEquity;
+        const ddPct = ((totalEquity - peakEquity) / peakEquity) * 100.0;
+        if (ddPct < maxDrawdownPct) maxDrawdownPct = ddPct;
+
+        equityCurve.push({
+          date: date,
+          equity: totalEquity,
+          bhEquity: bhEquity,
+          drawdownPct: ddPct
+        });
+      }
+
+      // Final calculations
+      const finalEquity = equityCurve[equityCurve.length - 1].equity;
+      const totalReturnPct = ((finalEquity - initialCapital) / initialCapital) * 100.0;
+
+      const d1 = new Date(filteredCandles[0].date);
+      const d2 = new Date(filteredCandles[filteredCandles.length - 1].date);
+      const years = Math.max((d2 - d1) / (1000 * 60 * 60 * 24 * 365.25), 0.1);
+      const cagrPct = (Math.pow(finalEquity / initialCapital, 1.0 / years) - 1.0) * 100.0;
+
+      const bhFinal = equityCurve[equityCurve.length - 1].bhEquity;
+      const bhCagrPct = (Math.pow(bhFinal / initialCapital, 1.0 / years) - 1.0) * 100.0;
+
+      const avgCycleDays = completedCycles.length > 0 
+        ? completedCycles.reduce((acc, c) => acc + c.durationDays, 0) / completedCycles.length 
+        : 0;
+
+      // Yearly Stats
+      const yearlyMap = {};
+      completedCycles.forEach(c => {
+        const yr = c.endDate.substring(0, 4);
+        if (!yearlyMap[yr]) {
+          yearlyMap[yr] = { completedCycles: 0, realizedProfit: 0, maxRounds: 0 };
+        }
+        yearlyMap[yr].completedCycles++;
+        yearlyMap[yr].realizedProfit += c.netProfit;
+        yearlyMap[yr].maxRounds = Math.max(yearlyMap[yr].maxRounds, c.maxRoundsUsed);
+      });
+
+      const curveByYear = {};
+      equityCurve.forEach(p => {
+        const yr = p.date.substring(0, 4);
+        if (!curveByYear[yr]) curveByYear[yr] = [];
+        curveByYear[yr].push(p);
+      });
+
+      const yearlyBreakdown = [];
+      Object.keys(curveByYear).sort().forEach(yr => {
+        const pts = curveByYear[yr];
+        const sEq = pts[0].equity;
+        const eEq = pts[pts.length - 1].equity;
+        const yrRet = ((eEq - sEq) / sEq) * 100.0;
+
+        let yrPeak = sEq;
+        let yrMdd = 0;
+        pts.forEach(p => {
+          if (p.equity > yrPeak) yrPeak = p.equity;
+          const dd = ((p.equity - yrPeak) / yrPeak) * 100.0;
+          if (dd < yrMdd) yrMdd = dd;
+        });
+
+        const cInfo = yearlyMap[yr] || { completedCycles: 0, realizedProfit: 0, maxRounds: 0 };
+        yearlyBreakdown.push({
+          year: yr,
+          startEquity: sEq,
+          endEquity: eEq,
+          returnPct: yrRet,
+          completedCycles: cInfo.completedCycles,
+          realizedProfit: cInfo.realizedProfit,
+          maxRoundsUsed: cInfo.maxRounds,
+          mddPct: yrMdd
+        });
+      });
+
+      latestSimResult = {
+        summary: {
+          initialCapital,
+          finalEquity,
+          totalReturnPct,
+          cagrPct,
+          bhCagrPct,
+          maxDrawdownPct,
+          completedCyclesCount: completedCycles.length,
+          avgCycleDays,
+          maxCycleDays,
+          activeCycle: {
+            cycleNum: cycleIdx,
+            round: cycleRound,
+            sharesHeld: sharesHeld,
+            totalInvested: totalInvested,
+            avgCost: avgCost,
+            unrealizedPct: avgCost > 0 ? ((filteredCandles[filteredCandles.length - 1].close - avgCost) / avgCost) * 100.0 : 0,
+            startDate: cycleStartDate,
+            lastClose: filteredCandles[filteredCandles.length - 1].close
+          }
+        },
+        yearlyBreakdown,
+        completedCycles,
+        equityCurve
+      };
+
+      updateUI();
+    }
+
+    function filterCandlesByPeriod(candles, period) {
+      if (period === "all") return candles;
+      const lastDate = new Date(candles[candles.length - 1].date);
+
+      if (period === "5y") {
+        const cutoff = new Date(lastDate);
+        cutoff.setFullYear(cutoff.getFullYear() - 5);
+        const cutStr = cutoff.toISOString().substring(0, 10);
+        return candles.filter(c => c.date >= cutStr);
+      }
+      if (period === "3y") {
+        const cutoff = new Date(lastDate);
+        cutoff.setFullYear(cutoff.getFullYear() - 3);
+        const cutStr = cutoff.toISOString().substring(0, 10);
+        return candles.filter(c => c.date >= cutStr);
+      }
+      if (period === "2022") {
+        return candles.filter(c => c.date >= "2022-01-01" && c.date <= "2022-12-31");
+      }
+      if (period === "2020") {
+        return candles.filter(c => c.date >= "2020-01-01" && c.date <= "2020-12-31");
+      }
+      return candles;
+    }
+
+    // -------------------------------------------------------------------------
+    // UI Update Functions
+    // -------------------------------------------------------------------------
+    function updateUI() {
+      if (!latestSimResult) return;
+      const s = latestSimResult.summary;
+      const isKrw = params.ticker.includes(".KS");
+      const fmtCurrency = (val) => isKrw ? `${Math.round(val).toLocaleString()}원` : `$${val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+
+      // KPIs
+      document.getElementById("kpiFinalEquity").innerText = fmtCurrency(s.finalEquity);
+      const retEl = document.getElementById("kpiTotalReturn");
+      retEl.innerText = `${s.totalReturnPct >= 0 ? '+' : ''}${s.totalReturnPct.toFixed(1)}%`;
+      retEl.className = `badge ${s.totalReturnPct >= 0 ? 'badge-green' : 'badge-red'}`;
+
+      document.getElementById("kpiCagr").innerText = `${s.cagrPct.toFixed(1)}%`;
+      document.getElementById("kpiBhCagr").innerText = `${s.bhCagrPct.toFixed(1)}%`;
+      document.getElementById("kpiMdd").innerText = `${s.maxDrawdownPct.toFixed(1)}%`;
+      document.getElementById("kpiCycles").innerText = `${s.completedCyclesCount}회`;
+      document.getElementById("kpiAvgDays").innerText = `${s.avgCycleDays.toFixed(1)}일`;
+      document.getElementById("kpiMaxDays").innerText = `${s.maxCycleDays}일`;
+
+      // Active Live Banner
+      const ac = s.activeCycle;
+      if (ac.sharesHeld > 0) {
+        document.getElementById("liveCycleBanner").style.display = "flex";
+        document.getElementById("activeCycleTitle").innerText = `진행 중인 사이클 (Cycle #${ac.cycleNum})`;
+        const phaseLabel = ac.round <= params.phaseSplitRound ? "전반부" : "후반부 (방어 모드)";
+        document.getElementById("activeCycleSub").innerText = `${ac.startDate} 시작 | 현재 ${ac.round}회차 / ${params.portions}회차 (${phaseLabel})`;
+        document.getElementById("activeInvestedVal").innerText = fmtCurrency(ac.totalInvested);
+        document.getElementById("activeAvgCostVal").innerText = fmtCurrency(ac.avgCost);
+        const targetVal = ac.avgCost * (1.0 + params.targetProfitPct / 100.0);
+        document.getElementById("activeTargetVal").innerText = fmtCurrency(targetVal);
+
+        const pnlEl = document.getElementById("activePnlVal");
+        pnlEl.innerText = `${ac.unrealizedPct >= 0 ? '+' : ''}${ac.unrealizedPct.toFixed(2)}%`;
+        pnlEl.className = `live-stat-val ${ac.unrealizedPct >= 0 ? 'val-positive' : 'val-negative'}`;
+      } else {
+        document.getElementById("liveCycleBanner").style.display = "flex";
+        document.getElementById("activeCycleTitle").innerText = `사이클 대기 중 (Cycle #${ac.cycleNum})`;
+        document.getElementById("activeCycleSub").innerText = `직전 사이클 익절 완료. 다음 거래일에 1회차 매수 시작 대기`;
+        document.getElementById("activeInvestedVal").innerText = fmtCurrency(0);
+        document.getElementById("activeAvgCostVal").innerText = "-";
+        document.getElementById("activeTargetVal").innerText = "-";
+        document.getElementById("activePnlVal").innerText = "0.0%";
+      }
+
+      // Yearly Table
+      const yBody = document.getElementById("yearlyTableBody");
+      yBody.innerHTML = "";
+      latestSimResult.yearlyBreakdown.forEach(y => {
+        const tr = document.createElement("tr");
+        const retClass = y.returnPct >= 0 ? 'val-positive' : 'val-negative';
+        tr.innerHTML = `
+          <td><strong>${y.year}</strong></td>
+          <td>${fmtCurrency(y.startEquity)}</td>
+          <td>${fmtCurrency(y.endEquity)}</td>
+          <td class="${retClass}" style="font-weight:700;">${y.returnPct >= 0 ? '+' : ''}${y.returnPct.toFixed(2)}%</td>
+          <td><span class="badge badge-cyan">${y.completedCycles}회</span></td>
+          <td style="font-weight:600;">${fmtCurrency(y.realizedProfit)}</td>
+          <td>${y.maxRoundsUsed} / ${params.portions}</td>
+          <td class="val-negative" style="font-weight:600;">${y.mddPct.toFixed(2)}%</td>
+        `;
+        yBody.appendChild(tr);
+      });
+
+      // Cycle Log Table
+      document.getElementById("cycleCountBadge").innerText = latestSimResult.completedCycles.length;
+      const cBody = document.getElementById("cyclesTableBody");
+      cBody.innerHTML = "";
+      // show reverse chronological order (newest first)
+      const reversedCycles = [...latestSimResult.completedCycles].reverse();
+      reversedCycles.forEach(c => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td><strong>#${c.cycleNum}</strong></td>
+          <td><span class="badge badge-green"><i class="fa-solid fa-check"></i> 익절</span></td>
+          <td>${c.startDate}</td>
+          <td>${c.endDate}</td>
+          <td>${c.durationDays}일</td>
+          <td><span class="badge ${c.maxRoundsUsed > params.phaseSplitRound ? 'badge-amber' : 'badge-cyan'}">${c.maxRoundsUsed}회</span></td>
+          <td>${fmtCurrency(c.totalInvested)}</td>
+          <td>${fmtCurrency(c.avgCost)}</td>
+          <td>${fmtCurrency(c.exitPrice)}</td>
+          <td class="val-positive" style="font-weight:600;">+${fmtCurrency(c.netProfit)}</td>
+          <td class="val-positive" style="font-weight:700;">+${c.returnPct.toFixed(2)}%</td>
+        `;
+        cBody.appendChild(tr);
+      });
+
+      // Chart
+      renderChart();
+    }
+
+    function renderChart() {
+      const ctx = document.getElementById("equityChart").getContext("2d");
+      const curve = latestSimResult.equityCurve;
+      
+      // Sample points if too dense (for smooth rendering)
+      const step = Math.max(1, Math.floor(curve.length / 350));
+      const sampled = [];
+      for (let i = 0; i < curve.length; i += step) {
+        sampled.push(curve[i]);
+      }
+      if (sampled[sampled.length - 1] !== curve[curve.length - 1]) {
+        sampled.push(curve[curve.length - 1]);
+      }
+
+      const labels = sampled.map(p => p.date);
+      const stratData = sampled.map(p => p.equity);
+      const bhData = sampled.map(p => p.bhEquity);
+
+      const isDark = (document.documentElement.getAttribute("data-theme") || "dark") === "dark";
+      const gridColor = isDark ? "rgba(255, 255, 255, 0.06)" : "rgba(0, 0, 0, 0.06)";
+      const textColor = isDark ? "#94a3b8" : "#64748b";
+
+      if (equityChartInstance) {
+        equityChartInstance.destroy();
+      }
+
+      equityChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'DCA 무한매수 전략 자산',
+              data: stratData,
+              borderColor: '#3b82f6',
+              backgroundColor: isDark ? 'rgba(59, 130, 246, 0.15)' : 'rgba(37, 99, 235, 0.08)',
+              borderWidth: 2.2,
+              pointRadius: 0,
+              pointHoverRadius: 5,
+              fill: true,
+              tension: 0.1
+            },
+            {
+              label: 'Buy & Hold 단순 보유',
+              data: bhData,
+              borderColor: isDark ? '#64748b' : '#94a3b8',
+              borderWidth: 1.5,
+              borderDash: [4, 4],
+              pointRadius: 0,
+              pointHoverRadius: 4,
+              fill: false,
+              tension: 0.1
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: {
+            mode: 'index',
+            intersect: false
+          },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: isDark ? 'rgba(15, 23, 42, 0.9)' : 'rgba(255, 255, 255, 0.95)',
+              titleColor: isDark ? '#f8fafc' : '#0f172a',
+              bodyColor: isDark ? '#cbd5e1' : '#334155',
+              borderColor: isDark ? '#334155' : '#e2e8f0',
+              borderWidth: 1,
+              padding: 10,
+              callbacks: {
+                label: function(context) {
+                  let label = context.dataset.label || '';
+                  if (label) label += ': ';
+                  if (context.parsed.y !== null) {
+                    label += '$' + Math.round(context.parsed.y).toLocaleString();
+                  }
+                  return label;
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: { color: gridColor },
+              ticks: {
+                color: textColor,
+                maxTicksLimit: 8,
+                font: { family: 'Outfit', size: 11 }
+              }
+            },
+            y: {
+              grid: { color: gridColor },
+              ticks: {
+                color: textColor,
+                callback: (val) => '$' + Math.round(val).toLocaleString(),
+                font: { family: 'JetBrains Mono', size: 11 }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function updateChartColors(theme) {
+      if (!equityChartInstance) return;
+      const isDark = theme === "dark";
+      equityChartInstance.options.scales.x.grid.color = isDark ? "rgba(255, 255, 255, 0.06)" : "rgba(0, 0, 0, 0.06)";
+      equityChartInstance.options.scales.y.grid.color = isDark ? "rgba(255, 255, 255, 0.06)" : "rgba(0, 0, 0, 0.06)";
+      equityChartInstance.options.scales.x.ticks.color = isDark ? "#94a3b8" : "#64748b";
+      equityChartInstance.options.scales.y.ticks.color = isDark ? "#94a3b8" : "#64748b";
+      equityChartInstance.update();
+    }
+
+    function exportCsv() {
+      if (!latestSimResult || !latestSimResult.completedCycles) return;
+      let csv = "Cycle,Status,StartDate,EndDate,DurationDays,MaxRounds,Invested,AvgCost,ExitPrice,NetProfit,ReturnPct\n";
+      latestSimResult.completedCycles.forEach(c => {
+        csv += `${c.cycleNum},${c.status},${c.startDate},${c.endDate},${c.durationDays},${c.maxRoundsUsed},${c.totalInvested.toFixed(2)},${c.avgCost.toFixed(4)},${c.exitPrice.toFixed(4)},${c.netProfit.toFixed(2)},${c.returnPct.toFixed(2)}%\n`;
+      });
+
+      const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `dca_signal_${params.ticker}_cycles_${new Date().toISOString().substring(0,10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+  </script>
+</body>
+
+</html>
