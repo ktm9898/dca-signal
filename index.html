@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DCA Signal - 라오어 무한매수법 & 정량 분할(DCA) 퀀트 시뮬레이터</title>
+  <title>DCA Signal - 정량 분할 적립식(DCA) 퀀트 시뮬레이터</title>
 
   <!-- Google Fonts & Font Awesome Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -22,37 +22,6 @@
 
   <style>
     :root {
-      --bg-base: #0a0e17;
-      --bg-surface: #111827;
-      --bg-card: #162032;
-      --bg-card-hover: #1c2942;
-      --card-border: #1e293b;
-      --card-border-active: #3b82f6;
-      
-      --accent-blue: #3b82f6;
-      --accent-cyan: #06b6d4;
-      --accent-green: #10b981;
-      --accent-emerald: #059669;
-      --accent-red: #ef4444;
-      --accent-rose: #f43f5e;
-      --accent-amber: #f59e0b;
-      --accent-purple: #8b5cf6;
-
-      --text-main: #f8fafc;
-      --text-sub: #94a3b8;
-      --text-muted: #64748b;
-      
-      --badge-cyan: rgba(6, 182, 212, 0.15);
-      --badge-green: rgba(16, 185, 129, 0.15);
-      --badge-red: rgba(239, 68, 68, 0.15);
-      --badge-amber: rgba(245, 158, 11, 0.15);
-
-      --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
-      --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
-      --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
-    }
-
-    [data-theme="light"] {
       --bg-base: #f8fafc;
       --bg-surface: #ffffff;
       --bg-card: #ffffff;
@@ -61,11 +30,10 @@
       --card-border-active: #2563eb;
 
       --accent-blue: #2563eb;
-      --accent-cyan: #0891b2;
+      --accent-cyan: #0284c7;
       --accent-green: #059669;
       --accent-emerald: #047857;
       --accent-red: #dc2626;
-      --accent-rose: #e11d48;
       --accent-amber: #d97706;
       --accent-purple: #7c3aed;
 
@@ -73,21 +41,20 @@
       --text-sub: #475569;
       --text-muted: #94a3b8;
 
-      --badge-cyan: rgba(8, 145, 178, 0.12);
-      --badge-green: rgba(5, 150, 105, 0.12);
-      --badge-red: rgba(220, 38, 38, 0.12);
-      --badge-amber: rgba(217, 119, 6, 0.12);
+      --badge-cyan: rgba(2, 132, 199, 0.1);
+      --badge-green: rgba(5, 150, 105, 0.1);
+      --badge-red: rgba(220, 38, 38, 0.1);
+      --badge-amber: rgba(217, 119, 6, 0.1);
 
       --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
-      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
-      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
     }
 
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      transition: background-color 0.2s, border-color 0.2s;
     }
 
     body {
@@ -117,7 +84,7 @@
       border: 1px solid var(--card-border);
       border-radius: 16px;
       margin-bottom: 24px;
-      box-shadow: var(--shadow-md);
+      box-shadow: var(--shadow-sm);
     }
 
     .brand {
@@ -129,23 +96,21 @@
     .logo-icon {
       width: 44px;
       height: 44px;
-      background: linear-gradient(135deg, #3b82f6, #06b6d4);
+      background: linear-gradient(135deg, #2563eb, #0284c7);
       border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
       color: white;
       font-size: 22px;
-      box-shadow: 0 4px 12px rgba(6, 182, 212, 0.35);
+      box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25);
     }
 
     .brand-text h1 {
       font-size: 22px;
       font-weight: 800;
       letter-spacing: -0.5px;
-      background: linear-gradient(90deg, #38bdf8, #818cf8);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      color: var(--text-main);
       display: flex;
       align-items: center;
       gap: 8px;
@@ -173,7 +138,7 @@
       font-weight: 600;
       cursor: pointer;
       border: 1px solid var(--card-border);
-      background: var(--bg-card);
+      background: var(--bg-surface);
       color: var(--text-main);
       transition: all 0.2s ease;
     }
@@ -182,18 +147,6 @@
       background: var(--bg-card-hover);
       border-color: var(--accent-blue);
       transform: translateY(-1px);
-    }
-
-    .btn-primary {
-      background: linear-gradient(135deg, #2563eb, #0284c7);
-      border: none;
-      color: white;
-      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
-    }
-
-    .btn-primary:hover {
-      background: linear-gradient(135deg, #1d4ed8, #0369a1);
-      box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4);
     }
 
     /* Main Layout Grid */
@@ -215,12 +168,10 @@
       border: 1px solid var(--card-border);
       border-radius: 16px;
       padding: 24px;
-      box-shadow: var(--shadow-md);
+      box-shadow: var(--shadow-sm);
       display: flex;
       flex-direction: column;
       gap: 22px;
-      position: sticky;
-      top: 20px;
     }
 
     .panel-section-title {
@@ -228,7 +179,7 @@
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.8px;
-      color: var(--accent-cyan);
+      color: var(--accent-blue);
       display: flex;
       align-items: center;
       gap: 8px;
@@ -254,17 +205,18 @@
 
     .form-group label span.value-badge {
       font-family: 'JetBrains Mono', monospace;
-      color: var(--accent-cyan);
+      color: var(--accent-blue);
       background: var(--badge-cyan);
       padding: 2px 8px;
       border-radius: 6px;
       font-size: 12px;
+      font-weight: 600;
     }
 
-    select, input[type="text"], input[type="number"] {
+    select, input[type="text"], input[type="number"], input[type="date"] {
       width: 100%;
-      padding: 10px 14px;
-      background: var(--bg-card);
+      padding: 9px 12px;
+      background: var(--bg-surface);
       border: 1px solid var(--card-border);
       border-radius: 10px;
       color: var(--text-main);
@@ -276,7 +228,7 @@
 
     select:focus, input:focus {
       border-color: var(--accent-blue);
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
     }
 
     input[type="range"] {
@@ -296,7 +248,7 @@
       border-radius: 50%;
       background: var(--accent-blue);
       cursor: pointer;
-      box-shadow: 0 0 8px rgba(59, 130, 246, 0.6);
+      box-shadow: 0 0 6px rgba(37, 99, 235, 0.4);
       transition: transform 0.1s;
     }
 
@@ -304,15 +256,16 @@
       transform: scale(1.2);
     }
 
+    /* Preset Buttons */
     .preset-pill-group {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 5px;
     }
 
     .preset-pill {
-      padding: 6px 11px;
-      background: var(--bg-card);
+      padding: 7px 0;
+      background: var(--bg-base);
       border: 1px solid var(--card-border);
       border-radius: 8px;
       font-size: 12px;
@@ -320,12 +273,31 @@
       color: var(--text-sub);
       cursor: pointer;
       transition: all 0.2s;
+      text-align: center;
     }
 
     .preset-pill:hover, .preset-pill.active {
       background: var(--accent-blue);
       border-color: var(--accent-blue);
       color: white;
+    }
+
+    .custom-date-box {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 6px;
+      padding: 10px;
+      background: var(--bg-base);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+    }
+
+    .custom-date-box label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 2px;
     }
 
     /* Radio Cards */
@@ -340,7 +312,7 @@
       align-items: flex-start;
       gap: 10px;
       padding: 10px 12px;
-      background: var(--bg-card);
+      background: var(--bg-base);
       border: 1px solid var(--card-border);
       border-radius: 10px;
       cursor: pointer;
@@ -350,12 +322,12 @@
 
     .radio-card:hover {
       background: var(--bg-card-hover);
-      border-color: rgba(59, 130, 246, 0.4);
+      border-color: rgba(37, 99, 235, 0.4);
     }
 
     .radio-card.active {
       border-color: var(--accent-blue);
-      background: rgba(59, 130, 246, 0.08);
+      background: rgba(37, 99, 235, 0.05);
     }
 
     .radio-card input {
@@ -378,6 +350,26 @@
       font-size: 11px;
     }
 
+    /* Threshold Control Box */
+    .threshold-sub-box {
+      margin-top: 8px;
+      padding: 12px;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .threshold-sub-box label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #1e40af;
+      display: flex;
+      justify-content: space-between;
+    }
+
     /* Right Main Content Area */
     .main-content {
       display: flex;
@@ -387,16 +379,15 @@
 
     /* Active Cycle Live Alert Banner */
     .live-cycle-banner {
-      background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.9));
-      border: 1px solid var(--card-border-active);
+      background: linear-gradient(135deg, #ffffff, #f0fdf4);
+      border: 1px solid #bbf7d0;
       border-radius: 16px;
       padding: 18px 22px;
-      box-shadow: var(--shadow-md);
+      box-shadow: var(--shadow-sm);
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 18px;
-      backdrop-filter: blur(8px);
     }
 
     .live-cycle-info {
@@ -410,14 +401,14 @@
       height: 14px;
       background-color: var(--accent-green);
       border-radius: 50%;
-      box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+      box-shadow: 0 0 0 0 rgba(5, 150, 105, 0.6);
       animation: pulse 1.8s infinite;
     }
 
     @keyframes pulse {
-      0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-      70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+      0% { box-shadow: 0 0 0 0 rgba(5, 150, 105, 0.6); }
+      70% { box-shadow: 0 0 0 10px rgba(5, 150, 105, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(5, 150, 105, 0); }
     }
 
     .live-cycle-title {
@@ -444,6 +435,7 @@
       font-size: 11px;
       color: var(--text-muted);
       text-transform: uppercase;
+      font-weight: 600;
     }
 
     .live-stat-val {
@@ -528,7 +520,7 @@
       border: 1px solid var(--card-border);
       border-radius: 16px;
       padding: 22px;
-      box-shadow: var(--shadow-md);
+      box-shadow: var(--shadow-sm);
       display: flex;
       flex-direction: column;
       gap: 16px;
@@ -579,7 +571,7 @@
       border: 1px solid var(--card-border);
       border-radius: 16px;
       padding: 22px;
-      box-shadow: var(--shadow-md);
+      box-shadow: var(--shadow-sm);
       display: flex;
       flex-direction: column;
       gap: 18px;
@@ -612,13 +604,13 @@
 
     .tab-btn:hover {
       color: var(--text-main);
-      background: var(--bg-card);
+      background: var(--bg-base);
     }
 
     .tab-btn.active {
-      color: var(--accent-cyan);
+      color: var(--accent-blue);
       background: var(--badge-cyan);
-      border-color: rgba(6, 182, 212, 0.3);
+      border-color: rgba(37, 99, 235, 0.2);
     }
 
     .tab-content {
@@ -645,7 +637,7 @@
     th {
       position: sticky;
       top: 0;
-      background: var(--bg-card);
+      background: #f1f5f9;
       color: var(--text-sub);
       font-weight: 600;
       padding: 12px 14px;
@@ -678,7 +670,7 @@
 
     .badge-green { background: var(--badge-green); color: var(--accent-green); }
     .badge-red { background: var(--badge-red); color: var(--accent-red); }
-    .badge-cyan { background: var(--badge-cyan); color: var(--accent-cyan); }
+    .badge-cyan { background: var(--badge-cyan); color: var(--accent-blue); }
     .badge-amber { background: var(--badge-amber); color: var(--accent-amber); }
 
     /* Footer */
@@ -697,17 +689,14 @@
     <header>
       <div class="brand">
         <div class="logo-icon">
-          <i class="fa-solid fa-infinity"></i>
+          <i class="fa-solid fa-chart-pie"></i>
         </div>
         <div class="brand-text">
-          <h1>DCA Signal <span style="font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 12px; background: rgba(59,130,246,0.15); color: var(--accent-blue); -webkit-text-fill-color: initial;">QUANT ENGINE</span></h1>
-          <p>라오어 무한매수법 & 정량 분할(DCA) 시뮬레이터</p>
+          <h1>DCA Signal <span style="font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 12px; background: rgba(37,99,235,0.1); color: var(--accent-blue);">QUANT SIMULATOR</span></h1>
+          <p>정량 분할 적립식(DCA) 퀀트 시뮬레이터 & 사이클 성과 분석</p>
         </div>
       </div>
       <div class="header-actions">
-        <button id="themeToggleBtn" class="btn" title="테마 변경">
-          <i class="fa-solid fa-moon"></i> 테마
-        </button>
         <button id="exportCsvBtn" class="btn">
           <i class="fa-solid fa-file-csv"></i> CSV 내보내기
         </button>
@@ -735,15 +724,27 @@
           </select>
         </div>
 
-        <!-- Period Presets -->
+        <!-- Period Presets & Direct Date Input -->
         <div class="form-group">
-          <label>테스트 기간 프리셋</label>
+          <label>테스트 기간 설정</label>
           <div class="preset-pill-group">
-            <button class="preset-pill active" data-period="all">10년 전체</button>
-            <button class="preset-pill" data-period="5y">최근 5년</button>
-            <button class="preset-pill" data-period="3y">최근 3년</button>
-            <button class="preset-pill" data-period="2022">2022 하락장</button>
-            <button class="preset-pill" data-period="2020">2020 코로나</button>
+            <button class="preset-pill active" data-period="10y">10년</button>
+            <button class="preset-pill" data-period="5y">5년</button>
+            <button class="preset-pill" data-period="3y">3년</button>
+            <button class="preset-pill" data-period="1y">1년</button>
+            <button class="preset-pill" data-period="custom">직접입력</button>
+          </div>
+
+          <!-- Direct Date Pickers (Shown when custom is picked or toggled) -->
+          <div id="customDateBox" class="custom-date-box" style="display: none;">
+            <div>
+              <label>시작일</label>
+              <input type="date" id="startDateInput">
+            </div>
+            <div>
+              <label>종료일</label>
+              <input type="date" id="endDateInput">
+            </div>
           </div>
         </div>
 
@@ -769,59 +770,50 @@
         <!-- Phase Split Round (M) -->
         <div class="form-group">
           <label for="splitRoundRange">
-            전반부/후반부 전환점
+            전반부 / 후반부 전환점
             <span class="value-badge" id="splitRoundDisplay">20회차</span>
           </label>
           <input type="range" id="splitRoundRange" min="5" max="40" step="1" value="20">
-          <small style="color:var(--text-muted); font-size:11px;">1~<span id="firstHalfRangeText">20</span>회: 전반부 / <span id="secondHalfRangeText">21~40</span>회: 후반부</small>
+          <small style="color:var(--text-muted); font-size:11px;">1~<span id="firstHalfRangeText">20</span>회: 전반부 (정량 매수) / <span id="secondHalfRangeText">21~40</span>회: 후반부 (조건부 매수)</small>
         </div>
 
-        <!-- First-Half Rule -->
+        <!-- Second-Half Rule (Condition relative to Average Cost) -->
         <div class="form-group">
-          <label>전반부 매수 룰</label>
+          <label>후반부 매수 조건 (하락장 방어)</label>
           <div class="radio-card-group">
             <label class="radio-card active">
-              <input type="radio" name="firstHalfRule" value="always" checked>
+              <input type="radio" name="secondHalfRule" value="below_threshold" checked>
               <div class="radio-card-desc">
-                <strong>매일 1회분 종가 매수</strong>
-                <small>상승장 물량 확보 및 심플 실행</small>
+                <strong>설정 기준 이하일 때만 1회분 매수</strong>
+                <small>기준 초과 시 매수 스킵 (현금 보존)</small>
               </div>
             </label>
             <label class="radio-card">
-              <input type="radio" name="firstHalfRule" value="laor_v1_loc">
+              <input type="radio" name="secondHalfRule" value="below_threshold_or_half">
               <div class="radio-card-desc">
-                <strong>라오어 V1 LOC 매수</strong>
-                <small>0.5회분 평단가 + 0.5회분 (평단가×1.05)</small>
-              </div>
-            </label>
-          </div>
-        </div>
-
-        <!-- Second-Half Rule (Crucial User Requirement) -->
-        <div class="form-group">
-          <label>후반부 매수 룰 (하락장 방어)</label>
-          <div class="radio-card-group">
-            <label class="radio-card active">
-              <input type="radio" name="secondHalfRule" value="below_avg" checked>
-              <div class="radio-card-desc">
-                <strong style="color:var(--accent-cyan);"><i class="fa-solid fa-shield-halved"></i> 종가 &lt; 평단가일 때만 매수</strong>
-                <small>평단가 이상이면 매수 스킵 (현금 보존)</small>
-              </div>
-            </label>
-            <label class="radio-card">
-              <input type="radio" name="secondHalfRule" value="below_avg_or_half">
-              <div class="radio-card-desc">
-                <strong>평단가 미만 1회분 / 이상 0.5회분</strong>
+                <strong>기준 이하 시 1회분 / 초과 시 0.5회분</strong>
                 <small>완전 스킵 대신 축소 매수로 완충</small>
               </div>
             </label>
             <label class="radio-card">
               <input type="radio" name="secondHalfRule" value="always">
               <div class="radio-card-desc">
-                <strong>무조건 1회분 종가 매수</strong>
-                <small>기계적 단순 균등 분할</small>
+                <strong>조건 없이 매일 1회분 매수</strong>
+                <small>기계적 단순 균등 분할 지속</small>
               </div>
             </label>
+          </div>
+
+          <!-- Dynamic Threshold % Slider Box -->
+          <div id="thresholdControlBox" class="threshold-sub-box">
+            <label>
+              <span>후반부 매수 기준선</span>
+              <span id="thresholdDisplay" class="value-badge">평단가 대비 0.0% 이하</span>
+            </label>
+            <input type="range" id="thresholdRange" min="-15" max="5" step="1" value="0">
+            <small id="thresholdExplainer" style="color:#1d4ed8; font-size:11px;">
+              종가가 현재 평단가 이하(0%)일 때만 매수를 진행합니다.
+            </small>
           </div>
         </div>
 
@@ -864,26 +856,26 @@
           <div class="live-cycle-info">
             <div class="pulse-dot"></div>
             <div>
-              <div class="live-cycle-title" id="activeCycleTitle">진행 중인 사이클 (Cycle #48)</div>
-              <div class="live-cycle-sub" id="activeCycleSub">2026-09-18 시작 | 현재 5회차 매수 완료</div>
+              <div class="live-cycle-title" id="activeCycleTitle">진행 중인 사이클</div>
+              <div class="live-cycle-sub" id="activeCycleSub">매수 현황 로딩 중...</div>
             </div>
           </div>
           <div class="live-stats-row">
             <div class="live-stat-item">
               <div class="live-stat-label">투입 원금</div>
-              <div class="live-stat-val" id="activeInvestedVal">$1,250.00</div>
+              <div class="live-stat-val" id="activeInvestedVal">$0.00</div>
             </div>
             <div class="live-stat-item">
               <div class="live-stat-label">보유 평단가</div>
-              <div class="live-stat-val" id="activeAvgCostVal">$78.40</div>
+              <div class="live-stat-val" id="activeAvgCostVal">$0.00</div>
             </div>
             <div class="live-stat-item">
-              <div class="live-stat-label">목표 익절가 (+10%)</div>
-              <div class="live-stat-val" id="activeTargetVal" style="color:var(--accent-green);">$86.24</div>
+              <div class="live-stat-label">목표 익절가</div>
+              <div class="live-stat-val" id="activeTargetVal" style="color:var(--accent-green);">$0.00</div>
             </div>
             <div class="live-stat-item">
               <div class="live-stat-label">현재 평가손익</div>
-              <div class="live-stat-val" id="activePnlVal">+2.45%</div>
+              <div class="live-stat-val" id="activePnlVal">0.0%</div>
             </div>
           </div>
         </div>
@@ -895,9 +887,9 @@
               <span>최종 평가 자산</span>
               <i class="fa-solid fa-vault"></i>
             </div>
-            <div class="kpi-value" id="kpiFinalEquity">$36,229</div>
+            <div class="kpi-value" id="kpiFinalEquity">-</div>
             <div class="kpi-subtext">
-              <span id="kpiTotalReturn" class="badge badge-green">+262.3%</span>
+              <span id="kpiTotalReturn" class="badge badge-green">+0.0%</span>
               <span>총 누적 수익</span>
             </div>
           </div>
@@ -907,10 +899,10 @@
               <span>연평균 복리 (CAGR)</span>
               <i class="fa-solid fa-chart-line"></i>
             </div>
-            <div class="kpi-value" id="kpiCagr">13.7%</div>
+            <div class="kpi-value" id="kpiCagr">-</div>
             <div class="kpi-subtext">
-              <span>존버(B&H): </span>
-              <span id="kpiBhCagr" style="font-weight:600;">14.2%</span>
+              <span>단순 보유(B&H): </span>
+              <span id="kpiBhCagr" style="font-weight:600;">-</span>
             </div>
           </div>
 
@@ -919,9 +911,9 @@
               <span>최대 낙폭 (MDD)</span>
               <i class="fa-solid fa-water"></i>
             </div>
-            <div class="kpi-value" id="kpiMdd">-28.5%</div>
+            <div class="kpi-value" id="kpiMdd">-</div>
             <div class="kpi-subtext">
-              <span>2022 대하락장 방어</span>
+              <span>기간 내 최대 자산 하락폭</span>
             </div>
           </div>
 
@@ -930,9 +922,9 @@
               <span>완료된 사이클</span>
               <i class="fa-solid fa-rotate-right"></i>
             </div>
-            <div class="kpi-value" id="kpiCycles">47회</div>
+            <div class="kpi-value" id="kpiCycles">-</div>
             <div class="kpi-subtext">
-              <span>익절 승률: </span>
+              <span>익절 성공률: </span>
               <span class="badge badge-green">100%</span>
             </div>
           </div>
@@ -942,20 +934,20 @@
               <span>평균 소요 일수</span>
               <i class="fa-regular fa-clock"></i>
             </div>
-            <div class="kpi-value" id="kpiAvgDays">52.7일</div>
+            <div class="kpi-value" id="kpiAvgDays">-</div>
             <div class="kpi-subtext">
-              <span>약 2.5개월 / 1사이클</span>
+              <span>1사이클당 평균 기간</span>
             </div>
           </div>
 
           <div class="kpi-card red">
             <div class="kpi-title">
-              <span>최장 물림 기간</span>
+              <span>최장 사이클 소요</span>
               <i class="fa-solid fa-hourglass-half"></i>
             </div>
-            <div class="kpi-value" id="kpiMaxDays">776일</div>
+            <div class="kpi-value" id="kpiMaxDays">-</div>
             <div class="kpi-subtext">
-              <span>2022 하락장 탈출 소요</span>
+              <span>최대 지연/물림 기간</span>
             </div>
           </div>
         </div>
@@ -965,12 +957,12 @@
           <div class="chart-header">
             <div class="chart-title">
               <i class="fa-solid fa-chart-area" style="color:var(--accent-blue);"></i>
-              자산 성장 곡선 (Equity Curve vs Benchmark)
+              자산 성장 곡선 (DCA 전략 vs Buy & Hold)
             </div>
             <div class="chart-legend-custom">
               <div class="legend-item">
-                <div class="legend-color" style="background:#3b82f6;"></div>
-                <span>DCA 무한매수 전략</span>
+                <div class="legend-color" style="background:#2563eb;"></div>
+                <span>DCA 분할 적립 전략</span>
               </div>
               <div class="legend-item">
                 <div class="legend-color" style="background:#94a3b8;"></div>
@@ -991,11 +983,11 @@
                 <i class="fa-regular fa-calendar"></i> 연도별 성과 분석
               </button>
               <button class="tab-btn" data-tab="tab-cycles">
-                <i class="fa-solid fa-list-check"></i> 사이클별 상세 내역 (<span id="cycleCountBadge">47</span>)
+                <i class="fa-solid fa-list-check"></i> 사이클별 상세 내역 (<span id="cycleCountBadge">0</span>)
               </button>
             </div>
             <div style="font-size: 12px; color: var(--text-muted);">
-              <i class="fa-solid fa-circle-info"></i> 조건 변경 시 즉각 자동 업데이트됩니다.
+              <i class="fa-solid fa-circle-info"></i> 조건 변경 시 실시간 재계산됩니다.
             </div>
           </div>
 
@@ -1029,7 +1021,7 @@
                 <thead>
                   <tr>
                     <th>사이클 #</th>
-                    <th>결과</th>
+                    <th>상태</th>
                     <th>시작일</th>
                     <th>종료일</th>
                     <th>소요 일수</th>
@@ -1052,7 +1044,7 @@
     </div>
 
     <footer>
-      <p>DCA Signal &copy; 2026. Quantitative Infinite Buying Simulator. All Rights Reserved.</p>
+      <p>DCA Signal &copy; 2026. Quantitative Dollar-Cost Averaging Simulator.</p>
     </footer>
   </div>
 
@@ -1065,12 +1057,14 @@
     // Default parameters
     const params = {
       ticker: "TQQQ",
-      period: "all",
+      period: "10y",
+      customStartDate: "",
+      customEndDate: "",
       initialCapital: 10000,
       portions: 40,
       phaseSplitRound: 20,
-      firstHalfRule: "always",
-      secondHalfRule: "below_avg",
+      secondHalfRule: "below_threshold",
+      secondHalfThresholdPct: 0.0,
       targetProfitPct: 10.0,
       reinvestProfit: false,
       feePct: 0.1,
@@ -1079,30 +1073,9 @@
 
     // Initialize UI on Load
     document.addEventListener("DOMContentLoaded", () => {
-      initTheme();
       initEventListeners();
       loadTickerData(params.ticker);
     });
-
-    function initTheme() {
-      const savedTheme = localStorage.getItem("dca_theme") || "dark";
-      document.documentElement.setAttribute("data-theme", savedTheme);
-      updateThemeIcon(savedTheme);
-
-      document.getElementById("themeToggleBtn").addEventListener("click", () => {
-        const cur = document.documentElement.getAttribute("data-theme") || "dark";
-        const next = cur === "dark" ? "light" : "dark";
-        document.documentElement.setAttribute("data-theme", next);
-        localStorage.setItem("dca_theme", next);
-        updateThemeIcon(next);
-        if (equityChartInstance) updateChartColors(next);
-      });
-    }
-
-    function updateThemeIcon(theme) {
-      const btn = document.getElementById("themeToggleBtn");
-      btn.innerHTML = theme === "dark" ? '<i class="fa-solid fa-sun"></i> 테마' : '<i class="fa-solid fa-moon"></i> 테마';
-    }
 
     function initEventListeners() {
       // Ticker select
@@ -1117,8 +1090,25 @@
           document.querySelectorAll(".preset-pill").forEach(p => p.classList.remove("active"));
           pill.classList.add("active");
           params.period = pill.getAttribute("data-period");
+
+          const customBox = document.getElementById("customDateBox");
+          if (params.period === "custom") {
+            customBox.style.display = "grid";
+          } else {
+            customBox.style.display = "none";
+          }
           runSimulation();
         });
+      });
+
+      // Custom date inputs
+      document.getElementById("startDateInput").addEventListener("change", (e) => {
+        params.customStartDate = e.target.value;
+        if (params.period === "custom") runSimulation();
+      });
+      document.getElementById("endDateInput").addEventListener("change", (e) => {
+        params.customEndDate = e.target.value;
+        if (params.period === "custom") runSimulation();
       });
 
       // Capital Input
@@ -1156,17 +1146,27 @@
         runSimulation();
       });
 
-      // Radio Groups
-      setupRadioGroup("firstHalfRule", (val) => {
-        params.firstHalfRule = val;
-        runSimulation();
-      });
-
+      // Second Half Rule Radio Group
       setupRadioGroup("secondHalfRule", (val) => {
         params.secondHalfRule = val;
+        const box = document.getElementById("thresholdControlBox");
+        if (val === "always") {
+          box.style.display = "none";
+        } else {
+          box.style.display = "flex";
+        }
         runSimulation();
       });
 
+      // Second Half Threshold Slider
+      const thresholdRange = document.getElementById("thresholdRange");
+      thresholdRange.addEventListener("input", (e) => {
+        params.secondHalfThresholdPct = parseFloat(e.target.value);
+        updateThresholdDisplay();
+        runSimulation();
+      });
+
+      // Reinvest Profit Radio Group
       setupRadioGroup("reinvestProfit", (val) => {
         params.reinvestProfit = (val === "true");
         runSimulation();
@@ -1206,6 +1206,23 @@
       });
     }
 
+    function updateThresholdDisplay() {
+      const pct = params.secondHalfThresholdPct;
+      const displayEl = document.getElementById("thresholdDisplay");
+      const explainerEl = document.getElementById("thresholdExplainer");
+
+      if (pct === 0) {
+        displayEl.innerText = "평단가 대비 0.0% 이하 (종가 ≤ 평단가)";
+        explainerEl.innerText = "종가가 현재 평단가 이하(0%)일 때만 매수를 진행합니다.";
+      } else if (pct < 0) {
+        displayEl.innerText = `평단가 대비 ${pct.toFixed(1)}% 이하`;
+        explainerEl.innerText = `종가가 현재 평단가보다 ${Math.abs(pct)}% 이상 더 하락한 깊은 조정 시에만 매수합니다.`;
+      } else {
+        displayEl.innerText = `평단가 대비 +${pct.toFixed(1)}% 이하`;
+        explainerEl.innerText = `종가가 평단가보다 +${pct}% 이하인 구간까지 매수를 허용합니다.`;
+      }
+    }
+
     function updateSplitRoundDisplay() {
       document.getElementById("splitRoundDisplay").innerText = `${params.phaseSplitRound}회차`;
       document.getElementById("firstHalfRangeText").innerText = params.phaseSplitRound;
@@ -1221,16 +1238,17 @@
     function loadTickerData(ticker) {
       if (window.DCA_PRESETS && window.DCA_PRESETS[ticker]) {
         currentData = window.DCA_PRESETS[ticker];
+        syncDateInputs();
         runSimulation();
         return;
       }
 
-      // Fallback to fetch if hosted on web server
       const filename = `data/${ticker.replace('.', '_')}.json`;
       fetch(filename)
         .then(res => res.json())
         .then(data => {
           currentData = data;
+          syncDateInputs();
           runSimulation();
         })
         .catch(err => {
@@ -1239,20 +1257,42 @@
         });
     }
 
+    function syncDateInputs() {
+      if (!currentData || !currentData.candles || currentData.candles.length === 0) return;
+      const start = currentData.candles[0].date;
+      const end = currentData.candles[currentData.candles.length - 1].date;
+
+      const sInput = document.getElementById("startDateInput");
+      const eInput = document.getElementById("endDateInput");
+      sInput.min = start;
+      sInput.max = end;
+      eInput.min = start;
+      eInput.max = end;
+
+      if (!params.customStartDate) {
+        sInput.value = start;
+        params.customStartDate = start;
+      }
+      if (!params.customEndDate) {
+        eInput.value = end;
+        params.customEndDate = end;
+      }
+    }
+
     // -------------------------------------------------------------------------
-    // Core Simulation Engine (Pure JavaScript Client-Side)
+    // Core Simulation Engine (Client-Side)
     // -------------------------------------------------------------------------
     function runSimulation() {
       if (!currentData || !currentData.candles || currentData.candles.length === 0) return;
 
-      const filteredCandles = filterCandlesByPeriod(currentData.candles, params.period);
+      const filteredCandles = filterCandles(currentData.candles);
       if (filteredCandles.length === 0) return;
 
       const initialCapital = params.initialCapital;
       const portions = params.portions;
       const phaseSplitRound = params.phaseSplitRound;
-      const firstHalfRule = params.firstHalfRule;
       const secondHalfRule = params.secondHalfRule;
+      const thresholdPct = params.secondHalfThresholdPct;
       const targetProfitPct = params.targetProfitPct;
       const feePct = params.feePct / 100.0;
       const slippagePct = params.slippagePct / 100.0;
@@ -1351,29 +1391,21 @@
           const orderFillPrice = closeP * (1.0 + slippagePct);
 
           if (isFirstHalf) {
-            if (firstHalfRule === "always") {
-              budgetToday = Math.min(portionSize, fundsLeft);
-            } else if (firstHalfRule === "laor_v1_loc") {
-              if (avgCost === 0) {
-                budgetToday = Math.min(portionSize, fundsLeft);
-              } else {
-                let b = 0.0;
-                if (closeP <= avgCost) b += portionSize * 0.5;
-                if (closeP <= avgCost * 1.05) b += portionSize * 0.5;
-                budgetToday = Math.min(b, fundsLeft);
-              }
-            }
+            // First Half: Daily 1 portion buy
+            budgetToday = Math.min(portionSize, fundsLeft);
           } else {
-            // Second Half Rules
-            if (secondHalfRule === "below_avg") {
-              // Buy ONLY when close < average cost!
-              if (avgCost === 0 || closeP < avgCost) {
+            // Second Half: Threshold condition (e.g. <= avgCost * (1 + thresholdPct / 100))
+            const targetThresholdPrice = avgCost * (1.0 + thresholdPct / 100.0);
+            const isBelowThreshold = (avgCost === 0 || closeP <= targetThresholdPrice);
+
+            if (secondHalfRule === "below_threshold") {
+              if (isBelowThreshold) {
                 budgetToday = Math.min(portionSize, fundsLeft);
               } else {
                 budgetToday = 0.0; // Pass & save cash
               }
-            } else if (secondHalfRule === "below_avg_or_half") {
-              if (avgCost === 0 || closeP < avgCost) {
+            } else if (secondHalfRule === "below_threshold_or_half") {
+              if (isBelowThreshold) {
                 budgetToday = Math.min(portionSize, fundsLeft);
               } else {
                 budgetToday = Math.min(portionSize * 0.5, fundsLeft);
@@ -1398,7 +1430,7 @@
           }
         }
 
-        // 3. Mark to Market Equity
+        // 3. Daily Mark to Market
         const currentSharesVal = sharesHeld * closeP;
         const cashInHand = (cycleBaseCapital - totalInvested) + (currentCapitalPool - cycleBaseCapital) + realizedPnlTotal;
         const totalEquity = cashInHand + currentSharesVal;
@@ -1432,7 +1464,7 @@
         ? completedCycles.reduce((acc, c) => acc + c.durationDays, 0) / completedCycles.length 
         : 0;
 
-      // Yearly Stats
+      // Yearly Breakdown
       const yearlyMap = {};
       completedCycles.forEach(c => {
         const yr = c.endDate.substring(0, 4);
@@ -1509,8 +1541,10 @@
       updateUI();
     }
 
-    function filterCandlesByPeriod(candles, period) {
-      if (period === "all") return candles;
+    function filterCandles(candles) {
+      const period = params.period;
+      if (period === "10y") return candles;
+
       const lastDate = new Date(candles[candles.length - 1].date);
 
       if (period === "5y") {
@@ -1525,11 +1559,16 @@
         const cutStr = cutoff.toISOString().substring(0, 10);
         return candles.filter(c => c.date >= cutStr);
       }
-      if (period === "2022") {
-        return candles.filter(c => c.date >= "2022-01-01" && c.date <= "2022-12-31");
+      if (period === "1y") {
+        const cutoff = new Date(lastDate);
+        cutoff.setFullYear(cutoff.getFullYear() - 1);
+        const cutStr = cutoff.toISOString().substring(0, 10);
+        return candles.filter(c => c.date >= cutStr);
       }
-      if (period === "2020") {
-        return candles.filter(c => c.date >= "2020-01-01" && c.date <= "2020-12-31");
+      if (period === "custom") {
+        const s = params.customStartDate || "1900-01-01";
+        const e = params.customEndDate || "2099-12-31";
+        return candles.filter(c => c.date >= s && c.date <= e);
       }
       return candles;
     }
@@ -1561,7 +1600,7 @@
       if (ac.sharesHeld > 0) {
         document.getElementById("liveCycleBanner").style.display = "flex";
         document.getElementById("activeCycleTitle").innerText = `진행 중인 사이클 (Cycle #${ac.cycleNum})`;
-        const phaseLabel = ac.round <= params.phaseSplitRound ? "전반부" : "후반부 (방어 모드)";
+        const phaseLabel = ac.round <= params.phaseSplitRound ? "전반부 (정량 매수)" : "후반부 (조건부 매수)";
         document.getElementById("activeCycleSub").innerText = `${ac.startDate} 시작 | 현재 ${ac.round}회차 / ${params.portions}회차 (${phaseLabel})`;
         document.getElementById("activeInvestedVal").innerText = fmtCurrency(ac.totalInvested);
         document.getElementById("activeAvgCostVal").innerText = fmtCurrency(ac.avgCost);
@@ -1604,7 +1643,6 @@
       document.getElementById("cycleCountBadge").innerText = latestSimResult.completedCycles.length;
       const cBody = document.getElementById("cyclesTableBody");
       cBody.innerHTML = "";
-      // show reverse chronological order (newest first)
       const reversedCycles = [...latestSimResult.completedCycles].reverse();
       reversedCycles.forEach(c => {
         const tr = document.createElement("tr");
@@ -1624,7 +1662,6 @@
         cBody.appendChild(tr);
       });
 
-      // Chart
       renderChart();
     }
 
@@ -1632,7 +1669,6 @@
       const ctx = document.getElementById("equityChart").getContext("2d");
       const curve = latestSimResult.equityCurve;
       
-      // Sample points if too dense (for smooth rendering)
       const step = Math.max(1, Math.floor(curve.length / 350));
       const sampled = [];
       for (let i = 0; i < curve.length; i += step) {
@@ -1646,9 +1682,8 @@
       const stratData = sampled.map(p => p.equity);
       const bhData = sampled.map(p => p.bhEquity);
 
-      const isDark = (document.documentElement.getAttribute("data-theme") || "dark") === "dark";
-      const gridColor = isDark ? "rgba(255, 255, 255, 0.06)" : "rgba(0, 0, 0, 0.06)";
-      const textColor = isDark ? "#94a3b8" : "#64748b";
+      const gridColor = "rgba(0, 0, 0, 0.05)";
+      const textColor = "#64748b";
 
       if (equityChartInstance) {
         equityChartInstance.destroy();
@@ -1660,10 +1695,10 @@
           labels: labels,
           datasets: [
             {
-              label: 'DCA 무한매수 전략 자산',
+              label: 'DCA 분할 적립 전략',
               data: stratData,
-              borderColor: '#3b82f6',
-              backgroundColor: isDark ? 'rgba(59, 130, 246, 0.15)' : 'rgba(37, 99, 235, 0.08)',
+              borderColor: '#2563eb',
+              backgroundColor: 'rgba(37, 99, 235, 0.08)',
               borderWidth: 2.2,
               pointRadius: 0,
               pointHoverRadius: 5,
@@ -1673,7 +1708,7 @@
             {
               label: 'Buy & Hold 단순 보유',
               data: bhData,
-              borderColor: isDark ? '#64748b' : '#94a3b8',
+              borderColor: '#94a3b8',
               borderWidth: 1.5,
               borderDash: [4, 4],
               pointRadius: 0,
@@ -1693,10 +1728,10 @@
           plugins: {
             legend: { display: false },
             tooltip: {
-              backgroundColor: isDark ? 'rgba(15, 23, 42, 0.9)' : 'rgba(255, 255, 255, 0.95)',
-              titleColor: isDark ? '#f8fafc' : '#0f172a',
-              bodyColor: isDark ? '#cbd5e1' : '#334155',
-              borderColor: isDark ? '#334155' : '#e2e8f0',
+              backgroundColor: 'rgba(255, 255, 255, 0.95)',
+              titleColor: '#0f172a',
+              bodyColor: '#334155',
+              borderColor: '#e2e8f0',
               borderWidth: 1,
               padding: 10,
               callbacks: {
@@ -1731,16 +1766,6 @@
           }
         }
       });
-    }
-
-    function updateChartColors(theme) {
-      if (!equityChartInstance) return;
-      const isDark = theme === "dark";
-      equityChartInstance.options.scales.x.grid.color = isDark ? "rgba(255, 255, 255, 0.06)" : "rgba(0, 0, 0, 0.06)";
-      equityChartInstance.options.scales.y.grid.color = isDark ? "rgba(255, 255, 255, 0.06)" : "rgba(0, 0, 0, 0.06)";
-      equityChartInstance.options.scales.x.ticks.color = isDark ? "#94a3b8" : "#64748b";
-      equityChartInstance.options.scales.y.ticks.color = isDark ? "#94a3b8" : "#64748b";
-      equityChartInstance.update();
     }
 
     function exportCsv() {

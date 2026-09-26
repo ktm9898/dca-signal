@@ -1,5 +1,5 @@
 """
-DCA Signal - Quantitative Infinite Buying & Dollar-Cost Averaging Simulation Engine
+DCA Signal - Quantitative Dollar-Cost Averaging Simulation Engine
 Simulates multi-cycle capital allocation, phase-based entry rules, and take-profit mechanics.
 """
 
@@ -16,8 +16,9 @@ class DCASimulator:
         initial_capital: float = 10000.0,
         portions: int = 40,
         phase_split_round: int = 20,
-        first_half_rule: str = "always",       # "always", "laor_v1_loc"
-        second_half_rule: str = "below_avg",    # "below_avg", "below_avg_or_half", "always"
+        first_half_rule: str = "always",       # "always"
+        second_half_rule: str = "below_threshold", # "below_threshold", "below_threshold_or_half", "always"
+        second_half_threshold_pct: float = 0.0,    # 0.0 means close <= avg_cost, -5.0 means close <= avg_cost * 0.95
         target_profit_pct: float = 10.0,
         fee_pct: float = 0.1,                   # 0.1% per trade
         slippage_pct: float = 0.05,
@@ -36,6 +37,7 @@ class DCASimulator:
         self.phase_split_round = int(phase_split_round)
         self.first_half_rule = first_half_rule
         self.second_half_rule = second_half_rule
+        self.second_half_threshold_pct = float(second_half_threshold_pct)
         self.target_profit_pct = float(target_profit_pct)
         self.fee_pct = float(fee_pct) / 100.0
         self.slippage_pct = float(slippage_pct) / 100.0
@@ -98,10 +100,8 @@ class DCASimulator:
 
                 # Take profit check (if not stopped out)
                 if not is_stop_loss and target_sell_price > 0:
-                    # In Laor method, sell limit order is at target_sell_price
                     if high_p >= target_sell_price:
                         is_take_profit = True
-                        # If open jumped above target sell price, fill at open; otherwise at target sell price
                         executed_p = max(open_p, target_sell_price) if open_p >= target_sell_price else target_sell_price
                         exit_price = executed_p * (1.0 - self.slippage_pct)
 
@@ -165,30 +165,21 @@ class DCASimulator:
                 order_fill_price = close_p * (1.0 + self.slippage_pct)
 
                 if is_first_half:
-                    # First half rules
-                    if self.first_half_rule == "always":
-                        budget_today = min(portion_size, funds_left)
-                    elif self.first_half_rule == "laor_v1_loc":
-                        # 0.5 portion at avg_cost, 0.5 portion at avg_cost * 1.05
-                        if avg_cost == 0:
-                            budget_today = min(portion_size, funds_left)
-                        else:
-                            b = 0.0
-                            if close_p <= avg_cost:
-                                b += portion_size * 0.5
-                            if close_p <= avg_cost * 1.05:
-                                b += portion_size * 0.5
-                            budget_today = min(b, funds_left)
+                    # First half: regular fixed amount DCA
+                    budget_today = min(portion_size, funds_left)
                 else:
-                    # Second half rules
-                    if self.second_half_rule == "below_avg":
-                        # Buy only if today's close is strictly below average cost!
-                        if avg_cost == 0 or close_p < avg_cost:
+                    # Second half: defensive threshold rule
+                    target_threshold_price = avg_cost * (1.0 + self.second_half_threshold_pct / 100.0)
+                    is_below_threshold = (avg_cost == 0 or close_p <= target_threshold_price)
+
+                    if self.second_half_rule == "below_threshold":
+                        # Buy only if today's close is <= threshold (e.g. <= avg_cost or <= avg_cost - X%)
+                        if is_below_threshold:
                             budget_today = min(portion_size, funds_left)
                         else:
                             budget_today = 0.0  # Pass, save cash
-                    elif self.second_half_rule == "below_avg_or_half":
-                        if avg_cost == 0 or close_p < avg_cost:
+                    elif self.second_half_rule == "below_threshold_or_half":
+                        if is_below_threshold:
                             budget_today = min(portion_size, funds_left)
                         else:
                             budget_today = min(portion_size * 0.5, funds_left)
@@ -290,7 +281,6 @@ class DCASimulator:
             end_eq = pts[-1]["equity"]
             yr_ret = ((end_eq - start_eq) / start_eq) * 100.0
             
-            # calculate year peak & mdd
             yr_peak = start_eq
             yr_mdd = 0.0
             for p in pts:
@@ -344,14 +334,14 @@ class DCASimulator:
             "parameters": {
                 "portions": self.portions,
                 "phase_split_round": self.phase_split_round,
-                "first_half_rule": self.first_half_rule,
                 "second_half_rule": self.second_half_rule,
+                "second_half_threshold_pct": self.second_half_threshold_pct,
                 "target_profit_pct": self.target_profit_pct,
                 "reinvest_profit": self.reinvest_profit
             },
             "yearly_breakdown": yearly_breakdown,
             "completed_cycles": completed_cycles,
-            "equity_curve": equity_curve[::max(1, len(equity_curve)//500)]  # sample ~500 points for light UI payload
+            "equity_curve": equity_curve[::max(1, len(equity_curve)//500)]
         }
 
 if __name__ == "__main__":
@@ -365,17 +355,12 @@ if __name__ == "__main__":
             initial_capital=10000,
             portions=40,
             phase_split_round=20,
-            first_half_rule="always",
-            second_half_rule="below_avg",
+            second_half_rule="below_threshold",
+            second_half_threshold_pct=0.0,
             target_profit_pct=10.0
         )
         res = sim.run()
         print("=== DCA Simulator (TQQQ 10Y) Test Result ===")
         print(f"Final Equity: ${res['summary']['final_equity']:,.2f} ({res['summary']['total_return_pct']}%)")
         print(f"CAGR: {res['summary']['cagr_pct']}% | MDD: {res['summary']['max_drawdown_pct']}%")
-        print(f"Completed Cycles: {res['summary']['completed_cycles_count']} (Avg: {res['summary']['avg_cycle_days']} days, Max: {res['summary']['max_cycle_days']} days)")
-        print("\n[Yearly Breakdown]")
-        for y in res["yearly_breakdown"]:
-            print(f"  {y['year']}: Return {y['return_pct']:>6.2f}% | MDD {y['mdd_pct']:>6.2f}% | Cycles: {y['completed_cycles']} | Profit: ${y['realized_profit']:,.2f}")
-    else:
-        print("Data file not found. Run fetch_data.py first.")
+        print(f"Completed Cycles: {res['summary']['completed_cycles_count']}")
