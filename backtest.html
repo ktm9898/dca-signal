@@ -1093,9 +1093,24 @@
           <input type="range" id="splitRoundRange" min="5" max="100" step="1" value="20">
         </div>
 
+        <!-- First-Half Rule (Split vs Lump) -->
+        <div class="form-group">
+          <label>전반기 매수</label>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+            <label class="radio-card active" style="padding: 8px 10px; justify-content: center; align-items: center;">
+              <input type="radio" name="firstHalfRule" value="split" checked>
+              <strong>분할</strong>
+            </label>
+            <label class="radio-card" style="padding: 8px 10px; justify-content: center; align-items: center;">
+              <input type="radio" name="firstHalfRule" value="lump">
+              <strong>일시</strong>
+            </label>
+          </div>
+        </div>
+
         <!-- Second-Half Rule (Condition relative to Average Cost) -->
         <div class="form-group">
-          <label>후반부 매수</label>
+          <label>후반기 매수</label>
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
             <label class="radio-card active" style="padding: 8px 10px; justify-content: center; align-items: center;">
               <input type="radio" name="secondHalfRule" value="below_threshold" checked>
@@ -1459,6 +1474,7 @@
       initialCapital: 10000000, // 1,000만원
       portions: 40,
       phaseSplitRound: 20,
+      firstHalfRule: "split", // split | lump
       secondHalfRule: "below_threshold",
       secondHalfThresholdPct: 0.0,
       targetProfitPct: 10.0,
@@ -1495,6 +1511,7 @@
               initialCapital: s.seedCapital,
               portions: s.portions,
               phaseSplitRound: s.phaseSplitRound,
+              firstHalfRule: s.earlyMode || s.firstHalfRule || "split",
               secondHalfRule: s.lateMode === "always" ? "always" : "below_threshold",
               secondHalfThresholdPct: s.lateThresholdPct != null ? s.lateThresholdPct : 0,
               targetProfitPct: Number(s.targetProfitPct) || 10,
@@ -1530,6 +1547,7 @@
             initialCapital: s.seedCapital,
             portions: s.portions,
             phaseSplitRound: s.phaseSplitRound,
+            firstHalfRule: s.earlyMode || s.firstHalfRule || "split",
             secondHalfRule: s.lateMode === "always" ? "always" : "below_threshold",
             secondHalfThresholdPct: s.lateThresholdPct != null ? s.lateThresholdPct : 0,
             targetProfitPct: Number(s.targetProfitPct) || 10,
@@ -1648,6 +1666,12 @@
           runSimulation();
         });
       }
+
+      // First Half Rule Radio Group
+      setupRadioGroup("firstHalfRule", (val) => {
+        params.firstHalfRule = val;
+        runSimulation();
+      });
 
       // Second Half Rule Radio Group
       setupRadioGroup("secondHalfRule", (val) => {
@@ -1801,6 +1825,7 @@
       const initialCapital = params.initialCapital;
       const portions = params.portions;
       const phaseSplitRound = params.phaseSplitRound;
+      const firstHalfRule = params.firstHalfRule || "split";
       const secondHalfRule = params.secondHalfRule;
       const thresholdPct = params.secondHalfThresholdPct;
       const targetProfitPct = params.targetProfitPct;
@@ -1917,10 +1942,20 @@
           let budgetToday = 0.0;
           const orderFillPrice = closeP * (1.0 + slippagePct);
           let buyReason = "";
+          let roundsPurchasedToday = 1;
 
           if (isFirstHalf) {
-            budgetToday = Math.min(portionSize, fundsLeft);
-            buyReason = cycleRound === 0 ? "1회차 사이클 시작 (정량매수)" : "전반부 기계적 정량매수";
+            if (firstHalfRule === "lump") {
+              // 전반기 일시 매수: 전환점 회차(phaseSplitRound)만큼의 금액을 1회차에 일괄 매수
+              roundsPurchasedToday = Math.min(phaseSplitRound, portions);
+              budgetToday = Math.min(portionSize * roundsPurchasedToday, fundsLeft);
+              buyReason = `전반기 일시 매수 (${roundsPurchasedToday}회차분 일괄)`;
+            } else {
+              // 전반기 분할 매수: 전환점까지 매일 1회분씩 매수
+              roundsPurchasedToday = 1;
+              budgetToday = Math.min(portionSize, fundsLeft);
+              buyReason = cycleRound === 0 ? "1회차 사이클 시작 (정량매수)" : "전반기 기계적 분할매수";
+            }
           } else {
             const targetThresholdPrice = avgCost * (1.0 + thresholdPct / 100.0);
             const isBelowThreshold = (avgCost === 0 || closeP <= targetThresholdPrice);
@@ -1928,21 +1963,21 @@
             if (secondHalfRule === "below_threshold") {
               if (isBelowThreshold) {
                 budgetToday = Math.min(portionSize, fundsLeft);
-                buyReason = thresholdPct === 0 ? "후반부 평단가 이하 매수" : `후반부 평단가 대비 ${thresholdPct}% 이하 매수`;
+                buyReason = thresholdPct === 0 ? "후반기 평단가 이하 매수" : `후반기 평단가 대비 ${thresholdPct}% 이하 매수`;
               } else {
                 budgetToday = 0.0;
               }
             } else if (secondHalfRule === "below_threshold_or_half") {
               if (isBelowThreshold) {
                 budgetToday = Math.min(portionSize, fundsLeft);
-                buyReason = "후반부 기준 이하 1회분 매수";
+                buyReason = "후반기 기준 이하 1회분 매수";
               } else {
                 budgetToday = Math.min(portionSize * 0.5, fundsLeft);
-                buyReason = "후반부 기준 초과 0.5회분 축소매수";
+                buyReason = "후반기 기준 초과 0.5회분 축소매수";
               }
             } else if (secondHalfRule === "always") {
               budgetToday = Math.min(portionSize, fundsLeft);
-              buyReason = "후반부 단순 분할 지속 매수";
+              buyReason = "후반기 균등분할 지속 매수";
             }
           }
 
@@ -1955,14 +1990,15 @@
               }
               sharesHeld += boughtShares;
               totalInvested += budgetToday;
-              cycleRound++;
+              cycleRound += roundsPurchasedToday;
               avgCost = totalInvested / sharesHeld;
 
               // Log Buy Trade in Journal
+              const isLumpTrade = (firstHalfRule === "lump" && cycleRound === roundsPurchasedToday);
               allTradesList.push({
                 date: date,
                 cycleNum: cycleIdx,
-                type: cycleRound === 1 ? "신규매수" : "분할매수",
+                type: isLumpTrade ? "일시매수" : (cycleRound === 1 ? "신규매수" : "분할매수"),
                 round: cycleRound,
                 price: orderFillPrice,
                 shares: boughtShares,
@@ -2147,7 +2183,9 @@
           banner.style.display = "flex";
           const titleEl = document.getElementById("activeCycleTitle");
           if (titleEl) titleEl.innerText = `진행 중인 사이클 (Cycle #${ac.cycleNum})`;
-          const phaseLabel = ac.round <= params.phaseSplitRound ? "전반부 (정량 매수)" : "후반부 (조건부 매수)";
+          const firstLabel = params.firstHalfRule === 'lump' ? "전반기 (일시 매수)" : "전반기 (정량 분할 매수)";
+          const secondLabel = params.secondHalfRule === 'always' ? "후반기 (균등 매수)" : "후반기 (조건부 매수)";
+          const phaseLabel = ac.round <= params.phaseSplitRound ? firstLabel : secondLabel;
           const subEl = document.getElementById("activeCycleSub");
           if (subEl) subEl.innerText = `${ac.startDate} 시작 | 현재 ${ac.round}회차 / ${params.portions}회차 (${phaseLabel})`;
           const invEl = document.getElementById("activeInvestedVal");
@@ -2308,15 +2346,19 @@
     // -------------------------------------------------------------------------
     function openSaveModal() {
       const pAmt = Math.round(params.initialCapital / params.portions);
+      const firstHalfText = params.firstHalfRule === "lump" ? `일시 (${params.phaseSplitRound}회차분 일괄)` : `분할 (${params.phaseSplitRound}회차)`;
+      const lateModeText = params.secondHalfRule === "always" ? "균등분할" : `평단가 대비 ${params.secondHalfThresholdPct}% 이하`;
+
       document.getElementById("saveStrategyName").value = `${params.ticker} ${params.portions}분할 전략`;
-      document.getElementById("saveStrategyMemo").value = `후반부 ${params.secondHalfThresholdPct}% 이하 매수, +${params.targetProfitPct}% 익절`;
+      document.getElementById("saveStrategyMemo").value = `전반기 ${params.firstHalfRule === "lump" ? "일시" : "분할"}, 후반기 ${params.secondHalfThresholdPct}% 이하 매수, +${params.targetProfitPct}% 익절`;
 
       const listEl = document.getElementById("savePreviewList");
       listEl.innerHTML = `
         <li>대상 종목: <strong>${params.ticker}</strong></li>
         <li>투자원금: <strong>${fmtKRW(params.initialCapital)}</strong> (1회당 ${fmtKRW(pAmt)})</li>
         <li>총 분할: <strong>${params.portions}회차</strong> (전환점: ${params.phaseSplitRound}회차)</li>
-        <li>매수조건: <strong>평단가 대비 ${params.secondHalfThresholdPct}% 이하</strong></li>
+        <li>전반기 매수: <strong>${firstHalfText}</strong></li>
+        <li>후반기 매수: <strong>${lateModeText}</strong></li>
         <li>목표 수익률: <strong>+${params.targetProfitPct}%</strong></li>
         <li>수익금 운용: <strong>${params.reinvestProfit ? "복리" : "단리"}</strong></li>
       `;
@@ -2353,6 +2395,8 @@
               seedCapital: params.initialCapital,
               portions: params.portions,
               phaseSplitRound: params.phaseSplitRound,
+              earlyMode: params.firstHalfRule || "split",
+              firstHalfRule: params.firstHalfRule || "split",
               lateMode: params.secondHalfRule === "below_threshold" ? "cond" : "always",
               lateThresholdPct: params.secondHalfThresholdPct,
               targetProfitPct: params.targetProfitPct,
@@ -2517,6 +2561,7 @@
         initialCapital: s.seedCapital,
         portions: s.portions,
         phaseSplitRound: s.phaseSplitRound,
+        firstHalfRule: s.earlyMode || s.firstHalfRule || "split",
         secondHalfRule: s.lateMode === "always" ? "always" : "below_threshold",
         secondHalfThresholdPct: s.lateThresholdPct,
         targetProfitPct: s.targetProfitPct,
@@ -2540,6 +2585,13 @@
         params.phaseSplitRound = newParams.phaseSplitRound;
         document.getElementById("splitRoundRange").value = params.phaseSplitRound;
         updateSplitRoundDisplay();
+      }
+      if (newParams.firstHalfRule) {
+        params.firstHalfRule = newParams.firstHalfRule;
+        document.querySelectorAll('input[name="firstHalfRule"]').forEach(r => {
+          r.checked = (r.value === params.firstHalfRule);
+          r.closest(".radio-card").classList.toggle("active", r.checked);
+        });
       }
       if (newParams.secondHalfRule) {
         params.secondHalfRule = newParams.secondHalfRule;

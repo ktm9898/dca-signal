@@ -901,7 +901,7 @@
         <div class="hero-summary-text" id="heroStrategySummary">
           <span>투자원금: <strong>10,000,000원</strong></span> &bull;
           <span>40회 분할 (전환 20회)</span> &bull;
-          <span>후반부 -5% 이하</span> &bull;
+          <span>후반기 -5% 이하</span> &bull;
           <span>목표 +10%</span> &bull;
           <span>단리</span>
         </div>
@@ -1325,7 +1325,7 @@
       document.getElementById("heroStrategySummary").innerHTML = `
         <span>투자원금: <strong>${fmtKRW(activeStrat.seedCapital)}</strong></span> &bull;
         <span>${activeStrat.portions}분할 (전환 ${activeStrat.phaseSplitRound}회)</span> &bull;
-        <span>후반부 ${lateModeText}</span> &bull;
+        <span>후반기 ${lateModeText}</span> &bull;
         <span>목표 +${activeStrat.targetProfitPct}%</span> &bull;
         <span>${activeStrat.compoundMode === "compound" ? "복리" : "단리"}</span>
       `;
