@@ -636,6 +636,72 @@
       color: var(--text-muted);
       margin-top: 10px;
     }
+
+    /* Strategy Selection Modal Styles */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(15, 23, 42, 0.5);
+      backdrop-filter: blur(4px);
+      z-index: 999;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-box {
+      background: var(--bg-surface);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      box-shadow: var(--shadow-lg);
+      width: 95%;
+      max-width: 820px;
+      max-height: 85vh;
+      overflow-y: auto;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      animation: modalFadeIn 0.2s ease-out;
+    }
+
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: translateY(12px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 12px;
+    }
+
+    .modal-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .modal-close-btn {
+      background: none;
+      border: none;
+      font-size: 20px;
+      color: var(--text-muted);
+      cursor: pointer;
+      line-height: 1;
+    }
+
+    .modal-close-btn:hover {
+      color: var(--text-main);
+    }
   </style>
 </head>
 
@@ -687,9 +753,9 @@
         </div>
       </div>
       <div>
-        <a href="backtest.html" class="btn btn-primary" style="font-size:12px;">
-          <i class="fa-solid fa-sliders"></i> 전략 변경/백테스트
-        </a>
+        <button class="btn btn-primary" onclick="openStrategyChangeModal()" style="font-size:12px;">
+          <i class="fa-solid fa-repeat"></i> 전략 변경
+        </button>
       </div>
     </div>
 
@@ -880,6 +946,47 @@
             <!-- Populated dynamically -->
           </tbody>
         </table>
+      </div>
+    </div>
+
+    <!-- Strategy Change Modal (Select & Apply from Google Sheet Slots) -->
+    <div id="strategyChangeModal" class="modal-backdrop">
+      <div class="modal-box">
+        <div class="modal-header">
+          <div class="modal-title">
+            <i class="fa-solid fa-repeat" style="color:var(--accent-blue);"></i> 실전 전략 선택 &amp; 변경
+          </div>
+          <button class="modal-close-btn" onclick="closeStrategyChangeModal()">&times;</button>
+        </div>
+
+        <div style="font-size:12px; color:var(--text-sub); line-height:1.4;">
+          구글 시트에 저장된 전략 슬롯 중 대시보드에 적용할 전략을 선택하세요.
+        </div>
+
+        <div style="overflow-x:auto; max-height:460px; border:1px solid var(--card-border); border-radius:10px;">
+          <table style="width:100%; border-collapse:collapse; font-size:12px; text-align:left;">
+            <thead>
+              <tr style="background:#f1f5f9; color:var(--text-sub);">
+                <th style="padding:10px 8px; width:70px; text-align:center;">슬롯</th>
+                <th style="padding:10px 8px; width:80px; text-align:center;">종목</th>
+                <th style="padding:10px 10px;">전략 명칭 &amp; 메모</th>
+                <th style="padding:10px 10px; width:180px;">주요 설정</th>
+                <th style="padding:10px 8px; width:95px; text-align:center;">저장일시</th>
+                <th style="padding:10px 8px; width:125px; text-align:center;">관리</th>
+              </tr>
+            </thead>
+            <tbody id="dashboard-slots-tbody">
+              <!-- Populated dynamically -->
+            </tbody>
+          </table>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; border-top:1px solid var(--card-border); padding-top:12px;">
+          <button class="btn" onclick="fetchStrategySlotsForDashboard()" style="font-size:12px;">
+            <i class="fa-solid fa-arrows-rotate"></i> 새로고침
+          </button>
+          <button class="btn" onclick="closeStrategyChangeModal()">닫기</button>
+        </div>
       </div>
     </div>
 
@@ -1286,6 +1393,196 @@
         `;
         tBody.appendChild(tr);
       });
+    }
+
+    // -------------------------------------------------------------------------
+    // Strategy Selection & Change Modal Functions
+    // -------------------------------------------------------------------------
+    let cachedDashboardSlots = [];
+
+    function openStrategyChangeModal() {
+      const modal = document.getElementById("strategyChangeModal");
+      if (modal) {
+        modal.style.display = "flex";
+        fetchStrategySlotsForDashboard();
+      }
+    }
+
+    function closeStrategyChangeModal() {
+      const modal = document.getElementById("strategyChangeModal");
+      if (modal) modal.style.display = "none";
+    }
+
+    async function fetchStrategySlotsForDashboard() {
+      const tbody = document.getElementById("dashboard-slots-tbody");
+      if (tbody) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:30px; color:var(--text-muted);"><i class="fa-solid fa-spinner fa-spin"></i> 구글 시트에서 전략 슬롯을 불러오는 중...</td></tr>`;
+      }
+
+      if (!GAS_WEBAPP_URL) {
+        if (tbody) {
+          tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:30px; color:var(--text-muted);">구글 시트 연동 주소가 설정되지 않았습니다.</td></tr>`;
+        }
+        return;
+      }
+
+      try {
+        const res = await fetch(`${GAS_WEBAPP_URL}?action=get_slots`);
+        const data = await res.json();
+        if (data.success && data.slots) {
+          cachedDashboardSlots = data.slots;
+          renderDashboardSlotsList();
+        } else {
+          cachedDashboardSlots = [];
+          renderDashboardSlotsList();
+        }
+      } catch (err) {
+        console.warn("fetch slots error", err);
+        if (tbody) {
+          tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:30px; color:var(--text-muted);">슬롯 목록을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.</td></tr>`;
+        }
+      }
+    }
+
+    function renderDashboardSlotsList() {
+      const tbody = document.getElementById("dashboard-slots-tbody");
+      if (!tbody) return;
+      tbody.innerHTML = "";
+
+      if (cachedDashboardSlots.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" style="text-align:center; padding:35px 10px; color:var(--text-muted); font-size:13px;">
+              <i class="fa-regular fa-folder-open" style="font-size:24px; margin-bottom:8px; display:block;"></i>
+              구글 시트에 저장된 전략이 없습니다.<br>
+              백테스트 페이지에서 테스트 후 전략을 저장할 수 있습니다.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      // Sort by slotId ascending
+      cachedDashboardSlots.sort((a, b) => a.slotId - b.slotId);
+
+      cachedDashboardSlots.forEach(s => {
+        const tr = document.createElement("tr");
+        tr.style.borderBottom = "1px solid var(--card-border)";
+
+        const activeBadge = s.isActive 
+          ? `<span class="badge badge-green" style="font-size:10px; padding:2px 5px;"><i class="fa-solid fa-bolt"></i> 가동중</span>` 
+          : '';
+
+        const lateText = s.lateMode === "always" ? "균등" : `${s.lateThresholdPct}% 이하`;
+        const settingText = `${s.portions}분할 &bull; ${lateText} &bull; 익절 +${s.targetProfitPct}% &bull; ${s.compoundMode === "compound" ? "복리" : "단리"}`;
+
+        let actionHtml = '';
+        if (s.isActive) {
+          actionHtml = `<span class="badge badge-green" style="font-size:11px; padding:3px 7px;"><i class="fa-solid fa-check"></i> 적용중</span>`;
+        } else {
+          actionHtml = `<button class="btn btn-primary" style="font-size:11px; padding:3px 8px;" onclick="applySlotFromDashboard(${s.slotId})" title="실전 전략으로 대시보드에 적용"><i class="fa-solid fa-bolt"></i> 적용</button>`;
+        }
+
+        actionHtml += `<button class="btn" style="color:#ef4444; border-color:#fca5a5; font-size:11px; padding:3px 6px; margin-left:4px;" onclick="deleteSlotFromDashboard(${s.slotId})" title="슬롯 삭제"><i class="fa-solid fa-trash-can"></i></button>`;
+
+        tr.innerHTML = `
+          <td style="text-align:center; font-weight:700; color:var(--accent-blue); padding:10px 8px;">
+            슬롯 ${s.slotId}
+            <div style="margin-top:2px;">${activeBadge}</div>
+          </td>
+          <td style="text-align:center; padding:10px 8px;">
+            <span class="badge badge-blue" style="font-size:11px;">${s.ticker}</span>
+          </td>
+          <td style="padding:10px 10px;">
+            <div style="font-weight:700; color:var(--text-main); font-size:13px;">${s.name}</div>
+            ${s.memo ? `<div style="font-size:11px; color:var(--text-muted); margin-top:2px;">${s.memo}</div>` : ''}
+          </td>
+          <td style="padding:10px 10px; font-size:11px; color:var(--text-sub);">
+            ${settingText}
+          </td>
+          <td style="text-align:center; font-size:11px; color:var(--text-muted); padding:10px 8px; white-space:nowrap;">
+            ${s.updatedAt ? s.updatedAt.substring(0, 16) : '-'}
+          </td>
+          <td style="text-align:center; padding:10px 8px; white-space:nowrap;">
+            ${actionHtml}
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function applySlotFromDashboard(slotId) {
+      if (!GAS_WEBAPP_URL) {
+        alert("구글 시트 연동 주소가 없습니다.");
+        return;
+      }
+
+      const target = cachedDashboardSlots.find(s => s.slotId === slotId);
+      if (!target) return;
+
+      const confirmMsg = `[슬롯 ${slotId}] "${target.name}" (${target.ticker}) 전략을 실전 대시보드에 적용하시겠습니까?`;
+      if (!confirm(confirmMsg)) return;
+
+      try {
+        await fetch(GAS_WEBAPP_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "set_active_slot",
+            slotId: slotId
+          })
+        });
+
+        // 로컬 activeStrat 업데이트
+        activeStrat.ticker = target.ticker;
+        if (target.seedCapital) activeStrat.seedCapital = target.seedCapital;
+        if (target.portions) activeStrat.portions = target.portions;
+        if (target.phaseSplitRound) activeStrat.phaseSplitRound = target.phaseSplitRound;
+        if (target.lateMode) activeStrat.lateMode = target.lateMode;
+        if (target.lateThresholdPct !== undefined) activeStrat.lateThresholdPct = target.lateThresholdPct;
+        if (target.targetProfitPct) activeStrat.targetProfitPct = target.targetProfitPct;
+        if (target.compoundMode) activeStrat.compoundMode = target.compoundMode;
+        if (target.startDate) activeStrat.startDate = target.startDate;
+        saveLocalState();
+
+        closeStrategyChangeModal();
+        alert(`슬롯 ${slotId} 전략(${target.name})이 실전 대시보드에 성공적으로 적용되었습니다!`);
+        
+        // 대시보드 전체 재초기화 및 갱신
+        await initDashboard();
+
+      } catch (err) {
+        console.error("apply slot error", err);
+        alert("전략 적용 중 통신 오류가 발생했습니다.");
+      }
+    }
+
+    async function deleteSlotFromDashboard(slotId) {
+      if (!confirm(`슬롯 ${slotId} 전략을 정말 삭제하시겠습니까?`)) return;
+
+      if (!GAS_WEBAPP_URL) {
+        alert("구글 시트 연동 주소가 없습니다.");
+        return;
+      }
+
+      try {
+        await fetch(GAS_WEBAPP_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "delete_slot",
+            slotId: slotId
+          })
+        });
+
+        alert(`슬롯 ${slotId}이 삭제되었습니다.`);
+        fetchStrategySlotsForDashboard();
+      } catch (err) {
+        console.error("delete slot error", err);
+        alert("슬롯 삭제 중 오류가 발생했습니다.");
+      }
     }
 
     window.addEventListener("DOMContentLoaded", () => {

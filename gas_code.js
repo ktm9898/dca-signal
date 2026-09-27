@@ -26,18 +26,8 @@ function setupSheets() {
     try { ss.deleteSheet(oldActiveSheet); } catch (e) {}
   }
 
-  // 1. 전략 슬롯 시트 (1~10번 보관함 - IsActive 컬럼으로 활성 실전 전략 표시)
-  let slotsSheet = ss.getSheetByName("DCA_Strategy_Slots");
-  if (!slotsSheet) {
-    slotsSheet = ss.insertSheet("DCA_Strategy_Slots");
-    slotsSheet.getRange("A1:O1").setValues([[
-      "SlotID", "IsActive", "Name", "Memo", "Ticker", "StartDate", 
-      "SeedCapital", "Portions", "PhaseSplitRound", "LateMode", 
-      "LateThresholdPct", "TargetProfitPct", "CompoundMode", "CurrentCycleNo", "UpdatedAt"
-    ]]);
-    slotsSheet.getRange("A1:O1").setFontWeight("bold").setBackground("#dbeafe");
-    // 사용자가 직접 저장한 전략만 보관 (초기 예시 행 없음)
-  }
+  // 1. 전략 슬롯 시트 표준화 및 생성
+  getStandardizedSlotsSheet(ss);
 
   // 2. 최신 시세 캐시 시트 (DCA_Latest_Quotes)
   let quoteSheet = ss.getSheetByName("DCA_Latest_Quotes");
@@ -58,6 +48,92 @@ function setupSheets() {
     ]]);
     cyclesSheet.getRange("A1:H1").setFontWeight("bold").setBackground("#dcfce7");
   }
+}
+
+/**
+ * 🛠️ DCA_Strategy_Slots 시트의 헤더 및 데이터 스키마 자동 보정/마이그레이션
+ * 구버전(12컬럼: SlotID, Name, Memo, Ticker, SeedCapital...)이 있더라도
+ * 최신 15컬럼 표준(SlotID, IsActive, Name, Memo, Ticker, StartDate, SeedCapital...)으로 완벽 자동 변환합니다.
+ */
+function getStandardizedSlotsSheet(ss) {
+  const standardHeaders = [
+    "SlotID", "IsActive", "Name", "Memo", "Ticker", "StartDate", 
+    "SeedCapital", "Portions", "PhaseSplitRound", "LateMode", 
+    "LateThresholdPct", "TargetProfitPct", "CompoundMode", "CurrentCycleNo", "UpdatedAt"
+  ];
+
+  let slotsSheet = ss.getSheetByName("DCA_Strategy_Slots");
+  if (!slotsSheet) {
+    slotsSheet = ss.insertSheet("DCA_Strategy_Slots");
+    slotsSheet.getRange(1, 1, 1, standardHeaders.length).setValues([standardHeaders]);
+    slotsSheet.getRange(1, 1, 1, standardHeaders.length).setFontWeight("bold").setBackground("#dbeafe");
+    return slotsSheet;
+  }
+
+  const lastRow = slotsSheet.getLastRow();
+  const lastCol = Math.max(slotsSheet.getLastColumn(), 1);
+
+  if (lastRow === 0) {
+    slotsSheet.getRange(1, 1, 1, standardHeaders.length).setValues([standardHeaders]);
+    slotsSheet.getRange(1, 1, 1, standardHeaders.length).setFontWeight("bold").setBackground("#dbeafe");
+    return slotsSheet;
+  }
+
+  const headerRow = slotsSheet.getRange(1, 1, 1, lastCol).getValues()[0].map(h => String(h).trim().toLowerCase());
+  const hasIsActive = headerRow.includes("isactive");
+  const hasStartDate = headerRow.includes("startdate");
+
+  // 만약 구버전 헤더(IsActive 컬럼 누락 등)라면 자동 마이그레이션 실행
+  if (!hasIsActive || !hasStartDate || lastCol < standardHeaders.length) {
+    const allData = slotsSheet.getDataRange().getValues();
+    const oldHeaders = allData[0].map(h => String(h).trim().toLowerCase());
+    const newRows = [];
+
+    for (let i = 1; i < allData.length; i++) {
+      const r = allData[i];
+      if (!r[0]) continue;
+
+      const getVal = (name, fallbackIdx, defVal) => {
+        const idx = oldHeaders.indexOf(name.toLowerCase());
+        if (idx >= 0 && r[idx] !== undefined && r[idx] !== "") return r[idx];
+        if (fallbackIdx >= 0 && fallbackIdx < r.length && r[fallbackIdx] !== undefined && r[fallbackIdx] !== "") return r[fallbackIdx];
+        return defVal;
+      };
+
+      const slotId = Number(r[0]) || i;
+      // 기존 구버전 컬럼 위치:
+      // [0] SlotID, [1] Name, [2] Memo, [3] Ticker, [4] SeedCapital, [5] Portions,
+      // [6] PhaseSplitRound, [7] LateMode, [8] LateThresholdPct, [9] TargetProfitPct, [10] CompoundMode, [11] UpdatedAt
+      const name = String(getVal("name", 1, `슬롯 ${slotId}`));
+      const memo = String(getVal("memo", 2, ""));
+      const ticker = String(getVal("ticker", 3, "TQQQ"));
+      const seedCapital = Number(getVal("seedcapital", 4, 10000000)) || 10000000;
+      const portions = Number(getVal("portions", 5, 40)) || 40;
+      const phaseSplitRound = Number(getVal("phasesplitround", 6, 20)) || 20;
+      const lateMode = String(getVal("latemode", 7, "cond"));
+      const lateThresholdPct = Number(getVal("latethresholdpct", 8, -5)) || 0;
+      const targetProfitPct = Number(getVal("targetprofitpct", 9, 10)) || 10;
+      const compoundMode = String(getVal("compoundmode", 10, "simple"));
+      const updatedAt = formatDateVal(getVal("updatedat", 11, Utilities.formatDate(new Date(), "GMT+9", "yyyy-MM-dd HH:mm:ss")));
+      const startDate = Utilities.formatDate(new Date(), "GMT+9", "yyyy-MM-dd");
+      const isActive = (slotId === 1); // 1번 슬롯을 기본 활성으로 부여
+
+      newRows.push([
+        slotId, isActive, name, memo, ticker, startDate,
+        seedCapital, portions, phaseSplitRound, lateMode,
+        lateThresholdPct, targetProfitPct, compoundMode, 1, updatedAt
+      ]);
+    }
+
+    slotsSheet.clear();
+    slotsSheet.getRange(1, 1, 1, standardHeaders.length).setValues([standardHeaders]);
+    slotsSheet.getRange(1, 1, 1, standardHeaders.length).setFontWeight("bold").setBackground("#dbeafe");
+    if (newRows.length > 0) {
+      slotsSheet.getRange(2, 1, newRows.length, standardHeaders.length).setValues(newRows);
+    }
+  }
+
+  return slotsSheet;
 }
 
 /**
@@ -174,37 +250,45 @@ function doGet(e) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
 
   try {
-    // 1. 전략 슬롯 목록 및 활성 전략 로드
-    let slotsSheet = ss.getSheetByName("DCA_Strategy_Slots");
-    if (!slotsSheet) {
-      setupSheets();
-      slotsSheet = ss.getSheetByName("DCA_Strategy_Slots");
-    }
-
+    // 1. 전략 슬롯 목록 및 활성 전략 로드 (자동 스키마 검증)
+    const slotsSheet = getStandardizedSlotsSheet(ss);
     const sData = slotsSheet.getDataRange().getValues();
+    const headers = sData[0].map(h => String(h).trim().toLowerCase());
+
+    const getCol = (r, name, fallbackIdx, defVal) => {
+      const idx = headers.indexOf(name.toLowerCase());
+      if (idx >= 0 && r[idx] !== undefined && r[idx] !== "") return r[idx];
+      if (fallbackIdx >= 0 && fallbackIdx < r.length && r[fallbackIdx] !== undefined && r[fallbackIdx] !== "") return r[fallbackIdx];
+      return defVal;
+    };
+
     const slots = [];
     let activeStrat = null;
 
     for (let i = 1; i < sData.length; i++) {
       const r = sData[i];
       if (!r[0]) continue;
-      const isActive = (r[1] === true || String(r[1]).toUpperCase() === "TRUE" || String(r[1]).toUpperCase() === "Y" || r[1] === 1);
+      
+      const rawActive = getCol(r, "isactive", 1, false);
+      const isActive = (rawActive === true || String(rawActive).toUpperCase() === "TRUE" || String(rawActive).toUpperCase() === "Y" || rawActive === 1);
+      const slotId = Number(r[0]);
+
       const slotObj = {
-        slotId: Number(r[0]),
+        slotId: slotId,
         isActive: isActive,
-        name: String(r[2] || `슬롯 ${r[0]}`),
-        memo: String(r[3] || ""),
-        ticker: String(r[4] || ""),
-        startDate: formatDateVal(r[5]).substring(0, 10),
-        seedCapital: Number(r[6]) || 0,
-        portions: Number(r[7]) || 0,
-        phaseSplitRound: Number(r[8]) || 0,
-        lateMode: String(r[9] || "cond"),
-        lateThresholdPct: Number(r[10]) || 0,
-        targetProfitPct: Number(r[11]) || 0,
-        compoundMode: String(r[12] || "simple"),
-        currentCycleNo: Number(r[13]) || 1,
-        updatedAt: formatDateVal(r[14])
+        name: String(getCol(r, "name", 2, `슬롯 ${slotId}`)),
+        memo: String(getCol(r, "memo", 3, "")),
+        ticker: String(getCol(r, "ticker", 4, "")),
+        startDate: formatDateVal(getCol(r, "startdate", 5, Utilities.formatDate(new Date(), "GMT+9", "yyyy-MM-dd"))).substring(0, 10),
+        seedCapital: Number(getCol(r, "seedcapital", 6, 0)) || 0,
+        portions: Number(getCol(r, "portions", 7, 0)) || 0,
+        phaseSplitRound: Number(getCol(r, "phasesplitround", 8, 0)) || 0,
+        lateMode: String(getCol(r, "latemode", 9, "cond")),
+        lateThresholdPct: Number(getCol(r, "latethresholdpct", 10, 0)) || 0,
+        targetProfitPct: Number(getCol(r, "targetprofitpct", 11, 0)) || 0,
+        compoundMode: String(getCol(r, "compoundmode", 12, "simple")),
+        currentCycleNo: Number(getCol(r, "currentcycleno", 13, 1)) || 1,
+        updatedAt: formatDateVal(getCol(r, "updatedat", 14, ""))
       };
 
       slots.push(slotObj);
@@ -213,13 +297,17 @@ function doGet(e) {
       }
     }
 
-    // 만약 활성 슬롯이 없는데 슬롯이 존재한다면 첫 번째 슬롯을 활성 전략으로 간주
+    // 만약 활성 슬롯이 명시되지 않았지만 슬롯이 존재한다면 첫 번째 슬롯을 활성 전략으로 간주
     if (!activeStrat && slots.length > 0) {
       activeStrat = slots[0];
     }
 
     if (action === "get_slots") {
       return respondJSON({ success: true, slots: slots });
+    }
+
+    if (action === "get_active_strategy") {
+      return respondJSON({ success: true, activeStrategy: activeStrat });
     }
 
     // 최신 시세 정보 (DCA_Latest_Quotes 시트에서 조회)
@@ -291,11 +379,7 @@ function doPost(e) {
   const action = body.action || (e && e.parameter && e.parameter.action) || "";
 
   try {
-    let slotsSheet = ss.getSheetByName("DCA_Strategy_Slots");
-    if (!slotsSheet) {
-      setupSheets();
-      slotsSheet = ss.getSheetByName("DCA_Strategy_Slots");
-    }
+    const slotsSheet = getStandardizedSlotsSheet(ss);
 
     // 1. 슬롯 저장 (save_slot)
     if (action === "save_slot") {
