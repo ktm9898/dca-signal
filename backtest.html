@@ -1,0 +1,2885 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DCA Signal - 정량 분할 적립식(DCA) 퀀트 시뮬레이터</title>
+
+  <!-- Google Fonts & Font Awesome Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <!-- Pre-bundled Data for 100% offline & local file:// support -->
+  <script src="data_bundle.js"></script>
+
+  <style>
+    :root {
+      --bg-base: #f8fafc;
+      --bg-surface: #ffffff;
+      --bg-card: #ffffff;
+      --bg-card-hover: #f1f5f9;
+      --card-border: #e2e8f0;
+      --card-border-active: #2563eb;
+
+      --accent-blue: #2563eb;
+      --accent-cyan: #0284c7;
+      --accent-green: #059669;
+      --accent-emerald: #047857;
+      --accent-red: #dc2626;
+      --accent-amber: #d97706;
+      --accent-purple: #7c3aed;
+
+      --text-main: #0f172a;
+      --text-sub: #475569;
+      --text-muted: #94a3b8;
+
+      --badge-cyan: rgba(2, 132, 199, 0.1);
+      --badge-green: rgba(5, 150, 105, 0.1);
+      --badge-red: rgba(220, 38, 38, 0.1);
+      --badge-amber: rgba(217, 119, 6, 0.1);
+
+      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Outfit', 'Noto Sans KR', sans-serif;
+      background-color: var(--bg-base);
+      color: var(--text-main);
+      line-height: 1.6;
+      padding: 0;
+      margin: 0;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 24px 20px 60px 20px;
+    }
+
+    /* Top Navigation Header */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 20px;
+      background: var(--bg-surface);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow-sm);
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-icon {
+      width: 38px;
+      height: 38px;
+      background: linear-gradient(135deg, #2563eb, #0284c7);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 18px;
+      box-shadow: 0 3px 8px rgba(37, 99, 235, 0.25);
+    }
+
+    .brand-text h1 {
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .nav-btn {
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      text-decoration: none;
+      transition: all 0.2s;
+      border: 1px solid var(--card-border);
+      background: var(--bg-surface);
+      color: var(--text-sub);
+    }
+
+    .nav-btn:hover {
+      background: var(--bg-card-hover);
+      color: var(--text-main);
+    }
+
+    .nav-btn.active {
+      background: var(--accent-blue);
+      border-color: var(--accent-blue);
+      color: #fff;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid var(--card-border);
+      background: var(--bg-surface);
+      color: var(--text-main);
+      transition: all 0.2s ease;
+    }
+
+    .btn:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--accent-blue);
+    }
+
+    .btn-primary {
+      background: var(--accent-blue);
+      color: #ffffff;
+      border-color: var(--accent-blue);
+    }
+
+    .btn-primary:hover {
+      background: #1d4ed8;
+      border-color: #1d4ed8;
+      color: #ffffff;
+    }
+
+    /* Main Layout Grid */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 370px 1fr;
+      gap: 24px;
+    }
+
+    @media (max-width: 1080px) {
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Sidebar / Control Panel */
+    .control-panel {
+      background: var(--bg-surface);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .panel-section-title {
+      font-size: 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--accent-blue);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--card-border);
+      margin-bottom: 4px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-sub);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .form-group label span.value-badge {
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--accent-blue);
+      background: var(--badge-cyan);
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    select, input[type="text"], input[type="number"], input[type="date"] {
+      width: 100%;
+      padding: 9px 12px;
+      background: var(--bg-surface);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      color: var(--text-main);
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 500;
+      outline: none;
+    }
+
+    select:focus, input:focus {
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 6px;
+      background: var(--card-border);
+      border-radius: 4px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--accent-blue);
+      cursor: pointer;
+      box-shadow: 0 0 6px rgba(37, 99, 235, 0.4);
+      transition: transform 0.1s;
+    }
+
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+
+    /* Preset Buttons */
+    .preset-pill-group {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 5px;
+    }
+
+    .preset-pill {
+      padding: 7px 0;
+      background: var(--bg-base);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-sub);
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+
+    .preset-pill:hover, .preset-pill.active {
+      background: var(--accent-blue);
+      border-color: var(--accent-blue);
+      color: white;
+    }
+
+    .custom-date-box {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 6px;
+      padding: 10px;
+      background: var(--bg-base);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+    }
+
+    .custom-date-box label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 2px;
+    }
+
+    /* Radio Cards */
+    .radio-card-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .radio-card {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 12px;
+      background: var(--bg-base);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.2s;
+    }
+
+    .radio-card:hover {
+      background: var(--bg-card-hover);
+      border-color: rgba(37, 99, 235, 0.4);
+    }
+
+    .radio-card.active {
+      border-color: var(--accent-blue);
+      background: rgba(37, 99, 235, 0.05);
+    }
+
+    .radio-card input {
+      margin-top: 3px;
+      accent-color: var(--accent-blue);
+    }
+
+    .radio-card-desc {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .radio-card-desc strong {
+      color: var(--text-main);
+      font-weight: 600;
+    }
+
+    .radio-card-desc small {
+      color: var(--text-muted);
+      font-size: 11px;
+    }
+
+    /* Threshold Control Box */
+    .threshold-sub-box {
+      margin-top: 8px;
+      padding: 12px;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .threshold-sub-box label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #1e40af;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* Right Main Content Area */
+    .main-content {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* Active Cycle Live Alert Banner */
+    .live-cycle-banner {
+      background: linear-gradient(135deg, #ffffff, #f0fdf4);
+      border: 1px solid #bbf7d0;
+      border-radius: 16px;
+      padding: 18px 22px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    .live-cycle-info {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .pulse-dot {
+      width: 14px;
+      height: 14px;
+      background-color: var(--accent-green);
+      border-radius: 50%;
+      box-shadow: 0 0 0 0 rgba(5, 150, 105, 0.6);
+      animation: pulse 1.8s infinite;
+    }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(5, 150, 105, 0.6); }
+      70% { box-shadow: 0 0 0 10px rgba(5, 150, 105, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(5, 150, 105, 0); }
+    }
+
+    .live-cycle-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .live-cycle-sub {
+      font-size: 12px;
+      color: var(--text-sub);
+    }
+
+    .live-stats-row {
+      display: flex;
+      gap: 20px;
+    }
+
+    .live-stat-item {
+      text-align: right;
+    }
+
+    .live-stat-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .live-stat-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    /* KPI Summary Cards Grid - Compact Single-Row */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 10px;
+    }
+
+    @media (max-width: 1080px) {
+      .kpi-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    @media (max-width: 640px) {
+      .kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+      }
+    }
+
+    .kpi-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 12px 14px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 3px;
+      height: 100%;
+      background: var(--accent-blue);
+      border-radius: 3px 0 0 3px;
+    }
+
+    .kpi-card.green::before { background: var(--accent-green); }
+    .kpi-card.cyan::before { background: var(--accent-cyan); }
+    .kpi-card.amber::before { background: var(--accent-amber); }
+    .kpi-card.purple::before { background: var(--accent-purple); }
+    .kpi-card.red::before { background: var(--accent-red); }
+
+    .kpi-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-sub);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .kpi-title i {
+      color: var(--text-muted);
+      font-size: 12px;
+    }
+
+    .kpi-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 17px;
+      font-weight: 800;
+      color: var(--text-main);
+      letter-spacing: -0.5px;
+      white-space: nowrap;
+    }
+
+    .kpi-subtext {
+      font-size: 10px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .val-positive { color: var(--accent-green); }
+    .val-negative { color: var(--accent-red); }
+
+    /* Chart Section */
+    .chart-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 22px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .chart-title {
+      font-size: 16px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .chart-legend-custom {
+      display: flex;
+      gap: 16px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .legend-color {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+    }
+
+    .chart-container {
+      position: relative;
+      height: 380px;
+      width: 100%;
+    }
+
+    /* Tabs & Tables */
+    .tabs-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 22px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .tabs-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 12px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .tab-btn {
+      padding: 8px 16px;
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-sub);
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .tab-btn:hover {
+      color: var(--text-main);
+      background: var(--bg-base);
+    }
+
+    .tab-btn.active {
+      color: var(--accent-blue);
+      background: var(--badge-cyan);
+      border-color: rgba(37, 99, 235, 0.2);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    /* Table Styles */
+    .table-container {
+      overflow-x: auto;
+      max-height: 520px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      text-align: left;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      background: #f1f5f9;
+      color: var(--text-sub);
+      font-weight: 600;
+      padding: 11px 13px;
+      border-bottom: 1px solid var(--card-border);
+      white-space: nowrap;
+      z-index: 2;
+    }
+
+    td {
+      padding: 10px 13px;
+      border-bottom: 1px solid var(--card-border);
+      white-space: nowrap;
+      color: var(--text-main);
+    }
+
+    tr:hover td {
+      background: var(--bg-card-hover);
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .badge-green { background: var(--badge-green); color: var(--accent-green); }
+    .badge-red { background: var(--badge-red); color: var(--accent-red); }
+    .badge-cyan { background: var(--badge-cyan); color: var(--accent-blue); }
+    .badge-amber { background: var(--badge-amber); color: var(--accent-amber); }
+
+    /* Filter Toolbars inside Tabs */
+    .tab-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .tab-toolbar-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    /* Modal Styles */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(15, 23, 42, 0.5);
+      backdrop-filter: blur(4px);
+      z-index: 999;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-box {
+      background: var(--bg-surface);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      box-shadow: var(--shadow-lg);
+      width: 90%;
+      max-width: 580px;
+      max-height: 85vh;
+      overflow-y: auto;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      animation: modalFadeIn 0.2s ease-out;
+    }
+
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: translateY(12px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 12px;
+    }
+
+    .modal-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .modal-close-btn {
+      background: none;
+      border: none;
+      font-size: 18px;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+
+    .modal-close-btn:hover {
+      color: var(--text-main);
+    }
+
+    .strategy-card-item {
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 14px;
+      background: var(--bg-base);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+
+    .strategy-card-item:hover {
+      border-color: var(--accent-blue);
+      background: var(--bg-card-hover);
+    }
+
+    /* Footer */
+    footer {
+      margin-top: 40px;
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header>
+      <div class="brand">
+        <a href="index.html" style="display:flex; align-items:center; gap:12px; text-decoration:none; color:inherit;">
+          <div class="logo-icon">
+            <i class="fa-solid fa-chart-pie"></i>
+          </div>
+          <div class="brand-text">
+            <h1>DCA Signal</h1>
+          </div>
+        </a>
+      </div>
+      <div class="header-actions">
+        <a href="index.html" class="nav-btn">
+          <i class="fa-solid fa-gauge-high"></i> 대시보드
+        </a>
+        <a href="backtest.html" class="nav-btn active">
+          <i class="fa-solid fa-sliders"></i> 백테스트
+        </a>
+        <a href="backtest.html?tab=data" class="nav-btn" onclick="openDataTab(event)">
+          <i class="fa-solid fa-table-list"></i> 데이터조회
+        </a>
+        <button id="btnOpenSaveModal" class="btn" onclick="openSaveModal()" title="전략 저장">
+          <i class="fa-solid fa-floppy-disk"></i> 저장
+        </button>
+        <button id="btnOpenLoadModal" class="btn" onclick="openLoadModal()" title="전략 불러오기">
+          <i class="fa-solid fa-folder-open"></i> 불러오기
+        </button>
+        <button id="btnApplyToLive" class="btn btn-primary" onclick="applyCurrentStrategyToDashboard()" title="현재 전략을 실전 대시보드에 적용">
+          <i class="fa-solid fa-bolt"></i> 실전 적용
+        </button>
+        <button id="exportCsvBtn" class="btn" title="CSV 다운로드">
+          <i class="fa-solid fa-file-csv"></i> CSV
+        </button>
+      </div>
+    </header>
+
+    <div class="dashboard-grid">
+      <!-- Left Control Panel -->
+      <aside class="control-panel">
+        <div class="panel-section-title">
+          <i class="fa-solid fa-sliders"></i> 전략 설정
+        </div>
+
+        <!-- Target Ticker -->
+        <div class="form-group">
+          <label for="tickerSelect">대상 종목</label>
+          <select id="tickerSelect">
+            <option value="TQQQ" selected>TQQQ (나스닥 100 3배)</option>
+            <option value="SOXL">SOXL (반도체 3배)</option>
+            <option value="UPRO">UPRO (S&P 500 3배)</option>
+            <option value="QLD">QLD (나스닥 100 2배)</option>
+            <option value="QQQ">QQQ (나스닥 100 1배)</option>
+            <option value="SPY">SPY (S&P 500 1배)</option>
+            <option value="122630.KS">122630.KS (KODEX 레버리지 2배)</option>
+          </select>
+        </div>
+
+        <!-- Period Presets & Direct Date Input -->
+        <div class="form-group">
+          <label>테스트 기간</label>
+          <div class="preset-pill-group">
+            <button class="preset-pill active" data-period="10y">10년</button>
+            <button class="preset-pill" data-period="5y">5년</button>
+            <button class="preset-pill" data-period="3y">3년</button>
+            <button class="preset-pill" data-period="1y">1년</button>
+            <button class="preset-pill" data-period="custom">직접입력</button>
+          </div>
+
+          <!-- Direct Date Pickers -->
+          <div id="customDateBox" class="custom-date-box" style="display: none;">
+            <div>
+              <label>시작일</label>
+              <input type="date" id="startDateInput">
+            </div>
+            <div>
+              <label>종료일</label>
+              <input type="date" id="endDateInput">
+            </div>
+          </div>
+        </div>
+
+        <!-- Capital & Portion Amount (Dual Input) -->
+        <div class="form-group">
+          <label>
+            <span>투자 자금</span>
+            <span class="value-badge" id="capitalSummaryBadge">1회 250,000원 × 40회</span>
+          </label>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+            <div>
+              <label style="font-size: 11px; margin-bottom: 2px;">투자원금</label>
+              <input type="number" id="initialCapital" value="10000000" step="500000" min="100000">
+            </div>
+            <div>
+              <label style="font-size: 11px; margin-bottom: 2px;">매수 금액</label>
+              <input type="number" id="portionAmountInput" value="250000" step="10000" min="10000">
+            </div>
+          </div>
+        </div>
+
+        <!-- Portions (N) up to 100 -->
+        <div class="form-group">
+          <label for="portionsRange">
+            <span>총 분할</span>
+            <span class="value-badge" id="portionsDisplay">40회차</span>
+          </label>
+          <input type="range" id="portionsRange" min="10" max="100" step="5" value="40">
+        </div>
+
+        <!-- Phase Split Round (M) -->
+        <div class="form-group">
+          <label for="splitRoundRange">
+            <span>전환점</span>
+            <span class="value-badge" id="splitRoundDisplay">20회차</span>
+          </label>
+          <input type="range" id="splitRoundRange" min="5" max="100" step="1" value="20">
+        </div>
+
+        <!-- Second-Half Rule (Condition relative to Average Cost) -->
+        <div class="form-group">
+          <label>후반부 매수</label>
+          <div class="radio-card-group">
+            <label class="radio-card active">
+              <input type="radio" name="secondHalfRule" value="below_threshold" checked>
+              <div class="radio-card-desc">
+                <strong>조건부 매수</strong>
+                <small>기준 이하 시 매수 (미달 시 관망)</small>
+              </div>
+            </label>
+            <label class="radio-card">
+              <input type="radio" name="secondHalfRule" value="below_threshold_or_half">
+              <div class="radio-card-desc">
+                <strong>완충 매수</strong>
+                <small>기준 이하 1회 / 초과 시 0.5회</small>
+              </div>
+            </label>
+            <label class="radio-card">
+              <input type="radio" name="secondHalfRule" value="always">
+              <div class="radio-card-desc">
+                <strong>균등분할 매수</strong>
+                <small>조건 없이 매일 1회분 매수</small>
+              </div>
+            </label>
+          </div>
+
+          <!-- Dynamic Threshold % Slider Box (Now -30% to +10%) -->
+          <div id="thresholdControlBox" class="threshold-sub-box">
+            <label>
+              <span>매수조건</span>
+              <span id="thresholdDisplay" class="value-badge">평단가 대비 0.0% 이하</span>
+            </label>
+            <input type="range" id="thresholdRange" min="-30" max="10" step="1" value="0">
+          </div>
+        </div>
+
+        <!-- Target Profit % -->
+        <div class="form-group">
+          <label for="targetProfitRange">
+            <span>목표 수익률</span>
+            <span class="value-badge" id="profitDisplay">+10.0%</span>
+          </label>
+          <input type="range" id="targetProfitRange" min="3" max="30" step="1" value="10">
+        </div>
+
+        <!-- Profit Reinvestment Mode -->
+        <div class="form-group">
+          <label>수익금 운용</label>
+          <div class="radio-card-group">
+            <label class="radio-card active">
+              <input type="radio" name="reinvestProfit" value="false" checked>
+              <div class="radio-card-desc">
+                <strong>단리</strong>
+                <small>원금 고정 운용</small>
+              </div>
+            </label>
+            <label class="radio-card">
+              <input type="radio" name="reinvestProfit" value="true">
+              <div class="radio-card-desc">
+                <strong>복리</strong>
+                <small>수익금 재투자</small>
+              </div>
+            </label>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Right Main Content -->
+      <main class="main-content">
+        <!-- KPI Cards Grid (Compact Single-Row) -->
+        <div class="kpi-grid">
+          <div class="kpi-card green">
+            <div class="kpi-title">
+              <span>최종 자산</span>
+              <i class="fa-solid fa-vault"></i>
+            </div>
+            <div class="kpi-value" id="kpiFinalEquity">-</div>
+            <div class="kpi-subtext">
+              <span id="kpiTotalReturn" class="badge badge-green">+0.0%</span>
+            </div>
+          </div>
+
+          <div class="kpi-card cyan">
+            <div class="kpi-title">
+              <span>CAGR</span>
+              <i class="fa-solid fa-chart-line"></i>
+            </div>
+            <div class="kpi-value" id="kpiCagr">-</div>
+            <div class="kpi-subtext">
+              <span>B&H: <strong id="kpiBhCagr">-</strong></span>
+            </div>
+          </div>
+
+          <div class="kpi-card amber">
+            <div class="kpi-title">
+              <span>MDD</span>
+              <i class="fa-solid fa-water"></i>
+            </div>
+            <div class="kpi-value" id="kpiMdd">-</div>
+            <div class="kpi-subtext">
+              <span>최대 낙폭</span>
+            </div>
+          </div>
+
+          <div class="kpi-card purple">
+            <div class="kpi-title">
+              <span>완료 사이클</span>
+              <i class="fa-solid fa-rotate-right"></i>
+            </div>
+            <div class="kpi-value" id="kpiCycles">-</div>
+            <div class="kpi-subtext">
+              <span>익절 100%</span>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-title">
+              <span>평균 기간</span>
+              <i class="fa-regular fa-clock"></i>
+            </div>
+            <div class="kpi-value" id="kpiAvgDays">-</div>
+            <div class="kpi-subtext">
+              <span>사이클당</span>
+            </div>
+          </div>
+
+          <div class="kpi-card red">
+            <div class="kpi-title">
+              <span>최장 사이클</span>
+              <i class="fa-solid fa-hourglass-half"></i>
+            </div>
+            <div class="kpi-value" id="kpiMaxDays">-</div>
+            <div class="kpi-subtext">
+              <span>최대 소요</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chart Card -->
+        <div class="chart-card">
+          <div class="chart-header">
+            <div class="chart-title">
+              <i class="fa-solid fa-chart-area" style="color:var(--accent-blue);"></i>
+              자산 성장 곡선
+            </div>
+            <div class="chart-legend-custom">
+              <div class="legend-item">
+                <div class="legend-color" style="background:#2563eb;"></div>
+                <span>DCA 분할 적립 전략</span>
+              </div>
+              <div class="legend-item">
+                <div class="legend-color" style="background:#94a3b8;"></div>
+                <span>단순 보유 (Buy & Hold)</span>
+              </div>
+            </div>
+          </div>
+          <div class="chart-container">
+            <canvas id="equityChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Tabs Section: 4 Tabs -->
+        <div class="tabs-card">
+          <div class="tabs-header">
+            <div class="nav-tabs">
+              <button class="tab-btn active" data-tab="tab-yearly" id="btnTabYearly">
+                <i class="fa-regular fa-calendar"></i> 연도별 성과
+              </button>
+              <button class="tab-btn" data-tab="tab-cycles" id="btnTabCycles">
+                <i class="fa-solid fa-list-check"></i> 사이클 기록 (<span id="cycleCountBadge">0</span>)
+              </button>
+              <button class="tab-btn" data-tab="tab-tradelog" id="btnTabTradeLog">
+                <i class="fa-solid fa-book-bookmark"></i> 매매 일지 (<span id="tradeCountBadge">0</span>)
+              </button>
+              <button class="tab-btn" data-tab="tab-dataviewer" id="btnTabDataViewer">
+                <i class="fa-solid fa-table"></i> 데이터 조회
+              </button>
+            </div>
+            <div style="font-size: 11px; color: var(--text-muted);">
+              실시간 자동 계산
+            </div>
+          </div>
+
+          <!-- Tab 1: Yearly Breakdown -->
+          <div id="tab-yearly" class="tab-content active">
+            <div class="table-container">
+              <table id="yearlyTable">
+                <thead>
+                  <tr>
+                    <th>연도</th>
+                    <th>기초 자산</th>
+                    <th>기말 자산</th>
+                    <th>연간 수익률</th>
+                    <th>완료 사이클</th>
+                    <th>실현 손익</th>
+                    <th>최대 소진 회차</th>
+                    <th>연간 MDD</th>
+                  </tr>
+                </thead>
+                <tbody id="yearlyTableBody">
+                  <!-- Populated dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Tab 2: Cycle Log -->
+          <div id="tab-cycles" class="tab-content">
+            <div class="table-container">
+              <table id="cyclesTable">
+                <thead>
+                  <tr>
+                    <th>사이클 #</th>
+                    <th>상태</th>
+                    <th>시작일</th>
+                    <th>종료일</th>
+                    <th>소요 일수</th>
+                    <th>최대 회차</th>
+                    <th>총 투입금</th>
+                    <th>평단가</th>
+                    <th>매도가</th>
+                    <th>실현 손익</th>
+                    <th>수익률</th>
+                  </tr>
+                </thead>
+                <tbody id="cyclesTableBody">
+                  <!-- Populated dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Tab 3: Detailed Trade Log (매매일지) -->
+          <div id="tab-tradelog" class="tab-content">
+            <div class="tab-toolbar">
+              <div class="tab-toolbar-left">
+                <select id="tradeFilterType" style="width: auto; padding: 6px 10px; font-size: 12px;">
+                  <option value="ALL">전체 체결 구분</option>
+                  <option value="BUY">매수만 (신규/분할)</option>
+                  <option value="SELL">매도만 (익절청산)</option>
+                </select>
+                <select id="tradeFilterCycle" style="width: auto; padding: 6px 10px; font-size: 12px;">
+                  <option value="ALL">전체 사이클</option>
+                </select>
+                <input type="text" id="tradeSearchInput" placeholder="날짜 검색 (예: 2024-03)..." style="width: 170px; padding: 6px 10px; font-size: 12px;">
+              </div>
+              <div style="font-size: 12px; color: var(--text-sub);">
+                총 <strong id="tradeFilteredCount" style="color:var(--accent-blue);">0</strong>건 표시 중
+              </div>
+            </div>
+
+            <div class="table-container">
+              <table id="tradesTable">
+                <thead>
+                  <tr>
+                    <th>거래일자</th>
+                    <th>사이클</th>
+                    <th>체결구분</th>
+                    <th>회차</th>
+                    <th>체결단가</th>
+                    <th>체결수량</th>
+                    <th>체결금액 (원화)</th>
+                    <th>보유평단가</th>
+                    <th>체결사유</th>
+                  </tr>
+                </thead>
+                <tbody id="tradesTableBody">
+                  <!-- Populated dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Tab 4: Price Data Viewer (OHLCV) -->
+          <div id="tab-dataviewer" class="tab-content">
+            <div class="tab-toolbar">
+              <div class="tab-toolbar-left">
+                <select id="dataviewerTickerSelect" style="width: auto; padding: 6px 10px; font-size: 12px; font-weight: 700;">
+                  <option value="TQQQ">TQQQ (나스닥 3배)</option>
+                  <option value="SOXL">SOXL (반도체 3배)</option>
+                  <option value="UPRO">UPRO (S&P 3배)</option>
+                  <option value="QLD">QLD (나스닥 2배)</option>
+                  <option value="QQQ">QQQ (나스닥 1배)</option>
+                  <option value="SPY">SPY (S&P 1배)</option>
+                  <option value="122630.KS">122630.KS (KODEX 레버리지)</option>
+                </select>
+                <div class="preset-pill-group" style="display: flex; gap: 4px;">
+                  <button class="preset-pill active" data-vrange="30" style="padding: 4px 8px; font-size: 11px;">30일</button>
+                  <button class="preset-pill" data-vrange="100" style="padding: 4px 8px; font-size: 11px;">100일</button>
+                  <button class="preset-pill" data-vrange="250" style="padding: 4px 8px; font-size: 11px;">1년</button>
+                  <button class="preset-pill" data-vrange="750" style="padding: 4px 8px; font-size: 11px;">3년</button>
+                  <button class="preset-pill" data-vrange="all" style="padding: 4px 8px; font-size: 11px;">전체</button>
+                </div>
+              </div>
+              <div id="dataViewerSummaryText" style="font-size: 12px; color: var(--text-sub);">
+                데이터 로딩 중...
+              </div>
+            </div>
+
+            <div class="table-container">
+              <table id="dataviewerTable">
+                <thead>
+                  <tr>
+                    <th>거래일자</th>
+                    <th>시가 (Open)</th>
+                    <th>고가 (High)</th>
+                    <th>저가 (Low)</th>
+                    <th>종가 (Close)</th>
+                    <th>전일비 (Change)</th>
+                    <th>거래량 (Volume)</th>
+                  </tr>
+                </thead>
+                <tbody id="dataviewerTableBody">
+                  <!-- Populated dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Modal 1: Strategy Save Modal -->
+    <div id="saveStrategyModal" class="modal-backdrop">
+      <div class="modal-box">
+        <div class="modal-header">
+          <div class="modal-title">
+            <i class="fa-solid fa-floppy-disk" style="color:var(--accent-blue);"></i> 전략 저장
+          </div>
+          <button class="modal-close-btn" onclick="closeSaveModal()">&times;</button>
+        </div>
+
+        <div class="form-group">
+          <label>전략 명칭</label>
+          <input type="text" id="saveStrategyName" placeholder="예: 나의 TQQQ 50분할 안전형">
+        </div>
+
+        <div class="form-group">
+          <label>전략 설명 / 메모</label>
+          <input type="text" id="saveStrategyMemo" placeholder="예: -5% 이하 선별 매수 방어 전략">
+        </div>
+
+        <div class="form-group">
+          <label>구글 시트 클라우드 슬롯 지정</label>
+          <select id="saveSheetSlotSelect">
+            <option value="1">슬롯 1 (기본 슬롯)</option>
+            <option value="2">슬롯 2</option>
+            <option value="3">슬롯 3</option>
+            <option value="4">슬롯 4</option>
+            <option value="5">슬롯 5</option>
+            <option value="6">슬롯 6</option>
+            <option value="7">슬롯 7</option>
+            <option value="8">슬롯 8</option>
+            <option value="9">슬롯 9</option>
+            <option value="10">슬롯 10</option>
+          </select>
+        </div>
+
+        <div style="background:var(--bg-base); border:1px solid var(--card-border); border-radius:10px; padding:12px; font-size:12px;">
+          <div style="font-weight:700; margin-bottom:6px; color:var(--text-sub);">저장될 파라미터 요약:</div>
+          <ul id="savePreviewList" style="padding-left:18px; color:var(--text-muted); display:flex; flex-direction:column; gap:3px;">
+            <!-- Populated dynamically -->
+          </ul>
+        </div>
+
+        <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:8px;">
+          <button class="btn" onclick="closeSaveModal()">취소</button>
+          <button class="btn btn-primary" onclick="confirmSaveStrategy()">
+            <i class="fa-solid fa-check"></i> 저장 완료
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal 2: Strategy Load Modal -->
+    <div id="loadStrategyModal" class="modal-backdrop">
+      <div class="modal-box" style="max-width: 680px;">
+        <div class="modal-header">
+          <div class="modal-title">
+            <i class="fa-solid fa-folder-open" style="color:var(--accent-emerald);"></i> 전략 불러오기
+          </div>
+          <button class="modal-close-btn" onclick="closeLoadModal()">&times;</button>
+        </div>
+
+        <div class="nav-tabs" style="border-bottom:1px solid var(--card-border); padding-bottom:8px;">
+          <button class="tab-btn active" id="btnTabPresets" onclick="switchLoadTab('presets')">
+            <i class="fa-solid fa-cube"></i> 추천 프리셋
+          </button>
+          <button class="tab-btn" id="btnTabSlots" onclick="switchLoadTab('slots')">
+            <i class="fa-solid fa-table"></i> 구글 시트 슬롯 (<span id="sheetSlotCountBadge">0</span>)
+          </button>
+          <button class="tab-btn" id="btnTabMyStrat" onclick="switchLoadTab('mystrat')">
+            <i class="fa-solid fa-bookmark"></i> 내 로컬 저장 (<span id="myStratCountBadge">0</span>)
+          </button>
+        </div>
+
+        <!-- Presets List -->
+        <div id="loadSectionPresets" style="display:flex; flex-direction:column; gap:10px; max-height:400px; overflow-y:auto;">
+          <!-- Populated dynamically -->
+        </div>
+
+        <!-- Google Sheet Slots List -->
+        <div id="loadSectionSlots" style="display:none; flex-direction:column; gap:10px; max-height:400px; overflow-y:auto;">
+          <!-- Populated dynamically -->
+        </div>
+
+        <!-- My Saved Strategies List -->
+        <div id="loadSectionMyStrat" style="display:none; flex-direction:column; gap:10px; max-height:400px; overflow-y:auto;">
+          <!-- Populated dynamically -->
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; border-top:1px solid var(--card-border); padding-top:10px;">
+          <div style="display:flex; gap:6px;">
+            <button class="btn" onclick="exportStrategiesJson()" style="font-size:11px; padding:6px 10px;">
+              <i class="fa-solid fa-download"></i> 백업(JSON)
+            </button>
+            <button class="btn" onclick="triggerImportJson()" style="font-size:11px; padding:6px 10px;">
+              <i class="fa-solid fa-upload"></i> 복구(JSON)
+            </button>
+            <input type="file" id="importJsonFileInput" accept=".json" style="display:none;" onchange="handleImportJson(event)">
+          </div>
+          <button class="btn" onclick="closeLoadModal()">닫기</button>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <p>DCA Signal &copy; 2026. Quantitative Dollar-Cost Averaging Simulator.</p>
+    </footer>
+  </div>
+
+  <script>
+    // State & Config
+    let currentData = null;
+    let equityChartInstance = null;
+    let latestSimResult = null;
+    let allTradesList = [];
+    let currentViewerRange = "30";
+
+    // Default parameters (in KRW)
+    const params = {
+      ticker: "TQQQ",
+      period: "10y",
+      customStartDate: "",
+      customEndDate: "",
+      initialCapital: 10000000, // 1,000만원
+      portions: 40,
+      phaseSplitRound: 20,
+      secondHalfRule: "below_threshold",
+      secondHalfThresholdPct: 0.0,
+      targetProfitPct: 10.0,
+      reinvestProfit: false,
+      feePct: 0.1,
+      slippagePct: 0.05
+    };
+
+    // Built-in Presets
+    const BUILTIN_PRESETS = [
+      {
+        id: "preset_1",
+        name: "스탠다드 DCA (40분할 + 평단가 이하 매수)",
+        memo: "가장 균형 잡힌 정석 분할 매수. 전반부 정량 매수 후 21회차부터 평단가 이하에서만 진입",
+        params: {
+          ticker: "TQQQ",
+          portions: 40,
+          phaseSplitRound: 20,
+          secondHalfRule: "below_threshold",
+          secondHalfThresholdPct: 0.0,
+          targetProfitPct: 10.0,
+          reinvestProfit: false
+        }
+      },
+      {
+        id: "preset_2",
+        name: "하락장 방어형 (50분할 + 딥다이브 -5%)",
+        memo: "원금을 50분할하고, 후반부에는 평단가 대비 -5% 이상 하락한 과매도 구간에서만 매수하여 현금 보존",
+        params: {
+          ticker: "TQQQ",
+          portions: 50,
+          phaseSplitRound: 25,
+          secondHalfRule: "below_threshold",
+          secondHalfThresholdPct: -5.0,
+          targetProfitPct: 10.0,
+          reinvestProfit: false
+        }
+      },
+      {
+        id: "preset_3",
+        name: "단기 고속 회전형 (20분할 + 5% 조기익절)",
+        memo: "자본을 20회분으로 빠르게 회전시키며 +5% 익절 시 신속하게 사이클을 리셋하여 회전율 극대화",
+        params: {
+          ticker: "TQQQ",
+          portions: 20,
+          phaseSplitRound: 10,
+          secondHalfRule: "below_threshold",
+          secondHalfThresholdPct: 0.0,
+          targetProfitPct: 5.0,
+          reinvestProfit: true
+        }
+      },
+      {
+        id: "preset_4",
+        name: "대폭락 극복형 (60분할 + -15% 폭락 매수)",
+        memo: "2022년급 대세 하락장을 정면 돌파. 후반부 평단가 대비 -15% 이하 폭락 구간에서만 담아 MDD 최소화",
+        params: {
+          ticker: "TQQQ",
+          portions: 60,
+          phaseSplitRound: 30,
+          secondHalfRule: "below_threshold",
+          secondHalfThresholdPct: -15.0,
+          targetProfitPct: 15.0,
+          reinvestProfit: false
+        }
+      }
+    ];
+
+    // Currency & Price Formatters
+    function fmtKRW(val) {
+      return `${Math.round(val).toLocaleString()}원`;
+    }
+
+    function fmtPrice(val, ticker) {
+      const t = ticker || params.ticker;
+      if (t.includes(".KS")) {
+        return `${Math.round(val).toLocaleString()}원`;
+      }
+      return `$${val.toFixed(2)}`;
+    }
+
+    // Initialize UI on Load
+    document.addEventListener("DOMContentLoaded", () => {
+      initEventListeners();
+      updateCapitalUI();
+      updateThresholdDisplay();
+      updateSplitRoundDisplay();
+      loadTickerData(params.ticker);
+    });
+
+    function initEventListeners() {
+      // Ticker select
+      document.getElementById("tickerSelect").addEventListener("change", (e) => {
+        params.ticker = e.target.value;
+        document.getElementById("dataviewerTickerSelect").value = params.ticker;
+        loadTickerData(params.ticker);
+      });
+
+      // Data viewer ticker select
+      document.getElementById("dataviewerTickerSelect").addEventListener("change", (e) => {
+        renderDataViewerTab(e.target.value);
+      });
+
+      // Period pills
+      document.querySelectorAll(".preset-pill[data-period]").forEach(pill => {
+        pill.addEventListener("click", () => {
+          document.querySelectorAll(".preset-pill[data-period]").forEach(p => p.classList.remove("active"));
+          pill.classList.add("active");
+          params.period = pill.getAttribute("data-period");
+
+          const customBox = document.getElementById("customDateBox");
+          if (params.period === "custom") {
+            customBox.style.display = "grid";
+          } else {
+            customBox.style.display = "none";
+          }
+          runSimulation();
+        });
+      });
+
+      // Data viewer range pills
+      document.querySelectorAll(".preset-pill[data-vrange]").forEach(pill => {
+        pill.addEventListener("click", () => {
+          document.querySelectorAll(".preset-pill[data-vrange]").forEach(p => p.classList.remove("active"));
+          pill.classList.add("active");
+          currentViewerRange = pill.getAttribute("data-vrange");
+          renderDataViewerTab(document.getElementById("dataviewerTickerSelect").value);
+        });
+      });
+
+      // Custom date inputs
+      document.getElementById("startDateInput").addEventListener("change", (e) => {
+        params.customStartDate = e.target.value;
+        if (params.period === "custom") runSimulation();
+      });
+      document.getElementById("endDateInput").addEventListener("change", (e) => {
+        params.customEndDate = e.target.value;
+        if (params.period === "custom") runSimulation();
+      });
+
+      // Dual Capital Inputs: Total Capital & Portion Amount
+      const capitalInput = document.getElementById("initialCapital");
+      const portionInput = document.getElementById("portionAmountInput");
+
+      capitalInput.addEventListener("input", (e) => {
+        const cap = parseFloat(e.target.value) || 10000000;
+        params.initialCapital = cap;
+        const pAmt = Math.round(cap / params.portions);
+        portionInput.value = pAmt;
+        updateCapitalUI();
+        runSimulation();
+      });
+
+      portionInput.addEventListener("input", (e) => {
+        const pAmt = parseFloat(e.target.value) || 250000;
+        const cap = pAmt * params.portions;
+        params.initialCapital = cap;
+        capitalInput.value = cap;
+        updateCapitalUI();
+        runSimulation();
+      });
+
+      // Portions Range (up to 100)
+      const portionsRange = document.getElementById("portionsRange");
+      portionsRange.addEventListener("input", (e) => {
+        params.portions = parseInt(e.target.value);
+        document.getElementById("portionsDisplay").innerText = `${params.portions}회차`;
+        
+        // Auto adjust split round max
+        const splitRoundRange = document.getElementById("splitRoundRange");
+        splitRoundRange.max = params.portions;
+        if (params.phaseSplitRound > params.portions) {
+          params.phaseSplitRound = Math.floor(params.portions / 2);
+          splitRoundRange.value = params.phaseSplitRound;
+        }
+
+        // Keep 1회당 매수금액 fixed and adjust total capital
+        const pAmt = parseFloat(portionInput.value) || 250000;
+        params.initialCapital = pAmt * params.portions;
+        capitalInput.value = params.initialCapital;
+
+        updateSplitRoundDisplay();
+        updateCapitalUI();
+        runSimulation();
+      });
+
+      // Split Round Range
+      const splitRoundRange = document.getElementById("splitRoundRange");
+      splitRoundRange.addEventListener("input", (e) => {
+        params.phaseSplitRound = parseInt(e.target.value);
+        updateSplitRoundDisplay();
+        runSimulation();
+      });
+
+      // Second Half Rule Radio Group
+      setupRadioGroup("secondHalfRule", (val) => {
+        params.secondHalfRule = val;
+        const box = document.getElementById("thresholdControlBox");
+        if (val === "always") {
+          box.style.display = "none";
+        } else {
+          box.style.display = "flex";
+        }
+        runSimulation();
+      });
+
+      // Second Half Threshold Slider (-30% ~ +10%)
+      const thresholdRange = document.getElementById("thresholdRange");
+      thresholdRange.addEventListener("input", (e) => {
+        params.secondHalfThresholdPct = parseFloat(e.target.value);
+        updateThresholdDisplay();
+        runSimulation();
+      });
+
+      // Reinvest Profit Radio Group
+      setupRadioGroup("reinvestProfit", (val) => {
+        params.reinvestProfit = (val === "true");
+        runSimulation();
+      });
+
+      // Target Profit Range
+      const targetProfitRange = document.getElementById("targetProfitRange");
+      targetProfitRange.addEventListener("input", (e) => {
+        params.targetProfitPct = parseFloat(e.target.value);
+        document.getElementById("profitDisplay").innerText = `+${params.targetProfitPct.toFixed(1)}%`;
+        runSimulation();
+      });
+
+      // Tab switching
+      document.querySelectorAll(".tab-btn[data-tab]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          document.querySelectorAll(".tab-btn[data-tab]").forEach(b => b.classList.remove("active"));
+          document.querySelectorAll(".tab-content").forEach(tc => tc.classList.remove("active"));
+          btn.classList.add("active");
+          const targetId = btn.getAttribute("data-tab");
+          document.getElementById(targetId).classList.add("active");
+
+          if (targetId === "tab-dataviewer") {
+            renderDataViewerTab(document.getElementById("dataviewerTickerSelect").value);
+          }
+        });
+      });
+
+      // Trade Log Filters
+      document.getElementById("tradeFilterType").addEventListener("change", filterAndRenderTrades);
+      document.getElementById("tradeFilterCycle").addEventListener("change", filterAndRenderTrades);
+      document.getElementById("tradeSearchInput").addEventListener("input", filterAndRenderTrades);
+
+      // Export CSV
+      document.getElementById("exportCsvBtn").addEventListener("click", exportCsv);
+    }
+
+    function setupRadioGroup(name, callback) {
+      document.querySelectorAll(`input[name="${name}"]`).forEach(radio => {
+        radio.addEventListener("change", (e) => {
+          document.querySelectorAll(`input[name="${name}"]`).forEach(r => {
+            r.closest(".radio-card").classList.toggle("active", r.checked);
+          });
+          callback(e.target.value);
+        });
+      });
+    }
+
+    function updateCapitalUI() {
+      const cap = params.initialCapital;
+      const pAmt = Math.round(cap / params.portions);
+      document.getElementById("capitalSummaryBadge").innerText = `1회 ${pAmt.toLocaleString()}원 × ${params.portions}회`;
+      document.getElementById("capitalDisplayText").innerText = `${cap.toLocaleString()}원`;
+    }
+
+    function updateThresholdDisplay() {
+      const pct = params.secondHalfThresholdPct;
+      const displayEl = document.getElementById("thresholdDisplay");
+      const explainerEl = document.getElementById("thresholdExplainer");
+
+      if (pct === 0) {
+        displayEl.innerText = "평단가 대비 0.0% 이하 (종가 ≤ 평단가)";
+        explainerEl.innerText = "종가가 현재 평단가 이하(0%)일 때만 매수를 진행합니다.";
+      } else if (pct <= -20) {
+        displayEl.innerText = `평단가 대비 ${pct.toFixed(1)}% 이하 (폭락장 방어)`;
+        explainerEl.innerText = `종가가 평단가 대비 ${Math.abs(pct)}% 이상 폭락한 심각한 과매도 구간에서만 선별 매수합니다.`;
+      } else if (pct < 0) {
+        displayEl.innerText = `평단가 대비 ${pct.toFixed(1)}% 이하`;
+        explainerEl.innerText = `종가가 현재 평단가보다 ${Math.abs(pct)}% 이상 더 하락한 깊은 조정 시에만 매수합니다.`;
+      } else {
+        displayEl.innerText = `평단가 대비 +${pct.toFixed(1)}% 이하`;
+        explainerEl.innerText = `종가가 평단가보다 +${pct}% 이하인 구간까지 매수를 허용합니다.`;
+      }
+    }
+
+    function updateSplitRoundDisplay() {
+      document.getElementById("splitRoundDisplay").innerText = `${params.phaseSplitRound}회차`;
+      document.getElementById("firstHalfRangeText").innerText = params.phaseSplitRound;
+      document.getElementById("secondHalfRangeText").innerText = `${params.phaseSplitRound + 1}~${params.portions}`;
+    }
+
+    function loadTickerData(ticker) {
+      if (window.DCA_PRESETS && window.DCA_PRESETS[ticker]) {
+        currentData = window.DCA_PRESETS[ticker];
+        syncDateInputs();
+        runSimulation();
+        return;
+      }
+
+      const filename = `data/${ticker.replace('.', '_')}.json`;
+      fetch(filename)
+        .then(res => res.json())
+        .then(data => {
+          currentData = data;
+          syncDateInputs();
+          runSimulation();
+        })
+        .catch(err => {
+          console.error("Failed to fetch data:", err);
+          alert(`데이터 로딩 실패: ${ticker}`);
+        });
+    }
+
+    function syncDateInputs() {
+      if (!currentData || !currentData.candles || currentData.candles.length === 0) return;
+      const start = currentData.candles[0].date;
+      const end = currentData.candles[currentData.candles.length - 1].date;
+
+      const sInput = document.getElementById("startDateInput");
+      const eInput = document.getElementById("endDateInput");
+      sInput.min = start;
+      sInput.max = end;
+      eInput.min = start;
+      eInput.max = end;
+
+      if (!params.customStartDate) {
+        sInput.value = start;
+        params.customStartDate = start;
+      }
+      if (!params.customEndDate) {
+        eInput.value = end;
+        params.customEndDate = end;
+      }
+    }
+
+    // -------------------------------------------------------------------------
+    // Core Simulation Engine (Client-Side)
+    // -------------------------------------------------------------------------
+    function runSimulation() {
+      if (!currentData || !currentData.candles || currentData.candles.length === 0) return;
+
+      const filteredCandles = filterCandles(currentData.candles);
+      if (filteredCandles.length === 0) return;
+
+      const initialCapital = params.initialCapital;
+      const portions = params.portions;
+      const phaseSplitRound = params.phaseSplitRound;
+      const secondHalfRule = params.secondHalfRule;
+      const thresholdPct = params.secondHalfThresholdPct;
+      const targetProfitPct = params.targetProfitPct;
+      const feePct = params.feePct / 100.0;
+      const slippagePct = params.slippagePct / 100.0;
+      const reinvestProfit = params.reinvestProfit;
+
+      let currentCapitalPool = initialCapital;
+      let cycleBaseCapital = initialCapital;
+
+      let cycleIdx = 1;
+      let cycleRound = 0;
+      let sharesHeld = 0.0;
+      let totalInvested = 0.0;
+      let avgCost = 0.0;
+      let cycleStartDate = null;
+      let cycleStartIdx = 0;
+
+      const completedCycles = [];
+      const equityCurve = [];
+      allTradesList = [];
+
+      const bhShares = initialCapital / (filteredCandles[0].open * (1 + feePct + slippagePct));
+      let realizedPnlTotal = 0.0;
+      let peakEquity = initialCapital;
+      let maxDrawdownPct = 0.0;
+      let maxCycleDays = 0;
+
+      for (let idx = 0; idx < filteredCandles.length; idx++) {
+        const bar = filteredCandles[idx];
+        const date = bar.date;
+        const openP = bar.open;
+        const highP = bar.high;
+        const lowP = bar.low;
+        const closeP = bar.close;
+
+        avgCost = sharesHeld > 0 ? (totalInvested / sharesHeld) : 0.0;
+
+        // 1. Take Profit Check
+        const targetSellPrice = avgCost > 0 ? avgCost * (1.0 + targetProfitPct / 100.0) : 0.0;
+        let isTakeProfit = false;
+        let exitPrice = 0.0;
+
+        if (sharesHeld > 0 && targetSellPrice > 0) {
+          if (highP >= targetSellPrice) {
+            isTakeProfit = true;
+            const executedP = openP >= targetSellPrice ? openP : targetSellPrice;
+            exitPrice = executedP * (1.0 - slippagePct);
+          }
+        }
+
+        if (isTakeProfit) {
+          const grossRevenue = sharesHeld * exitPrice;
+          const fee = grossRevenue * feePct;
+          const netRevenue = grossRevenue - fee;
+          const netProfit = netRevenue - totalInvested;
+          const returnPct = (netProfit / totalInvested) * 100.0;
+
+          const durationDays = idx - cycleStartIdx + 1;
+          if (durationDays > maxCycleDays) maxCycleDays = durationDays;
+          realizedPnlTotal += netProfit;
+
+          completedCycles.push({
+            cycleNum: cycleIdx,
+            status: "PROFIT",
+            startDate: cycleStartDate,
+            endDate: date,
+            durationDays: durationDays,
+            maxRoundsUsed: cycleRound,
+            totalInvested: totalInvested,
+            grossRevenue: grossRevenue,
+            netProfit: netProfit,
+            returnPct: returnPct,
+            avgCost: avgCost,
+            exitPrice: exitPrice
+          });
+
+          // Log Sell Trade in Journal
+          allTradesList.push({
+            date: date,
+            cycleNum: cycleIdx,
+            type: "익절매도",
+            round: cycleRound,
+            price: exitPrice,
+            shares: sharesHeld,
+            cost: netRevenue,
+            netProfit: netProfit,
+            returnPct: returnPct,
+            avgCost: avgCost,
+            reason: `목표익절 (+${targetProfitPct.toFixed(1)}%) 달성 전량 청산`
+          });
+
+          if (reinvestProfit) {
+            currentCapitalPool += netProfit;
+            cycleBaseCapital = currentCapitalPool;
+          }
+
+          // Reset cycle
+          cycleIdx++;
+          cycleRound = 0;
+          sharesHeld = 0.0;
+          totalInvested = 0.0;
+          avgCost = 0.0;
+          cycleStartDate = null;
+        }
+
+        // 2. Daily Buy Check
+        const portionSize = cycleBaseCapital / portions;
+        const fundsLeft = cycleBaseCapital - totalInvested;
+        const canBuyMore = (cycleRound < portions);
+
+        if (canBuyMore && fundsLeft >= (portionSize * 0.1)) {
+          const isFirstHalf = (cycleRound < phaseSplitRound);
+          let budgetToday = 0.0;
+          const orderFillPrice = closeP * (1.0 + slippagePct);
+          let buyReason = "";
+
+          if (isFirstHalf) {
+            budgetToday = Math.min(portionSize, fundsLeft);
+            buyReason = cycleRound === 0 ? "1회차 사이클 시작 (정량매수)" : "전반부 기계적 정량매수";
+          } else {
+            const targetThresholdPrice = avgCost * (1.0 + thresholdPct / 100.0);
+            const isBelowThreshold = (avgCost === 0 || closeP <= targetThresholdPrice);
+
+            if (secondHalfRule === "below_threshold") {
+              if (isBelowThreshold) {
+                budgetToday = Math.min(portionSize, fundsLeft);
+                buyReason = thresholdPct === 0 ? "후반부 평단가 이하 매수" : `후반부 평단가 대비 ${thresholdPct}% 이하 매수`;
+              } else {
+                budgetToday = 0.0;
+              }
+            } else if (secondHalfRule === "below_threshold_or_half") {
+              if (isBelowThreshold) {
+                budgetToday = Math.min(portionSize, fundsLeft);
+                buyReason = "후반부 기준 이하 1회분 매수";
+              } else {
+                budgetToday = Math.min(portionSize * 0.5, fundsLeft);
+                buyReason = "후반부 기준 초과 0.5회분 축소매수";
+              }
+            } else if (secondHalfRule === "always") {
+              budgetToday = Math.min(portionSize, fundsLeft);
+              buyReason = "후반부 단순 분할 지속 매수";
+            }
+          }
+
+          if (budgetToday > 0 && orderFillPrice > 0) {
+            const boughtShares = (budgetToday * (1.0 - feePct)) / orderFillPrice;
+            if (boughtShares > 0) {
+              if (cycleStartDate === null) {
+                cycleStartDate = date;
+                cycleStartIdx = idx;
+              }
+              sharesHeld += boughtShares;
+              totalInvested += budgetToday;
+              cycleRound++;
+              avgCost = totalInvested / sharesHeld;
+
+              // Log Buy Trade in Journal
+              allTradesList.push({
+                date: date,
+                cycleNum: cycleIdx,
+                type: cycleRound === 1 ? "신규매수" : "분할매수",
+                round: cycleRound,
+                price: orderFillPrice,
+                shares: boughtShares,
+                cost: budgetToday,
+                netProfit: 0,
+                returnPct: 0,
+                avgCost: avgCost,
+                reason: buyReason
+              });
+            }
+          }
+        }
+
+        // 3. Daily Mark to Market
+        const currentSharesVal = sharesHeld * closeP;
+        const cashInHand = (cycleBaseCapital - totalInvested) + (currentCapitalPool - cycleBaseCapital) + realizedPnlTotal;
+        const totalEquity = cashInHand + currentSharesVal;
+        const bhEquity = bhShares * closeP;
+
+        if (totalEquity > peakEquity) peakEquity = totalEquity;
+        const ddPct = ((totalEquity - peakEquity) / peakEquity) * 100.0;
+        if (ddPct < maxDrawdownPct) maxDrawdownPct = ddPct;
+
+        equityCurve.push({
+          date: date,
+          equity: totalEquity,
+          bhEquity: bhEquity,
+          drawdownPct: ddPct
+        });
+      }
+
+      // Final calculations
+      const finalEquity = equityCurve[equityCurve.length - 1].equity;
+      const totalReturnPct = ((finalEquity - initialCapital) / initialCapital) * 100.0;
+
+      const d1 = new Date(filteredCandles[0].date);
+      const d2 = new Date(filteredCandles[filteredCandles.length - 1].date);
+      const years = Math.max((d2 - d1) / (1000 * 60 * 60 * 24 * 365.25), 0.1);
+      const cagrPct = (Math.pow(finalEquity / initialCapital, 1.0 / years) - 1.0) * 100.0;
+
+      const bhFinal = equityCurve[equityCurve.length - 1].bhEquity;
+      const bhCagrPct = (Math.pow(bhFinal / initialCapital, 1.0 / years) - 1.0) * 100.0;
+
+      const avgCycleDays = completedCycles.length > 0 
+        ? completedCycles.reduce((acc, c) => acc + c.durationDays, 0) / completedCycles.length 
+        : 0;
+
+      // Yearly Breakdown
+      const yearlyMap = {};
+      completedCycles.forEach(c => {
+        const yr = c.endDate.substring(0, 4);
+        if (!yearlyMap[yr]) {
+          yearlyMap[yr] = { completedCycles: 0, realizedProfit: 0, maxRounds: 0 };
+        }
+        yearlyMap[yr].completedCycles++;
+        yearlyMap[yr].realizedProfit += c.netProfit;
+        yearlyMap[yr].maxRounds = Math.max(yearlyMap[yr].maxRounds, c.maxRoundsUsed);
+      });
+
+      const curveByYear = {};
+      equityCurve.forEach(p => {
+        const yr = p.date.substring(0, 4);
+        if (!curveByYear[yr]) curveByYear[yr] = [];
+        curveByYear[yr].push(p);
+      });
+
+      const yearlyBreakdown = [];
+      Object.keys(curveByYear).sort().forEach(yr => {
+        const pts = curveByYear[yr];
+        const sEq = pts[0].equity;
+        const eEq = pts[pts.length - 1].equity;
+        const yrRet = ((eEq - sEq) / sEq) * 100.0;
+
+        let yrPeak = sEq;
+        let yrMdd = 0;
+        pts.forEach(p => {
+          if (p.equity > yrPeak) yrPeak = p.equity;
+          const dd = ((p.equity - yrPeak) / yrPeak) * 100.0;
+          if (dd < yrMdd) yrMdd = dd;
+        });
+
+        const cInfo = yearlyMap[yr] || { completedCycles: 0, realizedProfit: 0, maxRounds: 0 };
+        yearlyBreakdown.push({
+          year: yr,
+          startEquity: sEq,
+          endEquity: eEq,
+          returnPct: yrRet,
+          completedCycles: cInfo.completedCycles,
+          realizedProfit: cInfo.realizedProfit,
+          maxRoundsUsed: cInfo.maxRounds,
+          mddPct: yrMdd
+        });
+      });
+
+      latestSimResult = {
+        summary: {
+          initialCapital,
+          finalEquity,
+          totalReturnPct,
+          cagrPct,
+          bhCagrPct,
+          maxDrawdownPct,
+          completedCyclesCount: completedCycles.length,
+          avgCycleDays,
+          maxCycleDays,
+          activeCycle: {
+            cycleNum: cycleIdx,
+            round: cycleRound,
+            sharesHeld: sharesHeld,
+            totalInvested: totalInvested,
+            avgCost: avgCost,
+            unrealizedPct: avgCost > 0 ? ((filteredCandles[filteredCandles.length - 1].close - avgCost) / avgCost) * 100.0 : 0,
+            startDate: cycleStartDate,
+            lastClose: filteredCandles[filteredCandles.length - 1].close
+          }
+        },
+        yearlyBreakdown,
+        completedCycles,
+        equityCurve
+      };
+
+      updateUI();
+    }
+
+    function filterCandles(candles) {
+      const period = params.period;
+      if (period === "10y") return candles;
+
+      const lastDate = new Date(candles[candles.length - 1].date);
+
+      if (period === "5y") {
+        const cutoff = new Date(lastDate);
+        cutoff.setFullYear(cutoff.getFullYear() - 5);
+        const cutStr = cutoff.toISOString().substring(0, 10);
+        return candles.filter(c => c.date >= cutStr);
+      }
+      if (period === "3y") {
+        const cutoff = new Date(lastDate);
+        cutoff.setFullYear(cutoff.getFullYear() - 3);
+        const cutStr = cutoff.toISOString().substring(0, 10);
+        return candles.filter(c => c.date >= cutStr);
+      }
+      if (period === "1y") {
+        const cutoff = new Date(lastDate);
+        cutoff.setFullYear(cutoff.getFullYear() - 1);
+        const cutStr = cutoff.toISOString().substring(0, 10);
+        return candles.filter(c => c.date >= cutStr);
+      }
+      if (period === "custom") {
+        const s = params.customStartDate || "1900-01-01";
+        const e = params.customEndDate || "2099-12-31";
+        return candles.filter(c => c.date >= s && c.date <= e);
+      }
+      return candles;
+    }
+
+    // -------------------------------------------------------------------------
+    // UI Update Functions
+    // -------------------------------------------------------------------------
+    function updateUI() {
+      if (!latestSimResult) return;
+      const s = latestSimResult.summary;
+
+      // KPIs
+      document.getElementById("kpiFinalEquity").innerText = fmtKRW(s.finalEquity);
+      const retEl = document.getElementById("kpiTotalReturn");
+      retEl.innerText = `${s.totalReturnPct >= 0 ? '+' : ''}${s.totalReturnPct.toFixed(1)}%`;
+      retEl.className = `badge ${s.totalReturnPct >= 0 ? 'badge-green' : 'badge-red'}`;
+
+      document.getElementById("kpiCagr").innerText = `${s.cagrPct.toFixed(1)}%`;
+      document.getElementById("kpiBhCagr").innerText = `${s.bhCagrPct.toFixed(1)}%`;
+      document.getElementById("kpiMdd").innerText = `${s.maxDrawdownPct.toFixed(1)}%`;
+      document.getElementById("kpiCycles").innerText = `${s.completedCyclesCount}회`;
+      document.getElementById("kpiAvgDays").innerText = `${s.avgCycleDays.toFixed(1)}일`;
+      document.getElementById("kpiMaxDays").innerText = `${s.maxCycleDays}일`;
+
+      // Active Live Banner
+      const ac = s.activeCycle;
+      if (ac.sharesHeld > 0) {
+        document.getElementById("liveCycleBanner").style.display = "flex";
+        document.getElementById("activeCycleTitle").innerText = `진행 중인 사이클 (Cycle #${ac.cycleNum})`;
+        const phaseLabel = ac.round <= params.phaseSplitRound ? "전반부 (정량 매수)" : "후반부 (조건부 매수)";
+        document.getElementById("activeCycleSub").innerText = `${ac.startDate} 시작 | 현재 ${ac.round}회차 / ${params.portions}회차 (${phaseLabel})`;
+        document.getElementById("activeInvestedVal").innerText = fmtKRW(ac.totalInvested);
+        document.getElementById("activeAvgCostVal").innerText = fmtPrice(ac.avgCost);
+        const targetVal = ac.avgCost * (1.0 + params.targetProfitPct / 100.0);
+        document.getElementById("activeTargetVal").innerText = fmtPrice(targetVal);
+
+        const pnlEl = document.getElementById("activePnlVal");
+        pnlEl.innerText = `${ac.unrealizedPct >= 0 ? '+' : ''}${ac.unrealizedPct.toFixed(2)}%`;
+        pnlEl.className = `live-stat-val ${ac.unrealizedPct >= 0 ? 'val-positive' : 'val-negative'}`;
+      } else {
+        document.getElementById("liveCycleBanner").style.display = "flex";
+        document.getElementById("activeCycleTitle").innerText = `사이클 대기 중 (Cycle #${ac.cycleNum})`;
+        document.getElementById("activeCycleSub").innerText = `직전 사이클 익절 완료. 다음 거래일에 1회차 매수 시작 대기`;
+        document.getElementById("activeInvestedVal").innerText = fmtKRW(0);
+        document.getElementById("activeAvgCostVal").innerText = "-";
+        document.getElementById("activeTargetVal").innerText = "-";
+        document.getElementById("activePnlVal").innerText = "0.0%";
+      }
+
+      // Tab 1: Yearly Table
+      const yBody = document.getElementById("yearlyTableBody");
+      yBody.innerHTML = "";
+      latestSimResult.yearlyBreakdown.forEach(y => {
+        const tr = document.createElement("tr");
+        const retClass = y.returnPct >= 0 ? 'val-positive' : 'val-negative';
+        tr.innerHTML = `
+          <td><strong>${y.year}</strong></td>
+          <td>${fmtKRW(y.startEquity)}</td>
+          <td>${fmtKRW(y.endEquity)}</td>
+          <td class="${retClass}" style="font-weight:700;">${y.returnPct >= 0 ? '+' : ''}${y.returnPct.toFixed(2)}%</td>
+          <td><span class="badge badge-cyan">${y.completedCycles}회</span></td>
+          <td style="font-weight:600;">${fmtKRW(y.realizedProfit)}</td>
+          <td>${y.maxRoundsUsed} / ${params.portions}</td>
+          <td class="val-negative" style="font-weight:600;">${y.mddPct.toFixed(2)}%</td>
+        `;
+        yBody.appendChild(tr);
+      });
+
+      // Tab 2: Cycle Log Table
+      document.getElementById("cycleCountBadge").innerText = latestSimResult.completedCycles.length;
+      const cBody = document.getElementById("cyclesTableBody");
+      cBody.innerHTML = "";
+      const reversedCycles = [...latestSimResult.completedCycles].reverse();
+      reversedCycles.forEach(c => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td><strong>#${c.cycleNum}</strong></td>
+          <td><span class="badge badge-green"><i class="fa-solid fa-check"></i> 익절</span></td>
+          <td>${c.startDate}</td>
+          <td>${c.endDate}</td>
+          <td>${c.durationDays}일</td>
+          <td><span class="badge ${c.maxRoundsUsed > params.phaseSplitRound ? 'badge-amber' : 'badge-cyan'}">${c.maxRoundsUsed}회</span></td>
+          <td>${fmtKRW(c.totalInvested)}</td>
+          <td>${fmtPrice(c.avgCost)}</td>
+          <td>${fmtPrice(c.exitPrice)}</td>
+          <td class="val-positive" style="font-weight:600;">+${fmtKRW(c.netProfit)}</td>
+          <td class="val-positive" style="font-weight:700;">+${c.returnPct.toFixed(2)}%</td>
+        `;
+        cBody.appendChild(tr);
+      });
+
+      // Populate Cycle Filter in Trade Log
+      const cycleSelect = document.getElementById("tradeFilterCycle");
+      const currentCycleSel = cycleSelect.value;
+      cycleSelect.innerHTML = '<option value="ALL">전체 사이클</option>';
+      const maxC = latestSimResult.completedCycles.length + 1;
+      for (let i = 1; i <= maxC; i++) {
+        const opt = document.createElement("option");
+        opt.value = i;
+        opt.innerText = `Cycle #${i}`;
+        cycleSelect.appendChild(opt);
+      }
+      cycleSelect.value = currentCycleSel || "ALL";
+
+      // Tab 3: Render Detailed Trade Log
+      filterAndRenderTrades();
+
+      renderChart();
+    }
+
+    // -------------------------------------------------------------------------
+    // Trade Log Rendering & Filtering
+    // -------------------------------------------------------------------------
+    function filterAndRenderTrades() {
+      const typeFilter = document.getElementById("tradeFilterType").value;
+      const cycleFilter = document.getElementById("tradeFilterCycle").value;
+      const searchTxt = document.getElementById("tradeSearchInput").value.trim().toLowerCase();
+
+      let filtered = allTradesList.filter(t => {
+        if (typeFilter === "BUY" && !t.type.includes("매수")) return false;
+        if (typeFilter === "SELL" && !t.type.includes("매도")) return false;
+        if (cycleFilter !== "ALL" && t.cycleNum !== parseInt(cycleFilter)) return false;
+        if (searchTxt && !t.date.toLowerCase().includes(searchTxt)) return false;
+        return true;
+      });
+
+      document.getElementById("tradeCountBadge").innerText = allTradesList.length;
+      document.getElementById("tradeFilteredCount").innerText = `${filtered.length}건`;
+
+      const tBody = document.getElementById("tradesTableBody");
+      tBody.innerHTML = "";
+
+      // Show newest trades first
+      const reversedTrades = [...filtered].reverse();
+      const slice = reversedTrades.slice(0, 300); // limit 300 rows for smooth DOM performance
+
+      slice.forEach(t => {
+        const tr = document.createElement("tr");
+        const isSell = t.type.includes("매도");
+        const typeBadge = isSell 
+          ? `<span class="badge badge-red"><i class="fa-solid fa-arrow-trend-up"></i> 익절매도</span>`
+          : (t.round === 1 ? `<span class="badge badge-green">신규매수</span>` : `<span class="badge badge-cyan">분할매수</span>`);
+
+        tr.innerHTML = `
+          <td><strong>${t.date}</strong></td>
+          <td><span style="font-weight:600; color:var(--text-sub);">Cycle #${t.cycleNum}</span></td>
+          <td>${typeBadge}</td>
+          <td>${t.round}회차</td>
+          <td>${fmtPrice(t.price)}</td>
+          <td>${t.shares.toFixed(2)}주</td>
+          <td style="font-weight:600;">${fmtKRW(t.cost)}</td>
+          <td>${fmtPrice(t.avgCost)}</td>
+          <td style="font-size:12px; color:var(--text-muted);">${t.reason}</td>
+        `;
+        tBody.appendChild(tr);
+      });
+    }
+
+    // -------------------------------------------------------------------------
+    // ETF Price Data Viewer (OHLCV) Tab
+    // -------------------------------------------------------------------------
+    function renderDataViewerTab(ticker) {
+      const t = ticker || params.ticker;
+      document.getElementById("dataviewerTickerSelect").value = t;
+
+      if (!window.DCA_PRESETS || !window.DCA_PRESETS[t]) {
+        document.getElementById("dataViewerSummaryText").innerText = "데이터가 없습니다.";
+        return;
+      }
+
+      const tData = window.DCA_PRESETS[t];
+      const candles = tData.candles;
+      if (!candles || candles.length === 0) return;
+
+      // Filter by range
+      let displayCandles = candles;
+      if (currentViewerRange === "30") displayCandles = candles.slice(-30);
+      else if (currentViewerRange === "100") displayCandles = candles.slice(-100);
+      else if (currentViewerRange === "250") displayCandles = candles.slice(-250);
+      else if (currentViewerRange === "750") displayCandles = candles.slice(-750);
+
+      // Calculate stats
+      const lastCandle = candles[candles.length - 1];
+      const prevCandle = candles.length > 1 ? candles[candles.length - 2] : lastCandle;
+      const dayChgPct = ((lastCandle.close - prevCandle.close) / prevCandle.close) * 100.0;
+
+      // 52-week high/low
+      const recent1y = candles.slice(-250);
+      const high52 = Math.max(...recent1y.map(c => c.high));
+      const low52 = Math.min(...recent1y.map(c => c.low));
+
+      document.getElementById("dataViewerSummaryText").innerHTML = `
+        종가: <strong>${fmtPrice(lastCandle.close, t)}</strong> (${dayChgPct >= 0 ? '+' : ''}${dayChgPct.toFixed(2)}%) | 
+        52주 최고: <strong>${fmtPrice(high52, t)}</strong> | 최저: <strong>${fmtPrice(low52, t)}</strong> | 
+        전체 기간: ${tData.start_date} ~ ${tData.end_date} (총 ${candles.length.toLocaleString()}일)
+      `;
+
+      const vBody = document.getElementById("dataviewerTableBody");
+      vBody.innerHTML = "";
+
+      // Reverse order (newest date first)
+      const reversed = [...displayCandles].reverse();
+      reversed.forEach((c, idx) => {
+        const nextIdx = reversed.length - 1 - idx; // actual original index
+        const prevClose = nextIdx > 0 ? candles[nextIdx - 1].close : c.open;
+        const chgPct = ((c.close - prevClose) / prevClose) * 100.0;
+        const chgBadge = chgPct >= 0 
+          ? `<span class="badge badge-green">+${chgPct.toFixed(2)}%</span>`
+          : `<span class="badge badge-red">${chgPct.toFixed(2)}%</span>`;
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td><strong>${c.date}</strong></td>
+          <td>${fmtPrice(c.open, t)}</td>
+          <td>${fmtPrice(c.high, t)}</td>
+          <td>${fmtPrice(c.low, t)}</td>
+          <td style="font-weight:700;">${fmtPrice(c.close, t)}</td>
+          <td>${chgBadge}</td>
+          <td style="font-family:'JetBrains Mono';">${c.volume.toLocaleString()}</td>
+        `;
+        vBody.appendChild(tr);
+      });
+    }
+
+    // -------------------------------------------------------------------------
+    // Strategy Save & Load (Google Sheet Cloud Slots & LocalStorage)
+    // -------------------------------------------------------------------------
+    const DEFAULT_GAS_URL = "https://script.google.com/macros/s/AKfycbw_mOf0ej-maqAf7HIxZBSjcc4tnFPrH-_CjwzcVar-kxR5KepZDvou_EQKvRJMAykUYg/exec";
+    const GAS_WEBAPP_URL = localStorage.getItem("dca_gas_url") || DEFAULT_GAS_URL;
+    let cachedSheetSlots = [];
+
+    function openDataTab(event) {
+      if (event) event.preventDefault();
+      const tabBtn = document.getElementById("btnTabDataViewer");
+      if (tabBtn) tabBtn.click();
+      window.history.replaceState(null, null, "?tab=data");
+    }
+
+    async function applyCurrentStrategyToDashboard() {
+      if (!confirm(`현재 설정된 [${params.ticker}] 전략을 실전 대시보드 가동 전략으로 적용하시겠습니까?`)) return;
+      
+      const activeStrat = {
+        ticker: params.ticker,
+        startDate: new Date().toISOString().substring(0, 10),
+        seedCapital: params.initialCapital,
+        portions: params.portions,
+        phaseSplitRound: params.phaseSplitRound,
+        lateMode: params.secondHalfRule === "below_threshold" ? "cond" : (params.secondHalfRule === "below_threshold_or_half" ? "half" : "always"),
+        lateThresholdPct: params.secondHalfThresholdPct,
+        targetProfitPct: params.targetProfitPct,
+        compoundMode: params.reinvestProfit ? "compound" : "simple",
+        currentRound: 1,
+        holdQty: 0,
+        avgPrice: 0,
+        updatedAt: new Date().toISOString().substring(0, 19).replace('T', ' ')
+      };
+
+      localStorage.setItem("dca_active_strategy", JSON.stringify(activeStrat));
+
+      if (GAS_WEBAPP_URL) {
+        try {
+          await fetch(GAS_WEBAPP_URL, {
+            method: "POST",
+            mode: "no-cors",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: "set_active_strategy", strategy: activeStrat })
+          });
+        } catch (e) {
+          console.warn("GAS sync error", e);
+        }
+      }
+
+      if (confirm("실전 대시보드 가동 전략으로 설정되었습니다!\n지금 실전 대시보드로 이동하시겠습니까?")) {
+        window.location.href = "index.html";
+      }
+    }
+
+    function openSaveModal() {
+      const pAmt = Math.round(params.initialCapital / params.portions);
+      document.getElementById("saveStrategyName").value = `${params.ticker} ${params.portions}분할 전략`;
+      document.getElementById("saveStrategyMemo").value = `후반부 ${params.secondHalfThresholdPct}% 이하 매수, +${params.targetProfitPct}% 익절`;
+
+      const listEl = document.getElementById("savePreviewList");
+      listEl.innerHTML = `
+        <li>대상 종목: <strong>${params.ticker}</strong></li>
+        <li>투자원금: <strong>${fmtKRW(params.initialCapital)}</strong> (1회당 ${fmtKRW(pAmt)})</li>
+        <li>총 분할: <strong>${params.portions}회차</strong> (전환점: ${params.phaseSplitRound}회차)</li>
+        <li>매수조건: <strong>평단가 대비 ${params.secondHalfThresholdPct}% 이하</strong></li>
+        <li>목표 수익률: <strong>+${params.targetProfitPct}%</strong></li>
+        <li>수익금 운용: <strong>${params.reinvestProfit ? "복리" : "단리"}</strong></li>
+      `;
+
+      document.getElementById("saveStrategyModal").style.display = "flex";
+    }
+
+    function closeSaveModal() {
+      document.getElementById("saveStrategyModal").style.display = "none";
+    }
+
+    async function confirmSaveStrategy() {
+      const name = document.getElementById("saveStrategyName").value.trim() || `${params.ticker} 커스텀 전략`;
+      const memo = document.getElementById("saveStrategyMemo").value.trim();
+      const slotId = parseInt(document.getElementById("saveSheetSlotSelect").value) || 1;
+
+      const newStrat = {
+        id: "strat_" + Date.now(),
+        slotId: slotId,
+        name: name,
+        memo: memo,
+        savedAt: new Date().toISOString().substring(0, 19).replace('T', ' '),
+        params: { ...params }
+      };
+
+      // 1. Save to LocalStorage
+      const saved = getSavedStrategies();
+      saved.unshift(newStrat);
+      localStorage.setItem("dca_saved_strategies", JSON.stringify(saved));
+
+      // 2. Save to Google Sheet if GAS_WEBAPP_URL is present
+      if (GAS_WEBAPP_URL) {
+        try {
+          await fetch(GAS_WEBAPP_URL, {
+            method: "POST",
+            mode: "no-cors",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              action: "save_slot",
+              slotId: slotId,
+              name: name,
+              memo: memo,
+              strategy: {
+                ticker: params.ticker,
+                seedCapital: params.initialCapital,
+                portions: params.portions,
+                phaseSplitRound: params.phaseSplitRound,
+                lateMode: params.secondHalfRule === "below_threshold" ? "cond" : (params.secondHalfRule === "below_threshold_or_half" ? "half" : "always"),
+                lateThresholdPct: params.secondHalfThresholdPct,
+                targetProfitPct: params.targetProfitPct,
+                compoundMode: params.reinvestProfit ? "compound" : "simple"
+              }
+            })
+          });
+        } catch (e) {
+          console.warn("GAS save slot error", e);
+        }
+      }
+
+      closeSaveModal();
+      alert(`[${name}] 전략이 슬롯 ${slotId} 및 로컬에 저장되었습니다!`);
+    }
+
+    function getSavedStrategies() {
+      try {
+        const raw = localStorage.getItem("dca_saved_strategies");
+        return raw ? JSON.parse(raw) : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function openLoadModal() {
+      renderPresetsList();
+      renderMyStrategiesList();
+      fetchSheetSlots();
+      switchLoadTab("presets");
+      document.getElementById("loadStrategyModal").style.display = "flex";
+    }
+
+    function closeLoadModal() {
+      document.getElementById("loadStrategyModal").style.display = "none";
+    }
+
+    function switchLoadTab(tabName) {
+      document.getElementById("btnTabPresets").classList.remove("active");
+      document.getElementById("btnTabSlots").classList.remove("active");
+      document.getElementById("btnTabMyStrat").classList.remove("active");
+
+      document.getElementById("loadSectionPresets").style.display = "none";
+      document.getElementById("loadSectionSlots").style.display = "none";
+      document.getElementById("loadSectionMyStrat").style.display = "none";
+
+      if (tabName === "presets") {
+        document.getElementById("btnTabPresets").classList.add("active");
+        document.getElementById("loadSectionPresets").style.display = "flex";
+      } else if (tabName === "slots") {
+        document.getElementById("btnTabSlots").classList.add("active");
+        document.getElementById("loadSectionSlots").style.display = "flex";
+        renderSheetSlotsList();
+      } else {
+        document.getElementById("btnTabMyStrat").classList.add("active");
+        document.getElementById("loadSectionMyStrat").style.display = "flex";
+      }
+    }
+
+    async function fetchSheetSlots() {
+      if (!GAS_WEBAPP_URL) {
+        document.getElementById("sheetSlotCountBadge").innerText = "미연동";
+        return;
+      }
+      try {
+        const res = await fetch(`${GAS_WEBAPP_URL}?action=get_slots`);
+        const data = await res.json();
+        if (data.success && data.slots) {
+          cachedSheetSlots = data.slots;
+          document.getElementById("sheetSlotCountBadge").innerText = cachedSheetSlots.length;
+          renderSheetSlotsList();
+        }
+      } catch (e) {
+        console.warn("fetch slots error", e);
+      }
+    }
+
+    function renderSheetSlotsList() {
+      const container = document.getElementById("loadSectionSlots");
+      container.innerHTML = "";
+
+      if (!GAS_WEBAPP_URL) {
+        container.innerHTML = `
+          <div style="text-align:center; padding:30px 10px; color:var(--text-muted); font-size:13px;">
+            <i class="fa-solid fa-cloud" style="font-size:24px; margin-bottom:8px; display:block;"></i>
+            구글 시트 연동 주소가 아직 설정되지 않았습니다.<br>
+            대시보드 또는 설정에서 웹앱 URL을 연동하면 클라우드 슬롯이 표시됩니다.
+          </div>
+        `;
+        return;
+      }
+
+      if (cachedSheetSlots.length === 0) {
+        container.innerHTML = `
+          <div style="text-align:center; padding:30px 10px; color:var(--text-muted); font-size:13px;">
+            구글 시트에 저장된 슬롯이 없습니다.<br>[전략 저장]에서 슬롯을 지정해 저장해 보세요.
+          </div>
+        `;
+        return;
+      }
+
+      cachedSheetSlots.forEach(s => {
+        const card = document.createElement("div");
+        card.className = "strategy-card-item";
+        card.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <span class="badge badge-cyan" style="margin-right:4px;">슬롯 ${s.slotId}</span>
+              <strong style="color:var(--text-main); font-size:14px;">${s.name}</strong>
+              <small style="color:var(--text-muted); margin-left:6px;">(${s.updatedAt || ""})</small>
+            </div>
+            <button class="btn btn-primary" onclick="applySheetSlot(${s.slotId})" style="padding:4px 10px; font-size:12px;">
+              <i class="fa-solid fa-check"></i> 적용
+            </button>
+          </div>
+          ${s.memo ? `<div style="font-size:12px; color:var(--text-sub);">${s.memo}</div>` : ''}
+          <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:2px;">
+            <span class="badge badge-cyan">${s.ticker}</span>
+            <span class="badge badge-cyan">${s.portions}회차</span>
+            <span class="badge badge-amber">기준: ${s.lateThresholdPct}%</span>
+            <span class="badge badge-green">익절: +${s.targetProfitPct}%</span>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function applySheetSlot(slotId) {
+      const s = cachedSheetSlots.find(x => x.slotId === slotId);
+      if (!s) return;
+      applyStrategyParams({
+        ticker: s.ticker,
+        initialCapital: s.seedCapital,
+        portions: s.portions,
+        phaseSplitRound: s.phaseSplitRound,
+        secondHalfRule: s.lateMode === "half" ? "below_threshold_or_half" : (s.lateMode === "always" ? "always" : "below_threshold"),
+        secondHalfThresholdPct: s.lateThresholdPct,
+        targetProfitPct: s.targetProfitPct,
+        reinvestProfit: s.compoundMode === "compound"
+      });
+      closeLoadModal();
+      alert(`[슬롯 ${slotId}: ${s.name}] 전략이 적용되었습니다!`);
+    }
+
+    function renderPresetsList() {
+      const container = document.getElementById("loadSectionPresets");
+      container.innerHTML = "";
+
+      BUILTIN_PRESETS.forEach(p => {
+        const card = document.createElement("div");
+        card.className = "strategy-card-item";
+        card.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <strong style="color:var(--accent-blue); font-size:14px;">${p.name}</strong>
+            <button class="btn btn-primary" onclick="applyStrategyPreset('${p.id}')" style="padding:4px 10px; font-size:12px;">
+              <i class="fa-solid fa-check"></i> 적용
+            </button>
+          </div>
+          <div style="font-size:12px; color:var(--text-sub);">${p.memo}</div>
+          <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:2px;">
+            <span class="badge badge-cyan">${p.params.portions}회 분할</span>
+            <span class="badge badge-cyan">${p.params.phaseSplitRound}회 분기</span>
+            <span class="badge badge-amber">기준: ${p.params.secondHalfThresholdPct}% 이하</span>
+            <span class="badge badge-green">익절: +${p.params.targetProfitPct}%</span>
+            <span class="badge badge-cyan">${p.params.reinvestProfit ? "복리" : "단리"}</span>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function renderMyStrategiesList() {
+      const container = document.getElementById("loadSectionMyStrat");
+      const list = getSavedStrategies();
+      document.getElementById("myStratCountBadge").innerText = list.length;
+      container.innerHTML = "";
+
+      if (list.length === 0) {
+        container.innerHTML = `
+          <div style="text-align:center; padding:30px 10px; color:var(--text-muted); font-size:13px;">
+            <i class="fa-regular fa-folder-open" style="font-size:24px; margin-bottom:8px; display:block;"></i>
+            아직 직접 저장한 전략이 없습니다.<br>좌측 설정 후 [전략 저장] 버튼을 눌러보세요!
+          </div>
+        `;
+        return;
+      }
+
+      list.forEach(item => {
+        const card = document.createElement("div");
+        card.className = "strategy-card-item";
+        card.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <strong style="color:var(--text-main); font-size:14px;">${item.name}</strong>
+              <small style="color:var(--text-muted); margin-left:6px;">(${item.savedAt})</small>
+            </div>
+            <div style="display:flex; gap:6px;">
+              <button class="btn btn-primary" onclick="applyUserStrategy('${item.id}')" style="padding:4px 10px; font-size:12px;">
+                <i class="fa-solid fa-check"></i> 적용
+              </button>
+              <button class="btn" onclick="deleteUserStrategy('${item.id}')" style="padding:4px 8px; font-size:12px; color:var(--accent-red);">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            </div>
+          </div>
+          ${item.memo ? `<div style="font-size:12px; color:var(--text-sub);">${item.memo}</div>` : ''}
+          <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:2px;">
+            <span class="badge badge-cyan">${item.params.ticker}</span>
+            <span class="badge badge-cyan">${item.params.portions}회 분할</span>
+            <span class="badge badge-amber">기준: ${item.params.secondHalfThresholdPct}% 이하</span>
+            <span class="badge badge-green">익절: +${item.params.targetProfitPct}%</span>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function applyStrategyPreset(presetId) {
+      const p = BUILTIN_PRESETS.find(x => x.id === presetId);
+      if (!p) return;
+      applyStrategyParams(p.params);
+      closeLoadModal();
+      alert(`[${p.name}] 전략이 적용되었습니다!`);
+    }
+
+    function applyUserStrategy(stratId) {
+      const list = getSavedStrategies();
+      const item = list.find(x => x.id === stratId);
+      if (!item) return;
+      applyStrategyParams(item.params);
+      closeLoadModal();
+      alert(`[${item.name}] 전략이 적용되었습니다!`);
+    }
+
+    function deleteUserStrategy(stratId) {
+      if (!confirm("해당 저장 전략을 삭제하시겠습니까?")) return;
+      let list = getSavedStrategies();
+      list = list.filter(x => x.id !== stratId);
+      localStorage.setItem("dca_saved_strategies", JSON.stringify(list));
+      renderMyStrategiesList();
+    }
+
+    function applyStrategyParams(newParams) {
+      if (newParams.ticker) {
+        params.ticker = newParams.ticker;
+        document.getElementById("tickerSelect").value = params.ticker;
+        document.getElementById("dataviewerTickerSelect").value = params.ticker;
+      }
+      if (newParams.portions) {
+        params.portions = newParams.portions;
+        document.getElementById("portionsRange").value = params.portions;
+        document.getElementById("portionsDisplay").innerText = `${params.portions}회차`;
+      }
+      if (newParams.phaseSplitRound) {
+        params.phaseSplitRound = newParams.phaseSplitRound;
+        document.getElementById("splitRoundRange").value = params.phaseSplitRound;
+        updateSplitRoundDisplay();
+      }
+      if (newParams.secondHalfRule) {
+        params.secondHalfRule = newParams.secondHalfRule;
+        document.querySelectorAll('input[name="secondHalfRule"]').forEach(r => {
+          r.checked = (r.value === params.secondHalfRule);
+          r.closest(".radio-card").classList.toggle("active", r.checked);
+        });
+      }
+      if (newParams.secondHalfThresholdPct !== undefined) {
+        params.secondHalfThresholdPct = newParams.secondHalfThresholdPct;
+        document.getElementById("thresholdRange").value = params.secondHalfThresholdPct;
+        updateThresholdDisplay();
+      }
+      if (newParams.targetProfitPct) {
+        params.targetProfitPct = newParams.targetProfitPct;
+        document.getElementById("targetProfitRange").value = params.targetProfitPct;
+        document.getElementById("profitDisplay").innerText = `+${params.targetProfitPct.toFixed(1)}%`;
+      }
+      if (newParams.reinvestProfit !== undefined) {
+        params.reinvestProfit = newParams.reinvestProfit;
+        document.querySelectorAll('input[name="reinvestProfit"]').forEach(r => {
+          r.checked = (r.value === String(params.reinvestProfit));
+          r.closest(".radio-card").classList.toggle("active", r.checked);
+        });
+      }
+      if (newParams.initialCapital) {
+        params.initialCapital = newParams.initialCapital;
+        document.getElementById("initialCapital").value = params.initialCapital;
+        document.getElementById("portionAmountInput").value = Math.round(params.initialCapital / params.portions);
+        updateCapitalUI();
+      }
+
+      loadTickerData(params.ticker);
+    }
+
+    function exportStrategiesJson() {
+      const list = getSavedStrategies();
+      const blob = new Blob([JSON.stringify(list, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `dca_signal_my_strategies_${new Date().toISOString().substring(0,10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+
+    function triggerImportJson() {
+      document.getElementById("importJsonFileInput").click();
+    }
+
+    function handleImportJson(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          if (Array.isArray(parsed)) {
+            const current = getSavedStrategies();
+            const merged = [...parsed, ...current];
+            localStorage.setItem("dca_saved_strategies", JSON.stringify(merged));
+            renderMyStrategiesList();
+            alert(`${parsed.length}개의 전략을 성공적으로 복구/불러왔습니다!`);
+          } else {
+            alert("유효하지 않은 전략 백업 파일 형식입니다.");
+          }
+        } catch (err) {
+          alert("JSON 파일 파싱 실패: " + err);
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    // -------------------------------------------------------------------------
+    // Equity Chart Rendering
+    // -------------------------------------------------------------------------
+    function renderChart() {
+      const ctx = document.getElementById("equityChart").getContext("2d");
+      const curve = latestSimResult.equityCurve;
+      
+      const step = Math.max(1, Math.floor(curve.length / 350));
+      const sampled = [];
+      for (let i = 0; i < curve.length; i += step) {
+        sampled.push(curve[i]);
+      }
+      if (sampled[sampled.length - 1] !== curve[curve.length - 1]) {
+        sampled.push(curve[curve.length - 1]);
+      }
+
+      const labels = sampled.map(p => p.date);
+      const stratData = sampled.map(p => p.equity);
+      const bhData = sampled.map(p => p.bhEquity);
+
+      const gridColor = "rgba(0, 0, 0, 0.05)";
+      const textColor = "#64748b";
+
+      if (equityChartInstance) {
+        equityChartInstance.destroy();
+      }
+
+      equityChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'DCA 분할 적립 전략',
+              data: stratData,
+              borderColor: '#2563eb',
+              backgroundColor: 'rgba(37, 99, 235, 0.08)',
+              borderWidth: 2.2,
+              pointRadius: 0,
+              pointHoverRadius: 5,
+              fill: true,
+              tension: 0.1
+            },
+            {
+              label: 'Buy & Hold 단순 보유',
+              data: bhData,
+              borderColor: '#94a3b8',
+              borderWidth: 1.5,
+              borderDash: [4, 4],
+              pointRadius: 0,
+              pointHoverRadius: 4,
+              fill: false,
+              tension: 0.1
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: {
+            mode: 'index',
+            intersect: false
+          },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: 'rgba(255, 255, 255, 0.95)',
+              titleColor: '#0f172a',
+              bodyColor: '#334155',
+              borderColor: '#e2e8f0',
+              borderWidth: 1,
+              padding: 10,
+              callbacks: {
+                label: function(context) {
+                  let label = context.dataset.label || '';
+                  if (label) label += ': ';
+                  if (context.parsed.y !== null) {
+                    label += Math.round(context.parsed.y).toLocaleString() + '원';
+                  }
+                  return label;
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: { color: gridColor },
+              ticks: {
+                color: textColor,
+                maxTicksLimit: 8,
+                font: { family: 'Outfit', size: 11 }
+              }
+            },
+            y: {
+              grid: { color: gridColor },
+              ticks: {
+                color: textColor,
+                callback: (val) => {
+                  if (val >= 100000000) return (val / 100000000).toFixed(1) + '억원';
+                  if (val >= 10000) return Math.round(val / 10000).toLocaleString() + '만원';
+                  return Math.round(val).toLocaleString() + '원';
+                },
+                font: { family: 'JetBrains Mono', size: 11 }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function exportCsv() {
+      if (!latestSimResult || !latestSimResult.completedCycles) return;
+      let csv = "Cycle,Status,StartDate,EndDate,DurationDays,MaxRounds,Invested(KRW),AvgCost,ExitPrice,NetProfit(KRW),ReturnPct\n";
+      latestSimResult.completedCycles.forEach(c => {
+        csv += `${c.cycleNum},${c.status},${c.startDate},${c.endDate},${c.durationDays},${c.maxRoundsUsed},${Math.round(c.totalInvested)},${c.avgCost.toFixed(4)},${c.exitPrice.toFixed(4)},${Math.round(c.netProfit)},${c.returnPct.toFixed(2)}%\n`;
+      });
+
+      const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `dca_signal_${params.ticker}_cycles_${new Date().toISOString().substring(0,10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+
+    // Auto-switch to data viewer if ?tab=data
+    window.addEventListener("DOMContentLoaded", () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get("tab") === "data") {
+        setTimeout(() => {
+          const btn = document.getElementById("btnTabDataViewer");
+          if (btn) btn.click();
+        }, 300);
+      }
+    });
+  </script>
+</body>
+
+</html>
