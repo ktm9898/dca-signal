@@ -1179,7 +1179,7 @@
             </div>
             <div class="kpi-value" id="kpiCagr">-</div>
             <div class="kpi-subtext">
-              <span>B&H: <strong id="kpiBhCagr">-</strong></span>
+              <span>나스닥100: <strong id="kpiBhCagr">-</strong></span>
             </div>
           </div>
 
@@ -1242,7 +1242,7 @@
               </div>
               <div class="legend-item">
                 <div class="legend-color" style="background:#94a3b8;"></div>
-                <span>단순 보유</span>
+                <span>나스닥100</span>
               </div>
             </div>
           </div>
@@ -1848,7 +1848,20 @@
       const equityCurve = [];
       allTradesList = [];
 
-      const bhShares = initialCapital / (filteredCandles[0].open * (1 + feePct + slippagePct));
+      const isUS = !params.ticker.includes('.KS');
+      const fxRate = isUS ? 1350 : 1;
+
+      // Benchmark: Nasdaq 100 (QQQ)
+      const qqqCandles = (window.DCA_PRESETS && window.DCA_PRESETS['QQQ'] && window.DCA_PRESETS['QQQ'].candles) || [];
+      const qqqMap = new Map();
+      qqqCandles.forEach(c => qqqMap.set(c.date, c.close));
+      const sDateStr = filteredCandles[0].date;
+      let qqqBasePrice = qqqMap.get(sDateStr);
+      if (!qqqBasePrice) {
+        const found = qqqCandles.find(c => c.date >= sDateStr);
+        qqqBasePrice = found ? found.close : (qqqCandles[0] ? qqqCandles[0].close : 100.0);
+      }
+
       let realizedPnlTotal = 0.0;
       let peakEquity = initialCapital;
       let maxDrawdownPct = 0.0;
@@ -1862,7 +1875,7 @@
         const lowP = bar.low;
         const closeP = bar.close;
 
-        avgCost = sharesHeld > 0 ? (totalInvested / sharesHeld) : 0.0;
+        avgCost = sharesHeld > 0 ? ((totalInvested / fxRate) / sharesHeld) : 0.0;
 
         // 1. Take Profit Check
         const targetSellPrice = avgCost > 0 ? avgCost * (1.0 + targetProfitPct / 100.0) : 0.0;
@@ -1878,7 +1891,7 @@
         }
 
         if (isTakeProfit) {
-          const grossRevenue = sharesHeld * exitPrice;
+          const grossRevenue = (sharesHeld * exitPrice) * fxRate;
           const fee = grossRevenue * feePct;
           const netRevenue = grossRevenue - fee;
           const netProfit = netRevenue - totalInvested;
@@ -1982,7 +1995,8 @@
           }
 
           if (budgetToday > 0 && orderFillPrice > 0) {
-            const boughtShares = (budgetToday * (1.0 - feePct)) / orderFillPrice;
+            const budgetAssetCurrency = budgetToday / fxRate;
+            const boughtShares = (budgetAssetCurrency * (1.0 - feePct)) / orderFillPrice;
             if (boughtShares > 0) {
               if (cycleStartDate === null) {
                 cycleStartDate = date;
@@ -1991,7 +2005,7 @@
               sharesHeld += boughtShares;
               totalInvested += budgetToday;
               cycleRound += roundsPurchasedToday;
-              avgCost = totalInvested / sharesHeld;
+              avgCost = (totalInvested / fxRate) / sharesHeld;
 
               // Log Buy Trade in Journal
               const isLumpTrade = (firstHalfRule === "lump" && cycleRound === roundsPurchasedToday);
@@ -2013,10 +2027,11 @@
         }
 
         // 3. Daily Mark to Market
-        const currentSharesVal = sharesHeld * closeP;
+        const currentSharesVal = (sharesHeld * closeP) * fxRate;
         const cashInHand = (cycleBaseCapital - totalInvested) + (currentCapitalPool - cycleBaseCapital) + realizedPnlTotal;
         const totalEquity = cashInHand + currentSharesVal;
-        const bhEquity = bhShares * closeP;
+        const qqqClose = qqqMap.get(date) || qqqBasePrice;
+        const qqqEquity = initialCapital * (qqqClose / qqqBasePrice);
 
         if (totalEquity > peakEquity) peakEquity = totalEquity;
         const ddPct = ((totalEquity - peakEquity) / peakEquity) * 100.0;
@@ -2025,7 +2040,7 @@
         equityCurve.push({
           date: date,
           equity: totalEquity,
-          bhEquity: bhEquity,
+          bhEquity: qqqEquity,
           drawdownPct: ddPct
         });
       }
@@ -2303,9 +2318,8 @@
 
       // Show newest trades first
       const reversedTrades = [...filtered].reverse();
-      const slice = reversedTrades.slice(0, 300); // limit 300 rows for smooth DOM performance
 
-      slice.forEach(t => {
+      reversedTrades.forEach(t => {
         const tr = document.createElement("tr");
         const isSell = t.type.includes("매도");
         const typeBadge = isSell 
@@ -2674,7 +2688,7 @@
               tension: 0.1
             },
             {
-              label: '단순 보유',
+              label: '나스닥100',
               data: bhData,
               borderColor: '#94a3b8',
               borderWidth: 1.5,
