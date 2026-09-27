@@ -1267,9 +1267,7 @@
     // -------------------------------------------------------------------------
     function evaluateProgressAndSignal() {
       // 1. Hero Info
-      const sName = activeStrat.name || `${activeStrat.ticker} 실전 전략`;
-      const displayName = sName.includes(activeStrat.ticker) ? sName : `${sName} (${activeStrat.ticker})`;
-      document.getElementById("heroTicker").innerText = displayName;
+      document.getElementById("heroTicker").innerText = activeStrat.name || `${activeStrat.ticker} 전략`;
       document.getElementById("currentTickerLabel").innerText = activeStrat.ticker;
 
       const sDateStr = activeStrat.startDate || new Date().toISOString().substring(0, 10);
