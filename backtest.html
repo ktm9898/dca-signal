@@ -51,6 +51,10 @@
       --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
     }
 
+    html {
+      scrollbar-gutter: stable;
+    }
+
     * {
       box-sizing: border-box;
       margin: 0;
@@ -61,7 +65,7 @@
       font-family: 'Outfit', 'Noto Sans KR', sans-serif;
       background-color: var(--bg-base);
       color: var(--text-main);
-      line-height: 1.6;
+      line-height: 1.5;
       padding: 0;
       margin: 0;
       min-height: 100vh;
@@ -69,9 +73,12 @@
     }
 
     .container {
-      max-width: 1440px;
+      max-width: 1280px;
       margin: 0 auto;
-      padding: 24px 20px 60px 20px;
+      padding: 16px 20px 60px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
     }
 
     /* Top Navigation Header */
@@ -83,40 +90,37 @@
       background: var(--bg-surface);
       border: 1px solid var(--card-border);
       border-radius: 14px;
-      margin-bottom: 20px;
       box-shadow: var(--shadow-sm);
       flex-wrap: wrap;
-      gap: 12px;
+      gap: 10px;
     }
 
     .brand {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
+      text-decoration: none;
+      color: inherit;
     }
 
     .logo-icon {
-      width: 38px;
-      height: 38px;
-      background: linear-gradient(135deg, #2563eb, #0284c7);
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-indigo));
       border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
       color: white;
-      font-size: 18px;
+      font-size: 17px;
       box-shadow: 0 3px 8px rgba(37, 99, 235, 0.25);
     }
 
-    .brand-text h1 {
+    .brand-title {
       font-size: 18px;
       font-weight: 800;
       letter-spacing: -0.5px;
       color: var(--text-main);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin: 0;
     }
 
     .header-actions {
@@ -219,8 +223,8 @@
     /* Main Layout Grid */
     .dashboard-grid {
       display: grid;
-      grid-template-columns: 370px 1fr;
-      gap: 24px;
+      grid-template-columns: 360px 1fr;
+      gap: 16px;
     }
 
     @media (max-width: 1080px) {
@@ -875,16 +879,13 @@
   <div class="container">
     <!-- Header -->
     <header>
-      <div class="brand">
-        <a href="index.html" style="display:flex; align-items:center; gap:12px; text-decoration:none; color:inherit;">
-          <div class="logo-icon">
-            <i class="fa-solid fa-chart-pie"></i>
-          </div>
-          <div class="brand-text">
-            <h1>DCA Signal</h1>
-          </div>
-        </a>
-      </div>
+      <a href="index.html" class="brand">
+        <div class="logo-icon">
+          <i class="fa-solid fa-chart-pie"></i>
+        </div>
+        <span class="brand-title">DCA Signal</span>
+      </a>
+
       <div class="header-actions">
         <a href="index.html" class="nav-btn">
           <i class="fa-solid fa-gauge-high"></i> 대시보드
