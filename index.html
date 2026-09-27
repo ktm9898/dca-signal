@@ -346,23 +346,119 @@
 
     .signal-body {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
+      flex-direction: column;
       gap: 14px;
     }
 
-    .signal-guide-box {
-      flex: 1;
-      background: rgba(255, 255, 255, 0.85);
-      border: 1px solid rgba(0, 0, 0, 0.06);
+    /* 2-Ticket Action Guide Layout */
+    .tickets-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      width: 100%;
+    }
+
+    @media (max-width: 768px) {
+      .tickets-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .ticket-card {
+      background: #ffffff;
+      border: 1px solid var(--card-border);
       border-radius: 12px;
-      padding: 14px;
-      font-size: 13px;
-      color: var(--text-sub);
+      padding: 16px;
       display: flex;
       flex-direction: column;
-      gap: 5px;
+      gap: 12px;
+      box-shadow: var(--shadow-sm);
+      position: relative;
+    }
+
+    .ticket-card.ticket-sell {
+      border-left: 4px solid var(--accent-red);
+      background: linear-gradient(135deg, #ffffff 0%, #fff8f8 100%);
+    }
+
+    .ticket-card.ticket-buy {
+      border-left: 4px solid var(--accent-blue);
+      background: linear-gradient(135deg, #ffffff 0%, #f8faff 100%);
+    }
+
+    .ticket-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .ticket-tag {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .tag-sell { background: #fee2e2; color: #dc2626; }
+    .tag-buy { background: #dbeafe; color: #2563eb; }
+
+    .ticket-price-box {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .ticket-price-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .ticket-price-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--text-main);
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+    }
+
+    .ticket-sub-delta {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--accent-green);
+    }
+
+    .ticket-details {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding-top: 10px;
+      border-top: 1px dashed var(--card-border);
+      font-size: 12px;
+    }
+
+    .ticket-detail-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--text-sub);
+    }
+
+    .ticket-detail-row strong {
+      color: var(--text-main);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .ticket-note {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+      line-height: 1.4;
     }
 
     /* Progress Bar */
@@ -597,14 +693,15 @@
       </div>
     </div>
 
-    <!-- Signal Alert Card (Live Signal Engine) -->
+    <!-- Trading Guide Card (매매 가이드) -->
     <div id="signalCard" class="signal-card">
       <div class="signal-top-row">
         <div class="signal-badge-title">
           <div class="signal-pulse" id="signalPulse"></div>
           <div class="signal-status-text" id="signalStatusText">
-            오늘의 신호: 정량 매수
+            <i class="fa-solid fa-clipboard-check" style="color:var(--accent-blue);"></i> 매매 가이드
           </div>
+          <span id="guidePhaseBadge" class="badge badge-blue">진도 계산 중</span>
         </div>
         <div class="price-pill">
           <span id="currentTickerLabel">TQQQ</span>
@@ -614,21 +711,83 @@
       </div>
 
       <div class="signal-body">
-        <div class="signal-guide-box">
-          <div style="font-weight: 700; color: var(--text-main);" id="signalGuideTitle">
-            진도 계산 중...
+        <!-- 2-Ticket Grid for Bedtime Orders -->
+        <div class="tickets-grid">
+          <!-- Ticket 1: Limit Sell Order -->
+          <div class="ticket-card ticket-sell">
+            <div class="ticket-head">
+              <span class="ticket-tag tag-sell">
+                <i class="fa-solid fa-arrow-trend-up"></i> 지정가 매도 예약
+              </span>
+              <span style="font-size: 11px; color: var(--text-muted);">장중 체결</span>
+            </div>
+            <div class="ticket-price-box">
+              <div class="ticket-price-label">익절 매도 목표 단가 (지정가)</div>
+              <div class="ticket-price-val">
+                <span id="ticketSellPrice">$0.00</span>
+                <span class="ticket-sub-delta" id="ticketSellProfitPct">+10.0%</span>
+              </div>
+            </div>
+            <div class="ticket-details">
+              <div class="ticket-detail-row">
+                <span>주문 수량</span>
+                <strong id="ticketSellQty">보유 전량</strong>
+              </div>
+              <div class="ticket-detail-row">
+                <span>주문 유형</span>
+                <strong>지정가 (Limit)</strong>
+              </div>
+              <div class="ticket-note">
+                * 장중 목표가 터치 시 자동 전량 익절 체결됩니다.
+              </div>
+            </div>
           </div>
-          <div id="signalGuideDesc">
-            1회 배정금 <strong>250,000원</strong>
+
+          <!-- Ticket 2: LOC Buy Order -->
+          <div class="ticket-card ticket-buy">
+            <div class="ticket-head">
+              <span class="ticket-tag tag-buy">
+                <i class="fa-solid fa-cart-shopping"></i> LOC 종가 매수 예약
+              </span>
+              <span style="font-size: 11px; color: var(--accent-blue); font-weight: 600;" id="ticketBuyConditionTag">종가 체결</span>
+            </div>
+            <div class="ticket-price-box">
+              <div class="ticket-price-label" id="ticketBuyPriceLabel">LOC 매수 기준 단가</div>
+              <div class="ticket-price-val">
+                <span id="ticketBuyPrice">$0.00</span>
+                <span style="font-size: 11px; color: var(--text-muted); font-weight: 500;" id="ticketBuyPriceSub">(최근종가 +10%)</span>
+              </div>
+            </div>
+            <div class="ticket-details">
+              <div class="ticket-detail-row">
+                <span>주문 금액</span>
+                <strong id="ticketBuyAmount">1회분 0원</strong>
+              </div>
+              <div class="ticket-detail-row">
+                <span>예상 수량</span>
+                <strong id="ticketBuyQty">약 0주</strong>
+              </div>
+              <div class="ticket-note" id="ticketBuyNote">
+                * 전반부 기계적 매수: 넉넉한 상한선 입력으로 당일 <strong>실제 마감 종가</strong>에 100% 무조건 체결됩니다.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Progress and Actions -->
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--text-sub);">
+            <span id="signalProgressLabel">사이클 진도: 0 / 40회차</span>
+            <span id="signalProgressPercent">0%</span>
           </div>
           <div class="progress-bar-container">
             <div id="signalProgressBar" class="progress-bar-fill" style="width: 0%;"></div>
           </div>
         </div>
 
-        <div id="sellActionArea" style="display: none;">
-          <button class="btn btn-success" style="padding: 10px 16px; font-size: 13px;" onclick="handleExecuteSell()">
-            <i class="fa-solid fa-flag-checkered"></i> 목표 익절 완료 (사이클 리셋)
+        <div id="sellActionArea" style="display: none; margin-top: 4px;">
+          <button class="btn btn-success" style="padding: 10px 16px; font-size: 13px; width: 100%; justify-content: center;" onclick="handleExecuteSell()">
+            <i class="fa-solid fa-flag-checkered"></i> 목표 익절 완료 (새 사이클 리셋)
           </button>
         </div>
       </div>
@@ -947,62 +1106,80 @@
       const targetPrice = avgPrice * (1 + activeStrat.targetProfitPct / 100.0);
       const targetDelta = ((targetPrice - closePrice) / closePrice) * 100.0;
 
-      // 4. Determine Signal
+      // 4. Update Trading Guide Tickets & Signals
       const signalCard = document.getElementById("signalCard");
       const signalPulse = document.getElementById("signalPulse");
-      const signalStatusText = document.getElementById("signalStatusText");
-      const signalGuideTitle = document.getElementById("signalGuideTitle");
-      const signalGuideDesc = document.getElementById("signalGuideDesc");
+      const guideBadge = document.getElementById("guidePhaseBadge");
       const sellArea = document.getElementById("sellActionArea");
 
       signalCard.className = "signal-card";
       sellArea.style.display = "none";
 
+      // Ticket 1: Limit Sell
+      document.getElementById("ticketSellPrice").innerText = fmtUSD(targetPrice);
+      document.getElementById("ticketSellProfitPct").innerText = `+${activeStrat.targetProfitPct.toFixed(1)}%`;
+      document.getElementById("ticketSellQty").innerText = totalShares > 0 ? `보유 전량 (${Math.round(totalShares)}주)` : "보유 전량";
+
+      // Ticket 2: LOC Buy
+      const estBuyShares = Math.max(1, Math.floor((portionCapital / 1350) / closePrice));
+      document.getElementById("ticketBuyAmount").innerText = `1회분 ${fmtKRW(portionCapital)}`;
+      document.getElementById("ticketBuyQty").innerText = `약 ${estBuyShares}주`;
+
       if (pnlPct >= activeStrat.targetProfitPct) {
         // [SELL] Target Reached!
         signalCard.classList.add("sell");
         signalPulse.style.backgroundColor = "var(--accent-red)";
-        signalStatusText.innerHTML = `<i class="fa-solid fa-flag-checkered" style="color:var(--accent-red);"></i> 오늘의 신호: 목표 도달! 전량 익절`;
-        signalGuideTitle.innerText = `목표 수익률(+${activeStrat.targetProfitPct}%) 달성! (현재 +${pnlPct.toFixed(2)}%)`;
-        signalGuideDesc.innerHTML = `전량 익절 매도 후 아래 버튼을 눌러 다음 사이클로 리셋하세요.`;
+        guideBadge.className = "badge badge-red";
+        guideBadge.innerText = `목표 달성 (+${pnlPct.toFixed(2)}%)`;
+
+        document.getElementById("ticketBuyConditionTag").innerText = "매수 보류";
+        document.getElementById("ticketBuyPrice").innerText = "익절 우선";
+        document.getElementById("ticketBuyPriceSub").innerText = "(목표 도달)";
+        document.getElementById("ticketBuyNote").innerHTML = `* 목표 수익률(+${activeStrat.targetProfitPct}%)에 도달했습니다. 추가 매수를 중단하고 전량 매도하세요.`;
+
         sellArea.style.display = "block";
 
       } else if (curRound <= activeStrat.phaseSplitRound) {
-        // [BUY] First Half
+        // [BUY] First Half (Mechanical 100% LOC execution at close +10%)
         signalCard.classList.add("buy");
         signalPulse.style.backgroundColor = "var(--accent-blue)";
-        signalStatusText.innerHTML = `<i class="fa-solid fa-circle-check" style="color:var(--accent-blue);"></i> 오늘의 신호: 정량 매수 (${curRound}회차)`;
-        signalGuideTitle.innerText = `전반부 정량 매수 구간 (${curRound} / ${activeStrat.phaseSplitRound}회차 진도)`;
-        signalGuideDesc.innerHTML = `오늘 1회 배정금 <strong>${fmtKRW(portionCapital)}</strong> 매수를 진행합니다. (약 ${Math.max(1, Math.floor((portionCapital/1350)/closePrice))}주)`;
+        guideBadge.className = "badge badge-blue";
+        guideBadge.innerText = `전반부 ${curRound}/${activeStrat.phaseSplitRound}회차 (정량 매수)`;
+
+        const locPrice = closePrice * 1.10;
+        document.getElementById("ticketBuyConditionTag").innerText = "100% 체결";
+        document.getElementById("ticketBuyPrice").innerText = fmtUSD(locPrice);
+        document.getElementById("ticketBuyPriceSub").innerText = "(최근종가 +10%)";
+        document.getElementById("ticketBuyNote").innerHTML = `* 전반부 기계적 매수: 넉넉한 상한선(+10%)을 적어두면 당일 <strong>실제 마감 종가</strong>에 100% 무조건 체결됩니다.`;
 
       } else if (curRound <= activeStrat.portions) {
-        // Second Half (Conditional)
+        // [BUY] Second Half (Conditional buy below avgPrice - threshold%)
         const thresholdPrice = avgPrice * (1 + activeStrat.lateThresholdPct / 100.0);
-        const isBelow = closePrice <= thresholdPrice;
+        signalCard.classList.add("buy");
+        signalPulse.style.backgroundColor = "var(--accent-green)";
+        guideBadge.className = "badge badge-green";
+        guideBadge.innerText = `후반부 ${curRound}/${activeStrat.portions}회차 (조건부 매수)`;
 
-        if (activeStrat.lateMode === "always" || isBelow) {
-          signalCard.classList.add("buy");
-          signalPulse.style.backgroundColor = "var(--accent-green)";
-          signalStatusText.innerHTML = `<i class="fa-solid fa-cart-shopping" style="color:var(--accent-green);"></i> 오늘의 신호: 조건부 매수 (${curRound}회차)`;
-          signalGuideTitle.innerText = `후반부 저점 매수 기회 (${curRound} / ${activeStrat.portions}회차 진도)`;
-          signalGuideDesc.innerHTML = `현재가(${fmtUSD(closePrice)})가 평단가 대비 조건(${activeStrat.lateThresholdPct}%, ${fmtUSD(thresholdPrice)}) 이하이므로 1회분 매수합니다.`;
-        } else {
-          signalCard.classList.add("wait");
-          signalPulse.style.backgroundColor = "var(--text-muted)";
-          signalStatusText.innerHTML = `<i class="fa-solid fa-hand" style="color:var(--text-muted);"></i> 오늘의 신호: 매수 스킵 (현금 관망)`;
-          signalGuideTitle.innerText = `후반부 기준 미달 (${curRound}회차 구간)`;
-          signalGuideDesc.innerHTML = `현재가가 평단가 기준선(${fmtUSD(thresholdPrice)})을 초과하여 오늘은 매수를 건너뛰고 현금을 보존합니다.`;
-        }
+        document.getElementById("ticketBuyConditionTag").innerText = "조건부 체결";
+        document.getElementById("ticketBuyPrice").innerText = fmtUSD(thresholdPrice);
+        document.getElementById("ticketBuyPriceSub").innerText = `(평단가 ${activeStrat.lateThresholdPct}%)`;
+        document.getElementById("ticketBuyNote").innerHTML = `* 후반부 저점 매수: 마감 종가가 기준단가(<strong>${fmtUSD(thresholdPrice)}</strong>) 이하일 때만 당일 종가로 자동 체결됩니다.`;
 
       } else {
         // [HOLD] Portions Exhausted
         signalCard.classList.add("wait");
         signalPulse.style.backgroundColor = "var(--accent-purple)";
-        signalStatusText.innerHTML = `<i class="fa-solid fa-shield-halved" style="color:var(--accent-purple);"></i> 오늘의 신호: 분할 소진 (익절 대기)`;
-        signalGuideTitle.innerText = `총 ${activeStrat.portions}회 분할이 모두 진행되었습니다.`;
-        signalGuideDesc.innerHTML = `추가 매수를 중단하고 목표 익절가(${fmtUSD(targetPrice)})까지 보유합니다.`;
+        guideBadge.className = "badge badge-purple";
+        guideBadge.innerText = `분할 소진 완료 (${activeStrat.portions}회)`;
+
+        document.getElementById("ticketBuyConditionTag").innerText = "매수 종료";
+        document.getElementById("ticketBuyPrice").innerText = "매수 중단";
+        document.getElementById("ticketBuyPriceSub").innerText = "(회차 소진)";
+        document.getElementById("ticketBuyNote").innerHTML = `* 총 ${activeStrat.portions}회 분할이 모두 진행되었습니다. 추가 매수 없이 목표 익절가(${fmtUSD(targetPrice)})까지 보유합니다.`;
       }
 
+      document.getElementById("signalProgressLabel").innerText = `사이클 진도: ${curRound} / ${activeStrat.portions}회차`;
+      document.getElementById("signalProgressPercent").innerText = `${progressPct}%`;
       document.getElementById("signalProgressBar").style.width = `${progressPct}%`;
 
       // 5. Update KPI Cards

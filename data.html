@@ -485,9 +485,9 @@
       tBody.innerHTML = "";
 
       const reversed = [...displayCandles].reverse();
-      reversed.forEach((c, idx) => {
-        const nextIdx = reversed.length - 1 - idx;
-        const prevClose = nextIdx > 0 ? candles[nextIdx - 1].close : c.open;
+      reversed.forEach((c) => {
+        const origIdx = candles.indexOf(c);
+        const prevClose = origIdx > 0 ? candles[origIdx - 1].close : c.open;
         const chgPct = ((c.close - prevClose) / prevClose) * 100.0;
         const chgBadge = chgPct >= 0 
           ? `<span class="badge badge-green">+${chgPct.toFixed(2)}%</span>`
