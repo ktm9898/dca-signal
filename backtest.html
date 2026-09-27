@@ -1376,14 +1376,66 @@
       return `$${val.toFixed(2)}`;
     }
 
-    // Initialize UI on Load
-    document.addEventListener("DOMContentLoaded", () => {
+    // Initialize UI on Load: Load Current Active Strategy
+    document.addEventListener("DOMContentLoaded", async () => {
       initEventListeners();
-      updateCapitalUI();
-      updateThresholdDisplay();
-      updateSplitRoundDisplay();
-      loadTickerData(params.ticker);
+
+      let hasLoadedActive = false;
+      try {
+        const savedStrat = localStorage.getItem("dca_active_strategy");
+        if (savedStrat) {
+          const s = JSON.parse(savedStrat);
+          if (s && s.ticker) {
+            applyStrategyParams({
+              ticker: s.ticker,
+              initialCapital: s.seedCapital,
+              portions: s.portions,
+              phaseSplitRound: s.phaseSplitRound,
+              secondHalfRule: s.lateMode === "always" ? "always" : "below_threshold",
+              secondHalfThresholdPct: s.lateThresholdPct != null ? s.lateThresholdPct : 0,
+              targetProfitPct: s.targetProfitPct,
+              reinvestProfit: (s.compoundMode === "compound")
+            });
+            hasLoadedActive = true;
+          }
+        }
+      } catch (e) {
+        console.warn("Local active strategy load error", e);
+      }
+
+      if (!hasLoadedActive) {
+        updateCapitalUI();
+        updateThresholdDisplay();
+        updateSplitRoundDisplay();
+        loadTickerData(params.ticker);
+      }
+
+      // Sync latest active strategy from cloud
+      syncActiveStrategyFromCloud();
     });
+
+    async function syncActiveStrategyFromCloud() {
+      if (!GAS_WEBAPP_URL) return;
+      try {
+        const res = await fetch(`${GAS_WEBAPP_URL}?action=get_active_strategy`);
+        const data = await res.json();
+        if (data.success && data.activeStrategy) {
+          const s = data.activeStrategy;
+          applyStrategyParams({
+            ticker: s.ticker,
+            initialCapital: s.seedCapital,
+            portions: s.portions,
+            phaseSplitRound: s.phaseSplitRound,
+            secondHalfRule: s.lateMode === "always" ? "always" : "below_threshold",
+            secondHalfThresholdPct: s.lateThresholdPct != null ? s.lateThresholdPct : 0,
+            targetProfitPct: s.targetProfitPct,
+            reinvestProfit: (s.compoundMode === "compound")
+          });
+        }
+      } catch (e) {
+        console.warn("Cloud active strategy sync error", e);
+      }
+    }
 
     function initEventListeners() {
       // Ticker select
