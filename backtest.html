@@ -1376,12 +1376,6 @@
       return `$${val.toFixed(2)}`;
     }
 
-    function sanitizeProfitPct(val) {
-      const n = parseFloat(val);
-      if (isNaN(n) || n <= 0 || n > 200) return 10.0;
-      return n;
-    }
-
     // Initialize UI on Load: Load Current Active Strategy
     document.addEventListener("DOMContentLoaded", async () => {
       initEventListeners();
@@ -1392,8 +1386,6 @@
         if (savedStrat) {
           const s = JSON.parse(savedStrat);
           if (s && s.ticker) {
-            s.targetProfitPct = sanitizeProfitPct(s.targetProfitPct);
-            localStorage.setItem("dca_active_strategy", JSON.stringify(s)); // 오염된 값 즉시 정화
             applyStrategyParams({
               ticker: s.ticker,
               initialCapital: s.seedCapital,
@@ -1401,7 +1393,7 @@
               phaseSplitRound: s.phaseSplitRound,
               secondHalfRule: s.lateMode === "always" ? "always" : "below_threshold",
               secondHalfThresholdPct: s.lateThresholdPct != null ? s.lateThresholdPct : 0,
-              targetProfitPct: s.targetProfitPct,
+              targetProfitPct: Number(s.targetProfitPct) || 10,
               reinvestProfit: (s.compoundMode === "compound")
             });
             hasLoadedActive = true;
@@ -1436,7 +1428,7 @@
             phaseSplitRound: s.phaseSplitRound,
             secondHalfRule: s.lateMode === "always" ? "always" : "below_threshold",
             secondHalfThresholdPct: s.lateThresholdPct != null ? s.lateThresholdPct : 0,
-            targetProfitPct: sanitizeProfitPct(s.targetProfitPct),
+            targetProfitPct: Number(s.targetProfitPct) || 10,
             reinvestProfit: (s.compoundMode === "compound")
           });
         }
@@ -2458,7 +2450,7 @@
         updateThresholdDisplay();
       }
       if (newParams.targetProfitPct !== undefined) {
-        params.targetProfitPct = sanitizeProfitPct(newParams.targetProfitPct);
+        params.targetProfitPct = Number(newParams.targetProfitPct) || 10;
         const r = document.getElementById("targetProfitRange");
         if (r) r.value = params.targetProfitPct;
         const d = document.getElementById("profitDisplay");

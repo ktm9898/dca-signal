@@ -126,10 +126,31 @@ function getStandardizedSlotsSheet(ss) {
     }
 
     slotsSheet.clear();
+    slotsSheet.clearFormats();
     slotsSheet.getRange(1, 1, 1, standardHeaders.length).setValues([standardHeaders]);
     slotsSheet.getRange(1, 1, 1, standardHeaders.length).setFontWeight("bold").setBackground("#dbeafe");
     if (newRows.length > 0) {
       slotsSheet.getRange(2, 1, newRows.length, standardHeaders.length).setValues(newRows);
+    }
+  }
+
+  // 12번째 열(TargetProfitPct, L열)의 셀 서식을 명시적으로 숫자로 지정
+  slotsSheet.getRange("L:L").setNumberFormat("0.##");
+
+  const totalRows = slotsSheet.getLastRow();
+  if (totalRows > 1) {
+    const profitCol = slotsSheet.getRange(2, 12, totalRows - 1, 1);
+    const pVals = profitCol.getValues();
+    let changed = false;
+    for (let i = 0; i < pVals.length; i++) {
+      // 기존 날짜 서식으로 인해 Date 객체로 변환되어 저장되어 있던 셀은 숫자로 재설정
+      if (pVals[i][0] instanceof Date) {
+        pVals[i][0] = 10;
+        changed = true;
+      }
+    }
+    if (changed) {
+      profitCol.setValues(pVals);
     }
   }
 
@@ -285,7 +306,7 @@ function doGet(e) {
         phaseSplitRound: Number(getCol(r, "phasesplitround", 8, 0)) || 0,
         lateMode: String(getCol(r, "latemode", 9, "cond")),
         lateThresholdPct: Number(getCol(r, "latethresholdpct", 10, 0)) || 0,
-        targetProfitPct: sanitizeProfitSafe(getCol(r, "targetprofitpct", 11, 10)),
+        targetProfitPct: Number(getCol(r, "targetprofitpct", 11, 10)) || 10,
         compoundMode: String(getCol(r, "compoundmode", 12, "simple")),
         currentCycleNo: Number(getCol(r, "currentcycleno", 13, 1)) || 1,
         updatedAt: formatDateVal(getCol(r, "updatedat", 14, ""))
@@ -413,7 +434,7 @@ function doPost(e) {
         Number(p.phaseSplitRound) || 0,
         p.lateMode || "cond",
         p.lateThresholdPct != null ? Number(p.lateThresholdPct) : 0,
-        sanitizeProfitSafe(p.targetProfitPct),
+        Number(p.targetProfitPct) || 10,
         p.compoundMode || "simple",
         Number(p.currentCycleNo) || 1,
         nowStr
@@ -421,8 +442,10 @@ function doPost(e) {
 
       if (targetRow > 0) {
         slotsSheet.getRange(targetRow, 1, 1, 15).setValues([rowValues]);
+        slotsSheet.getRange(targetRow, 12).setNumberFormat("0.##");
       } else {
         slotsSheet.appendRow(rowValues);
+        slotsSheet.getRange(slotsSheet.getLastRow(), 12).setNumberFormat("0.##");
       }
 
       return respondJSON({ success: true, message: `슬롯 ${slotId}에 전략이 저장되었습니다.` });
@@ -516,21 +539,4 @@ function formatDateVal(val) {
     return Utilities.formatDate(val, "GMT+9", "yyyy-MM-dd HH:mm:ss");
   }
   return String(val || "");
-}
-
-/**
- * 목표 익절률 정화 함수
- * 구글 시트의 날짜 서식 오적용으로 인한 1900년 Date 객체 밀리초(-2208328072000)를 원천 복원 및 방어합니다.
- */
-function sanitizeProfitSafe(val) {
-  if (val == null || val === "") return 10.0;
-  if (val instanceof Date) {
-    const epoch = new Date(1899, 11, 30).getTime();
-    const days = Math.round((val.getTime() - epoch) / (24 * 3600 * 1000));
-    if (days > 0 && days <= 200) return days;
-    return 10.0;
-  }
-  const n = Number(val);
-  if (isNaN(n) || n <= 0 || n > 200) return 10.0;
-  return n;
 }
