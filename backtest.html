@@ -2309,19 +2309,31 @@
       cachedSheetSlots.forEach(s => {
         const card = document.createElement("div");
         card.className = "strategy-card-item";
+        const activeBadge = s.isActive 
+          ? `<span class="badge badge-green" style="margin-left:6px;"><i class="fa-solid fa-bolt"></i> 실전 가동 중</span>` 
+          : '';
+
         card.innerHTML = `
-          <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
             <div>
               <span class="badge badge-cyan" style="margin-right:4px;">슬롯 ${s.slotId}</span>
               <strong style="color:var(--text-main); font-size:14px;">${s.name}</strong>
+              ${activeBadge}
               <small style="color:var(--text-muted); margin-left:6px;">(${s.updatedAt || ""})</small>
             </div>
-            <button class="btn btn-primary" onclick="applySheetSlot(${s.slotId})" style="padding:4px 10px; font-size:12px;">
-              <i class="fa-solid fa-check"></i> 적용
-            </button>
+            <div style="display:flex; gap:6px;">
+              <button class="btn" onclick="applySheetSlot(${s.slotId})" style="padding:4px 10px; font-size:12px;" title="백테스트 파라미터로 불러오기">
+                <i class="fa-solid fa-arrow-down"></i> 불러오기
+              </button>
+              ${!s.isActive ? `
+                <button class="btn btn-primary" onclick="setSlotAsActive(${s.slotId})" style="padding:4px 10px; font-size:12px;" title="실전 대시보드 가동 전략으로 전환">
+                  <i class="fa-solid fa-bolt"></i> 실전 적용
+                </button>
+              ` : ''}
+            </div>
           </div>
-          ${s.memo ? `<div style="font-size:12px; color:var(--text-sub);">${s.memo}</div>` : ''}
-          <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:2px;">
+          ${s.memo ? `<div style="font-size:12px; color:var(--text-sub); margin-top:4px;">${s.memo}</div>` : ''}
+          <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:4px;">
             <span class="badge badge-cyan">${s.ticker}</span>
             <span class="badge badge-cyan">${s.portions}회차</span>
             <span class="badge badge-amber">기준: ${s.lateThresholdPct}%</span>
@@ -2331,6 +2343,28 @@
         `;
         container.appendChild(card);
       });
+    }
+
+    async function setSlotAsActive(slotId) {
+      const s = cachedSheetSlots.find(x => x.slotId === slotId);
+      if (!s) return;
+      if (!confirm(`[슬롯 ${slotId}: ${s.name}] 전략을 실전 대시보드 가동 전략으로 전환하시겠습니까?`)) return;
+
+      if (GAS_WEBAPP_URL) {
+        try {
+          await fetch(GAS_WEBAPP_URL, {
+            method: "POST",
+            mode: "no-cors",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: "set_active_slot", slotId: slotId })
+          });
+        } catch (e) {
+          console.warn("set_active_slot error", e);
+        }
+      }
+
+      closeLoadModal();
+      alert(`[슬롯 ${slotId}: ${s.name}] 전략이 실전 가동 전략으로 활성화되었습니다!`);
     }
 
     function applySheetSlot(slotId) {
@@ -2347,7 +2381,7 @@
         reinvestProfit: s.compoundMode === "compound"
       });
       closeLoadModal();
-      alert(`[슬롯 ${slotId}: ${s.name}] 전략이 적용되었습니다!`);
+      alert(`[슬롯 ${slotId}: ${s.name}] 전략이 백테스트에 로드되었습니다!`);
     }
 
     function applyStrategyParams(newParams) {
