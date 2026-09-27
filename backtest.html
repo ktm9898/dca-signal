@@ -1465,16 +1465,13 @@
 
     function initEventListeners() {
       // Ticker select
-      document.getElementById("tickerSelect").addEventListener("change", (e) => {
-        params.ticker = e.target.value;
-        document.getElementById("dataviewerTickerSelect").value = params.ticker;
-        loadTickerData(params.ticker);
-      });
-
-      // Data viewer ticker select
-      document.getElementById("dataviewerTickerSelect").addEventListener("change", (e) => {
-        renderDataViewerTab(e.target.value);
-      });
+      const tickerSelect = document.getElementById("tickerSelect");
+      if (tickerSelect) {
+        tickerSelect.addEventListener("change", (e) => {
+          params.ticker = e.target.value;
+          loadTickerData(params.ticker);
+        });
+      }
 
       // Period pills
       document.querySelectorAll(".preset-pill[data-period]").forEach(pill => {
@@ -1485,107 +1482,114 @@
 
           const customBox = document.getElementById("customDateBox");
           if (params.period === "custom") {
-            customBox.style.display = "grid";
+            if (customBox) customBox.style.display = "grid";
           } else {
-            customBox.style.display = "none";
+            if (customBox) customBox.style.display = "none";
           }
           runSimulation();
         });
       });
 
-      // Data viewer range pills
-      document.querySelectorAll(".preset-pill[data-vrange]").forEach(pill => {
-        pill.addEventListener("click", () => {
-          document.querySelectorAll(".preset-pill[data-vrange]").forEach(p => p.classList.remove("active"));
-          pill.classList.add("active");
-          currentViewerRange = pill.getAttribute("data-vrange");
-          renderDataViewerTab(document.getElementById("dataviewerTickerSelect").value);
-        });
-      });
-
       // Custom date inputs
-      document.getElementById("startDateInput").addEventListener("change", (e) => {
-        params.customStartDate = e.target.value;
-        if (params.period === "custom") runSimulation();
-      });
-      document.getElementById("endDateInput").addEventListener("change", (e) => {
-        params.customEndDate = e.target.value;
-        if (params.period === "custom") runSimulation();
-      });
+      const sDateInput = document.getElementById("startDateInput");
+      if (sDateInput) {
+        sDateInput.addEventListener("change", (e) => {
+          params.customStartDate = e.target.value;
+          if (params.period === "custom") runSimulation();
+        });
+      }
+      const eDateInput = document.getElementById("endDateInput");
+      if (eDateInput) {
+        eDateInput.addEventListener("change", (e) => {
+          params.customEndDate = e.target.value;
+          if (params.period === "custom") runSimulation();
+        });
+      }
 
       // Dual Capital Inputs: Total Capital & Portion Amount
       const capitalInput = document.getElementById("initialCapital");
       const portionInput = document.getElementById("portionAmountInput");
 
-      capitalInput.addEventListener("input", (e) => {
-        const cap = parseFloat(e.target.value) || 10000000;
-        params.initialCapital = cap;
-        const pAmt = Math.round(cap / params.portions);
-        portionInput.value = pAmt;
-        updateCapitalUI();
-        runSimulation();
-      });
+      if (capitalInput && portionInput) {
+        capitalInput.addEventListener("input", (e) => {
+          const cap = parseFloat(e.target.value) || 10000000;
+          params.initialCapital = cap;
+          const pAmt = Math.round(cap / params.portions);
+          portionInput.value = pAmt;
+          updateCapitalUI();
+          runSimulation();
+        });
 
-      portionInput.addEventListener("input", (e) => {
-        const pAmt = parseFloat(e.target.value) || 250000;
-        const cap = pAmt * params.portions;
-        params.initialCapital = cap;
-        capitalInput.value = cap;
-        updateCapitalUI();
-        runSimulation();
-      });
+        portionInput.addEventListener("input", (e) => {
+          const pAmt = parseFloat(e.target.value) || 250000;
+          const cap = pAmt * params.portions;
+          params.initialCapital = cap;
+          capitalInput.value = cap;
+          updateCapitalUI();
+          runSimulation();
+        });
+      }
 
       // Portions Range (up to 100)
       const portionsRange = document.getElementById("portionsRange");
-      portionsRange.addEventListener("input", (e) => {
-        params.portions = parseInt(e.target.value);
-        document.getElementById("portionsDisplay").innerText = `${params.portions}회차`;
-        
-        // Auto adjust split round max
-        const splitRoundRange = document.getElementById("splitRoundRange");
-        splitRoundRange.max = params.portions;
-        if (params.phaseSplitRound > params.portions) {
-          params.phaseSplitRound = Math.floor(params.portions / 2);
-          splitRoundRange.value = params.phaseSplitRound;
-        }
+      if (portionsRange) {
+        portionsRange.addEventListener("input", (e) => {
+          params.portions = parseInt(e.target.value);
+          const pDisp = document.getElementById("portionsDisplay");
+          if (pDisp) pDisp.innerText = `${params.portions}회차`;
+          
+          // Auto adjust split round max
+          const splitRoundRange = document.getElementById("splitRoundRange");
+          if (splitRoundRange) {
+            splitRoundRange.max = params.portions;
+            if (params.phaseSplitRound > params.portions) {
+              params.phaseSplitRound = Math.floor(params.portions / 2);
+              splitRoundRange.value = params.phaseSplitRound;
+            }
+          }
 
-        // Keep 1회당 매수금액 fixed and adjust total capital
-        const pAmt = parseFloat(portionInput.value) || 250000;
-        params.initialCapital = pAmt * params.portions;
-        capitalInput.value = params.initialCapital;
+          // Keep 1회당 매수금액 fixed and adjust total capital
+          if (portionInput && capitalInput) {
+            const pAmt = parseFloat(portionInput.value) || 250000;
+            params.initialCapital = pAmt * params.portions;
+            capitalInput.value = params.initialCapital;
+          }
 
-        updateSplitRoundDisplay();
-        updateCapitalUI();
-        runSimulation();
-      });
+          updateSplitRoundDisplay();
+          updateCapitalUI();
+          runSimulation();
+        });
+      }
 
       // Split Round Range
       const splitRoundRange = document.getElementById("splitRoundRange");
-      splitRoundRange.addEventListener("input", (e) => {
-        params.phaseSplitRound = parseInt(e.target.value);
-        updateSplitRoundDisplay();
-        runSimulation();
-      });
+      if (splitRoundRange) {
+        splitRoundRange.addEventListener("input", (e) => {
+          params.phaseSplitRound = parseInt(e.target.value);
+          updateSplitRoundDisplay();
+          runSimulation();
+        });
+      }
 
       // Second Half Rule Radio Group
       setupRadioGroup("secondHalfRule", (val) => {
         params.secondHalfRule = val;
         const box = document.getElementById("thresholdControlBox");
-        if (val === "always") {
-          box.style.display = "none";
-        } else {
-          box.style.display = "flex";
+        if (box) {
+          box.style.display = (val === "always") ? "none" : "flex";
         }
         runSimulation();
       });
 
       // Second Half Threshold Slider (-30% ~ +10%)
       const thresholdRange = document.getElementById("thresholdRange");
-      thresholdRange.addEventListener("input", (e) => {
-        params.secondHalfThresholdPct = parseFloat(e.target.value);
-        updateThresholdDisplay();
-        runSimulation();
-      });
+      if (thresholdRange) {
+        thresholdRange.addEventListener("input", (e) => {
+          params.secondHalfThresholdPct = parseFloat(e.target.value);
+          updateThresholdDisplay();
+          runSimulation();
+        });
+      }
 
       // Reinvest Profit Radio Group
       setupRadioGroup("reinvestProfit", (val) => {
@@ -1595,11 +1599,14 @@
 
       // Target Profit Range
       const targetProfitRange = document.getElementById("targetProfitRange");
-      targetProfitRange.addEventListener("input", (e) => {
-        params.targetProfitPct = parseFloat(e.target.value);
-        document.getElementById("profitDisplay").innerText = `+${params.targetProfitPct.toFixed(1)}%`;
-        runSimulation();
-      });
+      if (targetProfitRange) {
+        targetProfitRange.addEventListener("input", (e) => {
+          params.targetProfitPct = parseFloat(e.target.value);
+          const pDisp = document.getElementById("profitDisplay");
+          if (pDisp) pDisp.innerText = `+${params.targetProfitPct.toFixed(1)}%`;
+          runSimulation();
+        });
+      }
 
       // Tab switching
       document.querySelectorAll(".tab-btn[data-tab]").forEach(btn => {
@@ -1608,28 +1615,26 @@
           document.querySelectorAll(".tab-content").forEach(tc => tc.classList.remove("active"));
           btn.classList.add("active");
           const targetId = btn.getAttribute("data-tab");
-          document.getElementById(targetId).classList.add("active");
-
-          if (targetId === "tab-dataviewer") {
-            renderDataViewerTab(document.getElementById("dataviewerTickerSelect").value);
-          }
+          const targetEl = document.getElementById(targetId);
+          if (targetEl) targetEl.classList.add("active");
         });
       });
 
       // Trade Log Filters
-      document.getElementById("tradeFilterType").addEventListener("change", filterAndRenderTrades);
-      document.getElementById("tradeFilterCycle").addEventListener("change", filterAndRenderTrades);
-      document.getElementById("tradeSearchInput").addEventListener("input", filterAndRenderTrades);
-
-      // Export CSV
-      document.getElementById("exportCsvBtn").addEventListener("click", exportCsv);
+      const tfType = document.getElementById("tradeFilterType");
+      if (tfType) tfType.addEventListener("change", filterAndRenderTrades);
+      const tfCycle = document.getElementById("tradeFilterCycle");
+      if (tfCycle) tfCycle.addEventListener("change", filterAndRenderTrades);
+      const tfSearch = document.getElementById("tradeSearchInput");
+      if (tfSearch) tfSearch.addEventListener("input", filterAndRenderTrades);
     }
 
     function setupRadioGroup(name, callback) {
       document.querySelectorAll(`input[name="${name}"]`).forEach(radio => {
         radio.addEventListener("change", (e) => {
           document.querySelectorAll(`input[name="${name}"]`).forEach(r => {
-            r.closest(".radio-card").classList.toggle("active", r.checked);
+            const card = r.closest(".radio-card");
+            if (card) card.classList.toggle("active", r.checked);
           });
           callback(e.target.value);
         });
@@ -1639,34 +1644,27 @@
     function updateCapitalUI() {
       const cap = params.initialCapital;
       const pAmt = Math.round(cap / params.portions);
-      document.getElementById("capitalSummaryBadge").innerText = `1회 ${pAmt.toLocaleString()}원 × ${params.portions}회`;
-      document.getElementById("capitalDisplayText").innerText = `${cap.toLocaleString()}원`;
+      const badge = document.getElementById("capitalSummaryBadge");
+      if (badge) badge.innerText = `1회 ${pAmt.toLocaleString()}원 × ${params.portions}회`;
     }
 
     function updateThresholdDisplay() {
       const pct = params.secondHalfThresholdPct;
       const displayEl = document.getElementById("thresholdDisplay");
-      const explainerEl = document.getElementById("thresholdExplainer");
+      if (!displayEl) return;
 
       if (pct === 0) {
-        displayEl.innerText = "평단가 대비 0.0% 이하 (종가 ≤ 평단가)";
-        explainerEl.innerText = "종가가 현재 평단가 이하(0%)일 때만 매수를 진행합니다.";
-      } else if (pct <= -20) {
-        displayEl.innerText = `평단가 대비 ${pct.toFixed(1)}% 이하 (폭락장 방어)`;
-        explainerEl.innerText = `종가가 평단가 대비 ${Math.abs(pct)}% 이상 폭락한 심각한 과매도 구간에서만 선별 매수합니다.`;
+        displayEl.innerText = "평단가 대비 0.0% 이하";
       } else if (pct < 0) {
         displayEl.innerText = `평단가 대비 ${pct.toFixed(1)}% 이하`;
-        explainerEl.innerText = `종가가 현재 평단가보다 ${Math.abs(pct)}% 이상 더 하락한 깊은 조정 시에만 매수합니다.`;
       } else {
         displayEl.innerText = `평단가 대비 +${pct.toFixed(1)}% 이하`;
-        explainerEl.innerText = `종가가 평단가보다 +${pct}% 이하인 구간까지 매수를 허용합니다.`;
       }
     }
 
     function updateSplitRoundDisplay() {
-      document.getElementById("splitRoundDisplay").innerText = `${params.phaseSplitRound}회차`;
-      document.getElementById("firstHalfRangeText").innerText = params.phaseSplitRound;
-      document.getElementById("secondHalfRangeText").innerText = `${params.phaseSplitRound + 1}~${params.portions}`;
+      const el = document.getElementById("splitRoundDisplay");
+      if (el) el.innerText = `${params.phaseSplitRound}회차`;
     }
 
     function loadTickerData(ticker) {
@@ -2063,29 +2061,45 @@
       document.getElementById("kpiAvgDays").innerText = `${s.avgCycleDays.toFixed(1)}일`;
       document.getElementById("kpiMaxDays").innerText = `${s.maxCycleDays}일`;
 
-      // Active Live Banner
-      const ac = s.activeCycle;
-      if (ac.sharesHeld > 0) {
-        document.getElementById("liveCycleBanner").style.display = "flex";
-        document.getElementById("activeCycleTitle").innerText = `진행 중인 사이클 (Cycle #${ac.cycleNum})`;
-        const phaseLabel = ac.round <= params.phaseSplitRound ? "전반부 (정량 매수)" : "후반부 (조건부 매수)";
-        document.getElementById("activeCycleSub").innerText = `${ac.startDate} 시작 | 현재 ${ac.round}회차 / ${params.portions}회차 (${phaseLabel})`;
-        document.getElementById("activeInvestedVal").innerText = fmtKRW(ac.totalInvested);
-        document.getElementById("activeAvgCostVal").innerText = fmtPrice(ac.avgCost);
-        const targetVal = ac.avgCost * (1.0 + params.targetProfitPct / 100.0);
-        document.getElementById("activeTargetVal").innerText = fmtPrice(targetVal);
+      // Active Live Banner (if present)
+      const banner = document.getElementById("liveCycleBanner");
+      if (banner) {
+        const ac = s.activeCycle;
+        if (ac.sharesHeld > 0) {
+          banner.style.display = "flex";
+          const titleEl = document.getElementById("activeCycleTitle");
+          if (titleEl) titleEl.innerText = `진행 중인 사이클 (Cycle #${ac.cycleNum})`;
+          const phaseLabel = ac.round <= params.phaseSplitRound ? "전반부 (정량 매수)" : "후반부 (조건부 매수)";
+          const subEl = document.getElementById("activeCycleSub");
+          if (subEl) subEl.innerText = `${ac.startDate} 시작 | 현재 ${ac.round}회차 / ${params.portions}회차 (${phaseLabel})`;
+          const invEl = document.getElementById("activeInvestedVal");
+          if (invEl) invEl.innerText = fmtKRW(ac.totalInvested);
+          const avgEl = document.getElementById("activeAvgCostVal");
+          if (avgEl) avgEl.innerText = fmtPrice(ac.avgCost);
+          const targetVal = ac.avgCost * (1.0 + params.targetProfitPct / 100.0);
+          const tgtEl = document.getElementById("activeTargetVal");
+          if (tgtEl) tgtEl.innerText = fmtPrice(targetVal);
 
-        const pnlEl = document.getElementById("activePnlVal");
-        pnlEl.innerText = `${ac.unrealizedPct >= 0 ? '+' : ''}${ac.unrealizedPct.toFixed(2)}%`;
-        pnlEl.className = `live-stat-val ${ac.unrealizedPct >= 0 ? 'val-positive' : 'val-negative'}`;
-      } else {
-        document.getElementById("liveCycleBanner").style.display = "flex";
-        document.getElementById("activeCycleTitle").innerText = `사이클 대기 중 (Cycle #${ac.cycleNum})`;
-        document.getElementById("activeCycleSub").innerText = `직전 사이클 익절 완료. 다음 거래일에 1회차 매수 시작 대기`;
-        document.getElementById("activeInvestedVal").innerText = fmtKRW(0);
-        document.getElementById("activeAvgCostVal").innerText = "-";
-        document.getElementById("activeTargetVal").innerText = "-";
-        document.getElementById("activePnlVal").innerText = "0.0%";
+          const pnlEl = document.getElementById("activePnlVal");
+          if (pnlEl) {
+            pnlEl.innerText = `${ac.unrealizedPct >= 0 ? '+' : ''}${ac.unrealizedPct.toFixed(2)}%`;
+            pnlEl.className = `live-stat-val ${ac.unrealizedPct >= 0 ? 'val-positive' : 'val-negative'}`;
+          }
+        } else {
+          banner.style.display = "flex";
+          const titleEl = document.getElementById("activeCycleTitle");
+          if (titleEl) titleEl.innerText = `사이클 대기 중 (Cycle #${ac.cycleNum})`;
+          const subEl = document.getElementById("activeCycleSub");
+          if (subEl) subEl.innerText = `직전 사이클 익절 완료. 다음 거래일에 1회차 매수 시작 대기`;
+          const invEl = document.getElementById("activeInvestedVal");
+          if (invEl) invEl.innerText = fmtKRW(0);
+          const avgEl = document.getElementById("activeAvgCostVal");
+          if (avgEl) avgEl.innerText = "-";
+          const tgtEl = document.getElementById("activeTargetVal");
+          if (tgtEl) tgtEl.innerText = "-";
+          const pnlEl = document.getElementById("activePnlVal");
+          if (pnlEl) pnlEl.innerText = "0.0%";
+        }
       }
 
       // Tab 1: Yearly Table
@@ -2554,7 +2568,6 @@
       if (newParams.ticker) {
         params.ticker = newParams.ticker;
         document.getElementById("tickerSelect").value = params.ticker;
-        document.getElementById("dataviewerTickerSelect").value = params.ticker;
       }
       if (newParams.portions) {
         params.portions = newParams.portions;
