@@ -30,6 +30,7 @@
       --card-border-active: #2563eb;
 
       --accent-blue: #2563eb;
+      --accent-indigo: #4f46e5;
       --accent-cyan: #0284c7;
       --accent-green: #059669;
       --accent-emerald: #047857;
@@ -106,12 +107,12 @@
     .logo-icon {
       width: 36px;
       height: 36px;
-      background: linear-gradient(135deg, var(--accent-blue), var(--accent-indigo));
+      background: linear-gradient(135deg, #2563eb, #4f46e5);
       border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: white;
+      color: #ffffff !important;
       font-size: 17px;
       box-shadow: 0 3px 8px rgba(37, 99, 235, 0.25);
     }
@@ -940,9 +941,12 @@
         padding-bottom: 4px;
         -webkit-overflow-scrolling: touch;
       }
+      .tab-btn .tab-text {
+        display: none;
+      }
       .tab-btn {
-        padding: 6px 12px;
-        font-size: 12px;
+        padding: 8px 14px;
+        font-size: 15px;
         white-space: nowrap;
       }
       .preset-pill-group {
@@ -1236,14 +1240,14 @@
         <div class="tabs-card">
           <div class="tabs-header">
             <div class="nav-tabs">
-              <button class="tab-btn active" data-tab="tab-yearly" id="btnTabYearly">
-                <i class="fa-regular fa-calendar"></i> 연도별 성과
+              <button class="tab-btn active" data-tab="tab-yearly" id="btnTabYearly" title="연도별 성과">
+                <i class="fa-regular fa-calendar"></i> <span class="tab-text">연도별 성과</span>
               </button>
-              <button class="tab-btn" data-tab="tab-cycles" id="btnTabCycles">
-                <i class="fa-solid fa-list-check"></i> 사이클 기록 (<span id="cycleCountBadge">0</span>)
+              <button class="tab-btn" data-tab="tab-cycles" id="btnTabCycles" title="사이클 기록">
+                <i class="fa-solid fa-list-check"></i> <span class="tab-text">사이클 기록 (<span id="cycleCountBadge">0</span>)</span>
               </button>
-              <button class="tab-btn" data-tab="tab-tradelog" id="btnTabTradeLog">
-                <i class="fa-solid fa-book-bookmark"></i> 매매 일지 (<span id="tradeCountBadge">0</span>)
+              <button class="tab-btn" data-tab="tab-tradelog" id="btnTabTradeLog" title="매매 일지">
+                <i class="fa-solid fa-book-bookmark"></i> <span class="tab-text">매매 일지 (<span id="tradeCountBadge">0</span>)</span>
               </button>
             </div>
             <div style="font-size: 11px; color: var(--text-muted);">
@@ -2589,9 +2593,10 @@
         sampled.push(curve[curve.length - 1]);
       }
 
+      const initCap = (latestSimResult && latestSimResult.summary && latestSimResult.summary.initialCapital) || params.initialCapital || 10000000;
       const labels = sampled.map(p => p.date);
-      const stratData = sampled.map(p => p.equity);
-      const bhData = sampled.map(p => p.bhEquity);
+      const stratData = sampled.map(p => Number((((p.equity - initCap) / initCap) * 100).toFixed(2)));
+      const bhData = sampled.map(p => Number((((p.bhEquity - initCap) / initCap) * 100).toFixed(2)));
 
       const gridColor = "rgba(0, 0, 0, 0.05)";
       const textColor = "#64748b";
@@ -2606,7 +2611,7 @@
           labels: labels,
           datasets: [
             {
-              label: 'DCA 분할 적립 전략',
+              label: 'DCA 전략',
               data: stratData,
               borderColor: '#2563eb',
               backgroundColor: 'rgba(37, 99, 235, 0.08)',
@@ -2617,7 +2622,7 @@
               tension: 0.1
             },
             {
-              label: 'Buy & Hold 단순 보유',
+              label: '단순 보유',
               data: bhData,
               borderColor: '#94a3b8',
               borderWidth: 1.5,
@@ -2646,36 +2651,42 @@
               borderWidth: 1,
               padding: 10,
               callbacks: {
+                title: (items) => items.length > 0 ? `날짜: ${items[0].label}` : '',
                 label: function(context) {
-                  let label = context.dataset.label || '';
-                  if (label) label += ': ';
-                  if (context.parsed.y !== null) {
-                    label += Math.round(context.parsed.y).toLocaleString() + '원';
-                  }
-                  return label;
+                  const label = context.dataset.label || '';
+                  const val = context.parsed.y;
+                  const sign = val >= 0 ? '+' : '';
+                  return ` ${label}: ${sign}${val.toFixed(2)}%`;
                 }
               }
             }
           },
           scales: {
             x: {
-              grid: { color: gridColor },
+              grid: { display: false },
               ticks: {
-                color: textColor,
-                maxTicksLimit: 8,
-                font: { family: 'Outfit', size: 11 }
+                color: '#64748b',
+                maxTicksLimit: window.innerWidth <= 768 ? 5 : 12,
+                maxRotation: 0,
+                minRotation: 0,
+                autoSkip: true,
+                font: { family: 'Outfit', size: window.innerWidth <= 768 ? 9 : 10 },
+                callback: function(val) {
+                  const rawDate = this.getLabelForValue(val);
+                  if (!rawDate) return '';
+                  if (window.innerWidth <= 768) {
+                    return rawDate.slice(2, 7).replace('-', '.');
+                  }
+                  return rawDate.slice(0, 7).replace('-', '.');
+                }
               }
             },
             y: {
-              grid: { color: gridColor },
+              grid: { color: '#f1f5f9' },
               ticks: {
-                color: textColor,
-                callback: (val) => {
-                  if (val >= 100000000) return (val / 100000000).toFixed(1) + '억원';
-                  if (val >= 10000) return Math.round(val / 10000).toLocaleString() + '만원';
-                  return Math.round(val).toLocaleString() + '원';
-                },
-                font: { family: 'JetBrains Mono', size: 11 }
+                color: '#64748b',
+                callback: (v) => (v >= 0 ? '+' : '') + v + '%',
+                font: { family: 'JetBrains Mono', size: 10 }
               }
             }
           }

@@ -213,11 +213,27 @@
       gap: 8px;
     }
 
-    .hero-badge-row {
+    .hero-top-info {
       display: flex;
       align-items: center;
       gap: 8px;
       flex-wrap: wrap;
+    }
+
+    .hero-title-row {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .hero-date-row {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .hero-change-mobile-btn {
+      display: none;
     }
 
     .ticker-badge {
@@ -741,8 +757,36 @@
       .hero-card {
         padding: 12px 14px;
         gap: 8px;
+        flex-direction: column;
+        align-items: stretch;
       }
-      .hero-badge-row {
+      .hero-strat-info {
+        width: 100%;
+        gap: 6px;
+      }
+      .hero-top-info {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 6px;
+      }
+      .hero-title-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+      }
+      .hero-change-mobile-btn {
+        display: inline-flex;
+        padding: 5px 9px;
+        font-size: 13px;
+        border-radius: 6px;
+      }
+      .hero-action-desktop {
+        display: none;
+      }
+      .hero-date-row {
+        display: flex;
+        align-items: center;
         gap: 6px;
       }
       .ticker-badge {
@@ -754,15 +798,6 @@
         padding: 3px 6px;
       }
       .days-prefix {
-        display: none;
-      }
-      .mobile-only-btn {
-        display: inline-flex;
-        padding: 4px 8px;
-        font-size: 12px;
-        border-radius: 6px;
-      }
-      .hero-action-desktop {
         display: none;
       }
       #heroStrategySummary {
@@ -847,16 +882,20 @@
     <!-- Strategy Hero Banner -->
     <div class="hero-card">
       <div class="hero-strat-info">
-        <div class="hero-badge-row">
-          <span class="ticker-badge" id="heroTicker">전략 로딩 중...</span>
-          <span class="days-badge" id="heroDaysCount"><span class="days-prefix">투자 시작 </span>D+0일</span>
-          <button class="btn btn-primary hero-change-btn mobile-only-btn" onclick="openStrategyChangeModal()" title="전략 변경">
-            <i class="fa-solid fa-repeat"></i>
-          </button>
-          <div class="start-date-box" title="투자개시일 수정">
-            <i class="fa-regular fa-calendar" style="color:var(--text-muted);"></i>
-            <span class="date-label" style="color:var(--text-muted); font-size:11px;">개시일:</span>
-            <input type="date" id="heroStartDateInput" class="start-date-input" onchange="updateStartDate(this.value)">
+        <div class="hero-top-info">
+          <div class="hero-title-row">
+            <span class="ticker-badge" id="heroTicker">전략 로딩 중...</span>
+            <button class="btn btn-primary hero-change-mobile-btn" onclick="openStrategyChangeModal()" title="전략 변경">
+              <i class="fa-solid fa-repeat"></i>
+            </button>
+          </div>
+          <div class="hero-date-row">
+            <div class="start-date-box" title="투자개시일 수정">
+              <i class="fa-regular fa-calendar" style="color:var(--text-muted);"></i>
+              <span class="date-label" style="color:var(--text-muted); font-size:11px;">개시일:</span>
+              <input type="date" id="heroStartDateInput" class="start-date-input" onchange="updateStartDate(this.value)">
+            </div>
+            <span class="days-badge" id="heroDaysCount"><span class="days-prefix">투자 시작 </span>D+0일</span>
           </div>
         </div>
         <div class="hero-summary-text" id="heroStrategySummary">
