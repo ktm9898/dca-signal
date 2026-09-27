@@ -706,6 +706,114 @@
     .modal-close-btn:hover {
       color: var(--text-main);
     }
+    .phase-mo {
+      display: none;
+    }
+    .mobile-only-btn {
+      display: none;
+    }
+
+    /* Mobile Responsive Styles */
+    @media (max-width: 640px) {
+      .container {
+        padding: 12px 12px 60px 12px;
+        gap: 12px;
+      }
+      header {
+        padding: 10px 12px;
+        gap: 8px;
+      }
+      .brand-title {
+        font-size: 16px;
+      }
+      .nav-btn .nav-text {
+        display: none;
+      }
+      .nav-btn {
+        padding: 6px 10px;
+        font-size: 13px;
+      }
+      .header-actions {
+        gap: 4px;
+      }
+
+      /* Hero Banner Mobile */
+      .hero-card {
+        padding: 12px 14px;
+        gap: 8px;
+      }
+      .hero-badge-row {
+        gap: 6px;
+      }
+      .ticker-badge {
+        font-size: 13px;
+        padding: 3px 8px;
+      }
+      .days-badge {
+        font-size: 11px;
+        padding: 3px 6px;
+      }
+      .days-prefix {
+        display: none;
+      }
+      .mobile-only-btn {
+        display: inline-flex;
+        padding: 4px 8px;
+        font-size: 12px;
+        border-radius: 6px;
+      }
+      .hero-action-desktop {
+        display: none;
+      }
+      #heroStrategySummary {
+        display: none !important;
+      }
+
+      /* Signal / Guide Mobile */
+      .signal-card {
+        padding: 14px;
+      }
+      .signal-top-row {
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .phase-pc {
+        display: none;
+      }
+      .phase-mo {
+        display: inline;
+        font-weight: 700;
+        font-size: 11px;
+      }
+      .price-pill {
+        padding: 3px 8px;
+        font-size: 12px;
+      }
+      .tickets-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+      .ticket-card {
+        padding: 12px 14px;
+      }
+
+      /* KPI Grid Mobile */
+      .kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+      }
+      .kpi-card {
+        padding: 10px 12px;
+      }
+      .kpi-value {
+        font-size: 15px;
+      }
+
+      /* Cycles Card Mobile */
+      .cycles-card {
+        padding: 14px;
+      }
+    }
   </style>
 </head>
 
@@ -721,18 +829,18 @@
       </a>
 
       <div class="header-actions">
-        <a href="index.html" class="nav-btn active">
-          <i class="fa-solid fa-gauge-high"></i> 대시보드
-        </a>
-        <a href="backtest.html" class="nav-btn">
-          <i class="fa-solid fa-sliders"></i> 백테스트
-        </a>
-        <a href="data.html" class="nav-btn">
-          <i class="fa-solid fa-table-list"></i> 데이터조회
-        </a>
-        <button class="btn" onclick="initDashboard()" title="새로고침">
+        <button class="btn nav-btn nav-refresh-btn" onclick="initDashboard()" title="새로고침">
           <i class="fa-solid fa-arrows-rotate"></i>
         </button>
+        <a href="index.html" class="nav-btn active" title="대시보드">
+          <i class="fa-solid fa-gauge-high"></i> <span class="nav-text">대시보드</span>
+        </a>
+        <a href="backtest.html" class="nav-btn" title="백테스트">
+          <i class="fa-solid fa-sliders"></i> <span class="nav-text">백테스트</span>
+        </a>
+        <a href="data.html" class="nav-btn" title="데이터조회">
+          <i class="fa-solid fa-table-list"></i> <span class="nav-text">데이터조회</span>
+        </a>
       </div>
     </header>
 
@@ -740,11 +848,14 @@
     <div class="hero-card">
       <div class="hero-strat-info">
         <div class="hero-badge-row">
-          <span class="ticker-badge" id="heroTicker">TQQQ</span>
-          <span class="days-badge" id="heroDaysCount">투자 시작 D+0일</span>
+          <span class="ticker-badge" id="heroTicker">전략 로딩 중...</span>
+          <span class="days-badge" id="heroDaysCount"><span class="days-prefix">투자 시작 </span>D+0일</span>
+          <button class="btn btn-primary hero-change-btn mobile-only-btn" onclick="openStrategyChangeModal()" title="전략 변경">
+            <i class="fa-solid fa-repeat"></i>
+          </button>
           <div class="start-date-box" title="투자개시일 수정">
             <i class="fa-regular fa-calendar" style="color:var(--text-muted);"></i>
-            <span style="color:var(--text-muted); font-size:11px;">개시일:</span>
+            <span class="date-label" style="color:var(--text-muted); font-size:11px;">개시일:</span>
             <input type="date" id="heroStartDateInput" class="start-date-input" onchange="updateStartDate(this.value)">
           </div>
         </div>
@@ -756,7 +867,7 @@
           <span>단리</span>
         </div>
       </div>
-      <div>
+      <div class="hero-action-desktop">
         <button class="btn btn-primary" onclick="openStrategyChangeModal()" style="font-size:12px;">
           <i class="fa-solid fa-repeat"></i> 전략 변경
         </button>
@@ -1156,7 +1267,9 @@
     // -------------------------------------------------------------------------
     function evaluateProgressAndSignal() {
       // 1. Hero Info
-      document.getElementById("heroTicker").innerText = activeStrat.ticker;
+      const sName = activeStrat.name || `${activeStrat.ticker} 실전 전략`;
+      const displayName = sName.includes(activeStrat.ticker) ? sName : `${sName} (${activeStrat.ticker})`;
+      document.getElementById("heroTicker").innerText = displayName;
       document.getElementById("currentTickerLabel").innerText = activeStrat.ticker;
 
       const sDateStr = activeStrat.startDate || new Date().toISOString().substring(0, 10);
@@ -1165,7 +1278,7 @@
       const sDate = new Date(sDateStr);
       const now = new Date();
       const calDays = Math.max(0, Math.floor((now - sDate) / (1000 * 60 * 60 * 24)));
-      document.getElementById("heroDaysCount").innerText = `투자 시작 D+${calDays}일`;
+      document.getElementById("heroDaysCount").innerHTML = `<span class="days-prefix">투자 시작 </span>D+${calDays}일`;
 
       const lateModeText = activeStrat.lateMode === "always" ? "균등매수" : `${activeStrat.lateThresholdPct}% 이하`;
       document.getElementById("heroStrategySummary").innerHTML = `
@@ -1241,7 +1354,7 @@
         signalCard.classList.add("sell");
         signalPulse.style.backgroundColor = "var(--accent-red)";
         guideBadge.className = "badge badge-red";
-        guideBadge.innerText = `목표 달성 (+${pnlPct.toFixed(2)}%)`;
+        guideBadge.innerHTML = `<span class="phase-pc">목표 달성 (+${pnlPct.toFixed(2)}%)</span><span class="phase-mo">목표 달성</span>`;
 
         document.getElementById("ticketBuyConditionTag").innerText = "매수 보류";
         document.getElementById("ticketBuyPrice").innerText = "익절 우선";
@@ -1255,7 +1368,7 @@
         signalCard.classList.add("buy");
         signalPulse.style.backgroundColor = "var(--accent-blue)";
         guideBadge.className = "badge badge-blue";
-        guideBadge.innerText = `전반부 ${curRound}/${activeStrat.phaseSplitRound}회차 (정량 매수)`;
+        guideBadge.innerHTML = `<span class="phase-pc">전반부 ${curRound}/${activeStrat.phaseSplitRound}회차 (정량 매수)</span><span class="phase-mo">전반 ${curRound}/${activeStrat.phaseSplitRound}</span>`;
 
         const locPrice = closePrice * 1.10;
         document.getElementById("ticketBuyConditionTag").innerText = "100% 체결";
@@ -1269,7 +1382,7 @@
         signalCard.classList.add("buy");
         signalPulse.style.backgroundColor = "var(--accent-green)";
         guideBadge.className = "badge badge-green";
-        guideBadge.innerText = `후반부 ${curRound}/${activeStrat.portions}회차 (조건부 매수)`;
+        guideBadge.innerHTML = `<span class="phase-pc">후반부 ${curRound}/${activeStrat.portions}회차 (조건부 매수)</span><span class="phase-mo">후반 ${curRound}/${activeStrat.portions}</span>`;
 
         document.getElementById("ticketBuyConditionTag").innerText = "조건부 체결";
         document.getElementById("ticketBuyPrice").innerText = fmtUSD(thresholdPrice);
@@ -1281,7 +1394,7 @@
         signalCard.classList.add("wait");
         signalPulse.style.backgroundColor = "var(--accent-purple)";
         guideBadge.className = "badge badge-purple";
-        guideBadge.innerText = `분할 소진 완료 (${activeStrat.portions}회)`;
+        guideBadge.innerHTML = `<span class="phase-pc">분할 소진 완료 (${activeStrat.portions}회)</span><span class="phase-mo">소진 완료</span>`;
 
         document.getElementById("ticketBuyConditionTag").innerText = "매수 종료";
         document.getElementById("ticketBuyPrice").innerText = "매수 중단";

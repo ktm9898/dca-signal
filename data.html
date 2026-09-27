@@ -301,7 +301,53 @@
       text-align: center;
       font-size: 11px;
       color: var(--text-muted);
-      margin-top: 10px;
+    /* Mobile Responsive */
+    @media (max-width: 640px) {
+      .container {
+        padding: 12px 12px 60px 12px;
+        gap: 12px;
+      }
+      header {
+        padding: 10px 12px;
+        gap: 8px;
+      }
+      .brand-title {
+        font-size: 16px;
+      }
+      .nav-btn .nav-text {
+        display: none;
+      }
+      .nav-btn {
+        padding: 6px 10px;
+        font-size: 13px;
+      }
+      .header-actions {
+        gap: 4px;
+      }
+      .toolbar-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+      }
+      .toolbar-left, .toolbar-right {
+        width: 100%;
+        justify-content: space-between;
+      }
+      .pill-group {
+        width: 100%;
+      }
+      .pill-btn {
+        flex: 1;
+        text-align: center;
+        padding: 6px 0;
+      }
+      .summary-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+      }
+      .data-card {
+        padding: 14px;
+      }
     }
   </style>
 </head>
@@ -318,14 +364,17 @@
       </a>
 
       <div class="header-actions">
-        <a href="index.html" class="nav-btn">
-          <i class="fa-solid fa-gauge-high"></i> 대시보드
+        <button class="btn nav-btn nav-refresh-btn" onclick="location.reload()" title="새로고침">
+          <i class="fa-solid fa-arrows-rotate"></i>
+        </button>
+        <a href="index.html" class="nav-btn" title="대시보드">
+          <i class="fa-solid fa-gauge-high"></i> <span class="nav-text">대시보드</span>
         </a>
-        <a href="backtest.html" class="nav-btn">
-          <i class="fa-solid fa-sliders"></i> 백테스트
+        <a href="backtest.html" class="nav-btn" title="백테스트">
+          <i class="fa-solid fa-sliders"></i> <span class="nav-text">백테스트</span>
         </a>
-        <a href="data.html" class="nav-btn active">
-          <i class="fa-solid fa-table-list"></i> 데이터조회
+        <a href="data.html" class="nav-btn active" title="데이터조회">
+          <i class="fa-solid fa-table-list"></i> <span class="nav-text">데이터조회</span>
         </a>
       </div>
     </header>
