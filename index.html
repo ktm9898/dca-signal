@@ -1118,6 +1118,7 @@
     const GAS_WEBAPP_URL = localStorage.getItem("dca_gas_url") || DEFAULT_GAS_URL;
 
     const DEFAULT_STRATEGY = {
+      name: "TQQQ 100분할 전략",
       ticker: "TQQQ",
       startDate: new Date().toISOString().substring(0, 10),
       seedCapital: 10000000,
@@ -1178,6 +1179,9 @@
         const json = await res.json();
         if (json.success && json.activeStrategy) {
           const s = json.activeStrategy;
+          if (s.name) activeStrat.name = s.name;
+          if (s.memo) activeStrat.memo = s.memo;
+          if (s.slotId) activeStrat.slotId = s.slotId;
           activeStrat.ticker = s.ticker || activeStrat.ticker;
           if (s.startDate) activeStrat.startDate = s.startDate.substring(0, 10);
           if (s.seedCapital) activeStrat.seedCapital = s.seedCapital;
@@ -1648,6 +1652,9 @@
         });
 
         // 로컬 activeStrat 업데이트
+        if (target.name) activeStrat.name = target.name;
+        if (target.memo) activeStrat.memo = target.memo;
+        if (target.slotId) activeStrat.slotId = target.slotId;
         activeStrat.ticker = target.ticker;
         if (target.seedCapital) activeStrat.seedCapital = target.seedCapital;
         if (target.portions) activeStrat.portions = target.portions;
