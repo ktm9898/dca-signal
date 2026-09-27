@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DCA Signal | 정량 분할 적립식 실전 대시보드</title>
+  <title>DCA Signal | 실전 투자 대시보드</title>
 
   <!-- Google Fonts & Font Awesome Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -13,9 +13,6 @@
     href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
     rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-  <!-- Chart.js -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
   <!-- Pre-bundled ETF Historical Price Data -->
   <script src="data_bundle.js"></script>
@@ -74,7 +71,7 @@
       gap: 16px;
     }
 
-    /* Top Navigation Header (Asset Signal Style) */
+    /* Top Navigation Header */
     header {
       display: flex;
       justify-content: space-between;
@@ -209,7 +206,7 @@
     .hero-strat-info {
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 8px;
     }
 
     .hero-badge-row {
@@ -237,6 +234,28 @@
       border-radius: 6px;
     }
 
+    .start-date-box {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--bg-base);
+      border: 1px solid var(--card-border);
+      border-radius: 6px;
+      padding: 2px 8px;
+      font-size: 12px;
+    }
+
+    .start-date-input {
+      border: none;
+      background: transparent;
+      font-family: 'Outfit', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-main);
+      outline: none;
+      cursor: pointer;
+    }
+
     .hero-summary-text {
       font-size: 13px;
       color: var(--text-sub);
@@ -248,8 +267,8 @@
 
     /* Signal Alert Banner (Main Highlight) */
     .signal-card {
-      background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
-      border: 2px solid #86efac;
+      background: linear-gradient(135deg, #ffffff 0%, #eff6ff 100%);
+      border: 2px solid #93c5fd;
       border-radius: 16px;
       padding: 20px;
       box-shadow: var(--shadow-sm);
@@ -257,6 +276,11 @@
       flex-direction: column;
       gap: 14px;
       position: relative;
+    }
+
+    .signal-card.buy {
+      background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
+      border-color: #86efac;
     }
 
     .signal-card.wait {
@@ -287,15 +311,15 @@
       width: 12px;
       height: 12px;
       border-radius: 50%;
-      background: var(--accent-green);
-      box-shadow: 0 0 0 0 rgba(5, 150, 105, 0.6);
+      background: var(--accent-blue);
+      box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.6);
       animation: pulse 1.8s infinite;
     }
 
     @keyframes pulse {
-      0% { box-shadow: 0 0 0 0 rgba(5, 150, 105, 0.6); }
-      70% { box-shadow: 0 0 0 8px rgba(5, 150, 105, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(5, 150, 105, 0); }
+      0% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.6); }
+      70% { box-shadow: 0 0 0 8px rgba(37, 99, 235, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0); }
     }
 
     .signal-status-text {
@@ -321,20 +345,16 @@
     }
 
     .signal-body {
-      display: grid;
-      grid-template-columns: 2fr 1fr;
-      gap: 16px;
+      display: flex;
+      justify-content: space-between;
       align-items: center;
-    }
-
-    @media (max-width: 768px) {
-      .signal-body {
-        grid-template-columns: 1fr;
-      }
+      flex-wrap: wrap;
+      gap: 14px;
     }
 
     .signal-guide-box {
-      background: rgba(255, 255, 255, 0.8);
+      flex: 1;
+      background: rgba(255, 255, 255, 0.85);
       border: 1px solid rgba(0, 0, 0, 0.06);
       border-radius: 12px;
       padding: 14px;
@@ -342,27 +362,24 @@
       color: var(--text-sub);
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 5px;
     }
 
-    .signal-action-buttons {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
+    /* Progress Bar */
+    .progress-bar-container {
+      width: 100%;
+      background: #e2e8f0;
+      height: 8px;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 4px;
     }
 
-    .action-btn-large {
-      padding: 12px 16px;
-      font-size: 14px;
-      font-weight: 700;
-      border-radius: 10px;
-      border: none;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      transition: all 0.2s;
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent-blue), var(--accent-indigo));
+      border-radius: 4px;
+      transition: width 0.3s;
     }
 
     /* KPI Summary Cards Grid - Compact Single-Row */
@@ -438,8 +455,8 @@
       text-overflow: ellipsis;
     }
 
-    /* Tabs & Content */
-    .tabs-card {
+    /* Cycles History Table */
+    .cycles-card {
       background: var(--bg-surface);
       border: 1px solid var(--card-border);
       border-radius: 14px;
@@ -450,47 +467,21 @@
       gap: 14px;
     }
 
-    .tabs-header {
+    .card-header-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
       border-bottom: 1px solid var(--card-border);
       padding-bottom: 10px;
-      flex-wrap: wrap;
-      gap: 8px;
     }
 
-    .nav-tabs {
+    .card-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-main);
       display: flex;
-      gap: 6px;
-    }
-
-    .tab-btn {
-      padding: 6px 12px;
-      background: transparent;
-      border: 1px solid transparent;
-      border-radius: 8px;
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text-sub);
-      cursor: pointer;
-      display: inline-flex;
       align-items: center;
-      gap: 5px;
-    }
-
-    .tab-btn.active {
-      color: var(--accent-blue);
-      background: var(--badge-blue);
-      border-color: rgba(37, 99, 235, 0.2);
-    }
-
-    .tab-content {
-      display: none;
-    }
-
-    .tab-content.active {
-      display: block;
+      gap: 6px;
     }
 
     .table-container {
@@ -541,78 +532,7 @@
 
     .badge-green { background: var(--badge-green); color: var(--accent-green); }
     .badge-red { background: var(--badge-red); color: var(--accent-red); }
-    .badge-cyan { background: var(--badge-blue); color: var(--accent-blue); }
-    .badge-amber { background: var(--badge-amber); color: var(--accent-amber); }
-
-    /* Modal */
-    .modal-backdrop {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(15, 23, 42, 0.5);
-      backdrop-filter: blur(4px);
-      z-index: 999;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .modal-box {
-      background: var(--bg-surface);
-      border: 1px solid var(--card-border);
-      border-radius: 14px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-      width: 90%;
-      max-width: 500px;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
-
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid var(--card-border);
-      padding-bottom: 10px;
-    }
-
-    .modal-title {
-      font-size: 15px;
-      font-weight: 700;
-      color: var(--text-main);
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .form-group {
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
-    }
-
-    .form-group label {
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--text-sub);
-    }
-
-    input, select {
-      width: 100%;
-      padding: 8px 11px;
-      border: 1px solid var(--card-border);
-      border-radius: 8px;
-      font-size: 13px;
-      outline: none;
-    }
-
-    input:focus, select:focus {
-      border-color: var(--accent-blue);
-    }
+    .badge-blue { background: var(--badge-blue); color: var(--accent-blue); }
 
     footer {
       text-align: center;
@@ -641,12 +561,9 @@
         <a href="backtest.html" class="nav-btn">
           <i class="fa-solid fa-sliders"></i> 백테스트
         </a>
-        <a href="backtest.html?tab=data" class="nav-btn">
+        <a href="data.html" class="nav-btn">
           <i class="fa-solid fa-table-list"></i> 데이터조회
         </a>
-        <button class="btn" onclick="openSyncModal()" title="구글 시트 연동 설정">
-          <i class="fa-solid fa-cloud"></i> <span id="syncStatusText">시트 연동</span>
-        </button>
         <button class="btn" onclick="initDashboard()" title="새로고침">
           <i class="fa-solid fa-arrows-rotate"></i>
         </button>
@@ -659,7 +576,11 @@
         <div class="hero-badge-row">
           <span class="ticker-badge" id="heroTicker">TQQQ</span>
           <span class="days-badge" id="heroDaysCount">투자 시작 D+0일</span>
-          <span style="font-size: 12px; color: var(--text-muted);" id="heroStartDate">2026-09-01 시작</span>
+          <div class="start-date-box" title="투자개시일 수정">
+            <i class="fa-regular fa-calendar" style="color:var(--text-muted);"></i>
+            <span style="color:var(--text-muted); font-size:11px;">개시일:</span>
+            <input type="date" id="heroStartDateInput" class="start-date-input" onchange="updateStartDate(this.value)">
+          </div>
         </div>
         <div class="hero-summary-text" id="heroStrategySummary">
           <span>투자원금: <strong>10,000,000원</strong></span> &bull;
@@ -682,8 +603,7 @@
         <div class="signal-badge-title">
           <div class="signal-pulse" id="signalPulse"></div>
           <div class="signal-status-text" id="signalStatusText">
-            <i class="fa-solid fa-circle-check" style="color:var(--accent-green);"></i>
-            오늘의 신호: 1회분 매수
+            오늘의 신호: 정량 매수
           </div>
         </div>
         <div class="price-pill">
@@ -696,23 +616,19 @@
       <div class="signal-body">
         <div class="signal-guide-box">
           <div style="font-weight: 700; color: var(--text-main);" id="signalGuideTitle">
-            현재 1회차 진행 권장 (전반부 정량 매수 구간)
+            진도 계산 중...
           </div>
           <div id="signalGuideDesc">
-            1회 배정금 <strong>250,000원</strong> 기준으로 장마감 전후 시장가/종가로 매수를 체결하세요.
+            1회 배정금 <strong>250,000원</strong>
           </div>
-          <div style="display: flex; gap: 12px; margin-top: 4px; font-size: 12px;">
-            <span>권장 매수: <strong id="signalSharesVal" style="color:var(--accent-blue); font-family:'JetBrains Mono';">0주</strong></span>
-            <span>예상 금액: <strong id="signalAmountVal" style="color:var(--text-main);">0원</strong></span>
+          <div class="progress-bar-container">
+            <div id="signalProgressBar" class="progress-bar-fill" style="width: 0%;"></div>
           </div>
         </div>
 
-        <div class="signal-action-buttons">
-          <button id="btnExecuteBuy" class="action-btn-large btn-primary" onclick="handleExecuteBuy()">
-            <i class="fa-solid fa-cart-shopping"></i> 오늘 매수 완료 (+1회차)
-          </button>
-          <button id="btnExecuteSell" class="action-btn-large btn-success" style="display:none;" onclick="handleExecuteSell()">
-            <i class="fa-solid fa-hand-holding-dollar"></i> 목표 달성! 전량 익절 완료
+        <div id="sellActionArea" style="display: none;">
+          <button class="btn btn-success" style="padding: 10px 16px; font-size: 13px;" onclick="handleExecuteSell()">
+            <i class="fa-solid fa-flag-checkered"></i> 목표 익절 완료 (사이클 리셋)
           </button>
         </div>
       </div>
@@ -722,7 +638,7 @@
     <div class="kpi-grid">
       <div class="kpi-card green">
         <div class="kpi-title">
-          <span>진행 회차</span>
+          <span>현재 진도</span>
           <i class="fa-solid fa-layer-group"></i>
         </div>
         <div class="kpi-value" id="kpiRound">0 / 40회</div>
@@ -731,7 +647,7 @@
 
       <div class="kpi-card">
         <div class="kpi-title">
-          <span>투입 원금</span>
+          <span>누적 배정 원금</span>
           <i class="fa-solid fa-wallet"></i>
         </div>
         <div class="kpi-value" id="kpiInvested">0원</div>
@@ -740,20 +656,20 @@
 
       <div class="kpi-card purple">
         <div class="kpi-title">
-          <span>보유 평단가</span>
+          <span>사이클 추정 평단</span>
           <i class="fa-solid fa-calculator"></i>
         </div>
         <div class="kpi-value" id="kpiAvgCost">-</div>
-        <div class="kpi-subtext" id="kpiHoldQty">보유: 0.0주</div>
+        <div class="kpi-subtext" id="kpiEstShares">예상 매수: 약 0주</div>
       </div>
 
       <div class="kpi-card amber">
         <div class="kpi-title">
-          <span>평가 손익률</span>
+          <span>수익률 (추정)</span>
           <i class="fa-solid fa-chart-line"></i>
         </div>
         <div class="kpi-value" id="kpiPnlPct">0.00%</div>
-        <div class="kpi-subtext" id="kpiPnlAmount">0원</div>
+        <div class="kpi-subtext" id="kpiPnlStatus">목표 도달 대기</div>
       </div>
 
       <div class="kpi-card green">
@@ -775,90 +691,36 @@
       </div>
     </div>
 
-    <!-- Tabs: Trade Journal & Cycles History -->
-    <div class="tabs-card">
-      <div class="tabs-header">
-        <div class="nav-tabs">
-          <button class="tab-btn active" id="btnTabJournal" onclick="switchDashboardTab('journal')">
-            <i class="fa-solid fa-book-bookmark"></i> 최근 매매 일지 (<span id="journalCountBadge">0</span>)
-          </button>
-          <button class="tab-btn" id="btnTabCycles" onclick="switchDashboardTab('cycles')">
-            <i class="fa-solid fa-list-check"></i> 완료된 사이클 이력 (<span id="cyclesCountBadge">0</span>)
-          </button>
+    <!-- Completed Cycles History Table -->
+    <div class="cycles-card">
+      <div class="card-header-row">
+        <div class="card-title">
+          <i class="fa-solid fa-list-check" style="color:var(--accent-blue);"></i>
+          완료된 사이클 이력 (<span id="cyclesCountBadge">0</span>)
         </div>
         <div style="font-size: 11px; color: var(--text-muted);">
-          실시간 기록 관리
+          목표 익절 시 자동 기록
         </div>
       </div>
 
-      <!-- Tab 1: Trade Journal -->
-      <div id="tabContentJournal" class="tab-content active">
-        <div class="table-container">
-          <table>
-            <thead>
-              <tr>
-                <th>날짜</th>
-                <th>사이클</th>
-                <th>회차</th>
-                <th>구분</th>
-                <th>체결가</th>
-                <th>체결 수량</th>
-                <th>체결 금액</th>
-                <th>누적 평단가</th>
-                <th>실현 손익</th>
-              </tr>
-            </thead>
-            <tbody id="journalTableBody">
-              <!-- Populated dynamically -->
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Tab 2: Completed Cycles -->
-      <div id="tabContentCycles" class="tab-content">
-        <div class="table-container">
-          <table>
-            <thead>
-              <tr>
-                <th>사이클 #</th>
-                <th>시작일</th>
-                <th>종료일</th>
-                <th>소요 일수</th>
-                <th>최대 소진 회차</th>
-                <th>투입 총액</th>
-                <th>실현 손익</th>
-                <th>수익률</th>
-              </tr>
-            </thead>
-            <tbody id="cyclesTableBody">
-              <!-- Populated dynamically -->
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- Sync Modal -->
-    <div id="syncModal" class="modal-backdrop">
-      <div class="modal-box">
-        <div class="modal-header">
-          <div class="modal-title">
-            <i class="fa-solid fa-cloud" style="color:var(--accent-blue);"></i> 구글 시트 웹앱 URL 설정
-          </div>
-          <button class="btn" style="border:none; padding:4px;" onclick="closeSyncModal()">&times;</button>
-        </div>
-        <div class="form-group">
-          <label>Google Apps Script 배포 URL (Web App URL)</label>
-          <input type="text" id="inputGasUrl" placeholder="https://script.google.com/macros/s/.../exec">
-          <small style="color:var(--text-muted); font-size:11px;">
-            스프레드시트의 [확장 프로그램] > [Apps Script]에서 배포한 URL을 입력하세요.
-          </small>
-        </div>
-        <div style="display:flex; justify-content:flex-end; gap:6px;">
-          <button class="btn" onclick="closeSyncModal()">취소</button>
-          <button class="btn btn-primary" onclick="saveGasUrl()">저장 및 동기화</button>
-        </div>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>사이클 #</th>
+              <th>시작일</th>
+              <th>종료일</th>
+              <th>소요 일수</th>
+              <th>소진 회차</th>
+              <th>투입 원금</th>
+              <th>실현 손익</th>
+              <th>수익률</th>
+            </tr>
+          </thead>
+          <tbody id="cyclesTableBody">
+            <!-- Populated dynamically -->
+          </tbody>
+        </table>
       </div>
     </div>
 
@@ -869,10 +731,10 @@
 
   <script>
     // -------------------------------------------------------------------------
-    // State & Constants
+    // Constants & State
     // -------------------------------------------------------------------------
     const DEFAULT_GAS_URL = "https://script.google.com/macros/s/AKfycbw_mOf0ej-maqAf7HIxZBSjcc4tnFPrH-_CjwzcVar-kxR5KepZDvou_EQKvRJMAykUYg/exec";
-    let GAS_WEBAPP_URL = localStorage.getItem("dca_gas_url") || DEFAULT_GAS_URL;
+    const GAS_WEBAPP_URL = localStorage.getItem("dca_gas_url") || DEFAULT_GAS_URL;
 
     const DEFAULT_STRATEGY = {
       ticker: "TQQQ",
@@ -880,24 +742,17 @@
       seedCapital: 10000000,
       portions: 40,
       phaseSplitRound: 20,
-      lateMode: "cond", // cond | half | always
+      lateMode: "cond", // cond | always
       lateThresholdPct: -5.0,
       targetProfitPct: 10.0,
       compoundMode: "simple", // simple | compound
       currentCycleNo: 1,
-      currentRound: 1,
-      holdQty: 0,
-      avgPrice: 0,
-      investedCapital: 0,
-      updatedAt: new Date().toISOString().substring(0, 19).replace('T', ' ')
+      completedCycles: []
     };
 
     let activeStrat = { ...DEFAULT_STRATEGY };
-    let tradeJournal = [];
-    let completedCycles = [];
     let currentLatestCandle = null;
 
-    // Currency Formatter
     function fmtKRW(num) {
       if (num == null || isNaN(num)) return "0원";
       return Math.round(num).toLocaleString() + "원";
@@ -909,46 +764,24 @@
     }
 
     // -------------------------------------------------------------------------
-    // Initialization
+    // Initialization & Cloud Sync
     // -------------------------------------------------------------------------
     async function initDashboard() {
-      updateSyncStatusUI();
       loadLocalState();
 
-      // If GAS is available, fetch latest from cloud
       if (GAS_WEBAPP_URL) {
-        await fetchCloudData();
+        await fetchCloudStrategy();
       }
 
-      // Fetch Latest ETF Quote from data_bundle.js
       loadLatestTickerQuote(activeStrat.ticker);
-
-      // Evaluate and Render Live Signal & KPIs
-      calculateAndRenderSignal();
-      renderTables();
-    }
-
-    function updateSyncStatusUI() {
-      const txt = document.getElementById("syncStatusText");
-      if (GAS_WEBAPP_URL) {
-        txt.innerText = "시트 연결됨";
-        txt.style.color = "var(--accent-green)";
-      } else {
-        txt.innerText = "시트 연동";
-        txt.style.color = "inherit";
-      }
+      evaluateProgressAndSignal();
+      renderCyclesTable();
     }
 
     function loadLocalState() {
       try {
         const savedStrat = localStorage.getItem("dca_active_strategy");
         if (savedStrat) activeStrat = { ...DEFAULT_STRATEGY, ...JSON.parse(savedStrat) };
-
-        const savedJournal = localStorage.getItem("dca_trade_journal");
-        if (savedJournal) tradeJournal = JSON.parse(savedJournal);
-
-        const savedCycles = localStorage.getItem("dca_completed_cycles");
-        if (savedCycles) completedCycles = JSON.parse(savedCycles);
       } catch (e) {
         console.warn("Local state load error", e);
       }
@@ -956,28 +789,27 @@
 
     function saveLocalState() {
       localStorage.setItem("dca_active_strategy", JSON.stringify(activeStrat));
-      localStorage.setItem("dca_trade_journal", JSON.stringify(tradeJournal));
-      localStorage.setItem("dca_completed_cycles", JSON.stringify(completedCycles));
     }
 
-    async function fetchCloudData() {
+    async function fetchCloudStrategy() {
       try {
-        const res = await fetch(`${GAS_WEBAPP_URL}?action=all`);
+        const res = await fetch(`${GAS_WEBAPP_URL}?action=get_active_strategy`);
         const json = await res.json();
-        if (json.success) {
-          if (json.activeStrategy) {
-            activeStrat = { ...activeStrat, ...json.activeStrategy };
-            // sync fields
-            if (json.activeStrategy.portions) activeStrat.portions = json.activeStrategy.portions;
-            if (json.activeStrategy.seedCapital) activeStrat.seedCapital = json.activeStrategy.seedCapital;
-          }
-          if (json.journal && json.journal.length > 0) {
-            tradeJournal = json.journal;
-          }
+        if (json.success && json.activeStrategy) {
+          const s = json.activeStrategy;
+          activeStrat.ticker = s.ticker || activeStrat.ticker;
+          if (s.startDate) activeStrat.startDate = s.startDate.substring(0, 10);
+          if (s.seedCapital) activeStrat.seedCapital = s.seedCapital;
+          if (s.portions) activeStrat.portions = s.portions;
+          if (s.phaseSplitRound) activeStrat.phaseSplitRound = s.phaseSplitRound;
+          if (s.lateMode) activeStrat.lateMode = s.lateMode;
+          if (s.lateThresholdPct !== undefined) activeStrat.lateThresholdPct = s.lateThresholdPct;
+          if (s.targetProfitPct) activeStrat.targetProfitPct = s.targetProfitPct;
+          if (s.compoundMode) activeStrat.compoundMode = s.compoundMode;
           saveLocalState();
         }
-      } catch (err) {
-        console.warn("Cloud fetch error:", err);
+      } catch (e) {
+        console.warn("Fetch cloud strategy error", e);
       }
     }
 
@@ -994,20 +826,68 @@
     }
 
     // -------------------------------------------------------------------------
-    // Signal Calculation Engine
+    // Start Date & Progress Calculation
     // -------------------------------------------------------------------------
-    function calculateAndRenderSignal() {
+    async function updateStartDate(newDateStr) {
+      if (!newDateStr) return;
+      activeStrat.startDate = newDateStr;
+      saveLocalState();
+
+      if (GAS_WEBAPP_URL) {
+        try {
+          await fetch(GAS_WEBAPP_URL, {
+            method: "POST",
+            mode: "no-cors",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              action: "set_active_strategy",
+              strategy: { ...activeStrat }
+            })
+          });
+        } catch (e) {
+          console.warn("Sync start date error", e);
+        }
+      }
+
+      evaluateProgressAndSignal();
+    }
+
+    // Calculate trading days between start date and now
+    function calculateTradingDays(startDateStr) {
+      const start = new Date(startDateStr);
+      const now = new Date();
+      if (isNaN(start.getTime()) || start > now) return 1;
+
+      // Count business days (exclude Sat & Sun)
+      let count = 0;
+      let cur = new Date(start);
+      while (cur <= now) {
+        const day = cur.getDay();
+        if (day !== 0 && day !== 6) {
+          count++;
+        }
+        cur.setDate(cur.getDate() + 1);
+      }
+      return Math.max(1, count);
+    }
+
+    // -------------------------------------------------------------------------
+    // Evaluate Progress & Signal Engine
+    // -------------------------------------------------------------------------
+    function evaluateProgressAndSignal() {
       // 1. Hero Info
       document.getElementById("heroTicker").innerText = activeStrat.ticker;
       document.getElementById("currentTickerLabel").innerText = activeStrat.ticker;
 
-      const sDate = new Date(activeStrat.startDate || new Date());
-      const now = new Date();
-      const diffDays = Math.max(0, Math.floor((now - sDate) / (1000 * 60 * 60 * 24)));
-      document.getElementById("heroDaysCount").innerText = `투자 시작 D+${diffDays}일`;
-      document.getElementById("heroStartDate").innerText = `${activeStrat.startDate} 시작`;
+      const sDateStr = activeStrat.startDate || new Date().toISOString().substring(0, 10);
+      document.getElementById("heroStartDateInput").value = sDateStr;
 
-      const lateModeText = activeStrat.lateMode === "half" ? "완충형" : (activeStrat.lateMode === "always" ? "균등매수" : `${activeStrat.lateThresholdPct}% 이하`);
+      const sDate = new Date(sDateStr);
+      const now = new Date();
+      const calDays = Math.max(0, Math.floor((now - sDate) / (1000 * 60 * 60 * 24)));
+      document.getElementById("heroDaysCount").innerText = `투자 시작 D+${calDays}일`;
+
+      const lateModeText = activeStrat.lateMode === "always" ? "균등매수" : `${activeStrat.lateThresholdPct}% 이하`;
       document.getElementById("heroStrategySummary").innerHTML = `
         <span>투자원금: <strong>${fmtKRW(activeStrat.seedCapital)}</strong></span> &bull;
         <span>${activeStrat.portions}분할 (전환 ${activeStrat.phaseSplitRound}회)</span> &bull;
@@ -1017,7 +897,7 @@
       `;
 
       // 2. Latest Price & Change
-      const closePrice = currentLatestCandle ? currentLatestCandle.close : (activeStrat.avgPrice || 50.0);
+      const closePrice = currentLatestCandle ? currentLatestCandle.close : 50.0;
       const prevClose = currentLatestCandle ? currentLatestCandle.prevClose : closePrice;
       const chgPct = ((closePrice - prevClose) / prevClose) * 100.0;
 
@@ -1026,330 +906,201 @@
       chgBadge.className = `badge ${chgPct >= 0 ? "badge-green" : "badge-red"}`;
       chgBadge.innerText = `${chgPct >= 0 ? "+" : ""}${chgPct.toFixed(2)}%`;
 
-      // Portion Capital
+      // 3. Progress Calculation
+      const tradingDays = calculateTradingDays(sDateStr);
+      const curRound = Math.min(tradingDays, activeStrat.portions);
       const portionCapital = Math.round(activeStrat.seedCapital / activeStrat.portions);
-      const usdKrwRate = 1350; // default estimated exchange rate for guidance
-      const estShares = Math.max(1, Math.floor((portionCapital / usdKrwRate) / closePrice));
+      const investedCapital = curRound * portionCapital;
+      const remainingCapital = Math.max(0, activeStrat.seedCapital - investedCapital);
+      const progressPct = Math.min(100, Math.round((tradingDays / activeStrat.portions) * 100));
 
-      // Current Holding metrics
-      const holdQty = Number(activeStrat.holdQty) || 0;
-      const avgPrice = Number(activeStrat.avgPrice) || 0;
-      const invested = Number(activeStrat.investedCapital) || 0;
-      const curRound = Number(activeStrat.currentRound) || 1;
-
-      // PnL Evaluation
-      let pnlPct = 0;
-      let pnlAmount = 0;
-      if (holdQty > 0 && avgPrice > 0) {
-        pnlPct = ((closePrice - avgPrice) / avgPrice) * 100.0;
-        pnlAmount = (closePrice - avgPrice) * holdQty * usdKrwRate;
+      // Estimate Avg Price from recent candles starting from sDate
+      let avgPrice = closePrice;
+      let totalShares = 0;
+      let costSum = 0;
+      if (window.DCA_PRESETS && window.DCA_PRESETS[activeStrat.ticker]) {
+        const candles = window.DCA_PRESETS[activeStrat.ticker].candles || [];
+        const cycleCandles = candles.filter(c => c.date >= sDateStr);
+        if (cycleCandles.length > 0) {
+          cycleCandles.forEach(c => {
+            const sh = (portionCapital / 1350) / c.close;
+            totalShares += sh;
+            costSum += portionCapital;
+          });
+          if (totalShares > 0) {
+            avgPrice = (costSum / 1350) / totalShares;
+          }
+        }
       }
 
-      const targetPrice = avgPrice > 0 ? avgPrice * (1 + activeStrat.targetProfitPct / 100.0) : 0;
-      const targetDeltaPct = avgPrice > 0 ? ((targetPrice - closePrice) / closePrice) * 100.0 : activeStrat.targetProfitPct;
+      const pnlPct = avgPrice > 0 ? ((closePrice - avgPrice) / avgPrice) * 100.0 : 0;
+      const targetPrice = avgPrice * (1 + activeStrat.targetProfitPct / 100.0);
+      const targetDelta = ((targetPrice - closePrice) / closePrice) * 100.0;
 
-      // 3. Determine Signal
+      // 4. Determine Signal
       const signalCard = document.getElementById("signalCard");
       const signalPulse = document.getElementById("signalPulse");
       const signalStatusText = document.getElementById("signalStatusText");
       const signalGuideTitle = document.getElementById("signalGuideTitle");
       const signalGuideDesc = document.getElementById("signalGuideDesc");
-      const btnBuy = document.getElementById("btnExecuteBuy");
-      const btnSell = document.getElementById("btnExecuteSell");
+      const sellArea = document.getElementById("sellActionArea");
 
       signalCard.className = "signal-card";
-      btnBuy.style.display = "flex";
-      btnSell.style.display = "none";
+      sellArea.style.display = "none";
 
-      if (holdQty > 0 && pnlPct >= activeStrat.targetProfitPct) {
+      if (pnlPct >= activeStrat.targetProfitPct) {
         // [SELL] Target Reached!
         signalCard.classList.add("sell");
         signalPulse.style.backgroundColor = "var(--accent-red)";
-        signalStatusText.innerHTML = `<i class="fa-solid fa-flag-checkered" style="color:var(--accent-red);"></i> 오늘의 신호: 전량 익절 매도!`;
-        signalGuideTitle.innerText = `목표 수익률(+${activeStrat.targetProfitPct}%) 달성!`;
-        signalGuideDesc.innerHTML = `현재 평가 수익률 <strong>+${pnlPct.toFixed(2)}%</strong> (약 +${fmtKRW(pnlAmount)}). 보유 전량 <strong>${holdQty.toFixed(2)}주</strong>를 전량 매도하고 1회차로 리셋하세요.`;
-        btnBuy.style.display = "none";
-        btnSell.style.display = "flex";
+        signalStatusText.innerHTML = `<i class="fa-solid fa-flag-checkered" style="color:var(--accent-red);"></i> 오늘의 신호: 목표 도달! 전량 익절`;
+        signalGuideTitle.innerText = `목표 수익률(+${activeStrat.targetProfitPct}%) 달성! (현재 +${pnlPct.toFixed(2)}%)`;
+        signalGuideDesc.innerHTML = `전량 익절 매도 후 아래 버튼을 눌러 다음 사이클로 리셋하세요.`;
+        sellArea.style.display = "block";
 
       } else if (curRound <= activeStrat.phaseSplitRound) {
-        // [BUY] First Half (Regular Daily Buy)
+        // [BUY] First Half
+        signalCard.classList.add("buy");
         signalPulse.style.backgroundColor = "var(--accent-blue)";
-        signalStatusText.innerHTML = `<i class="fa-solid fa-circle-check" style="color:var(--accent-blue);"></i> 오늘의 신호: ${curRound}회차 정량 매수`;
-        signalGuideTitle.innerText = `전반부 정량 매수 구간 (${curRound} / ${activeStrat.phaseSplitRound}회차)`;
-        signalGuideDesc.innerHTML = `기계적으로 1회 배정금 <strong>${fmtKRW(portionCapital)}</strong> 매수를 진행합니다.`;
+        signalStatusText.innerHTML = `<i class="fa-solid fa-circle-check" style="color:var(--accent-blue);"></i> 오늘의 신호: 정량 매수 (${curRound}회차)`;
+        signalGuideTitle.innerText = `전반부 정량 매수 구간 (${curRound} / ${activeStrat.phaseSplitRound}회차 진도)`;
+        signalGuideDesc.innerHTML = `오늘 1회 배정금 <strong>${fmtKRW(portionCapital)}</strong> 매수를 진행합니다. (약 ${Math.max(1, Math.floor((portionCapital/1350)/closePrice))}주)`;
 
       } else if (curRound <= activeStrat.portions) {
         // Second Half (Conditional)
         const thresholdPrice = avgPrice * (1 + activeStrat.lateThresholdPct / 100.0);
-        const isBelowThreshold = closePrice <= thresholdPrice;
+        const isBelow = closePrice <= thresholdPrice;
 
-        if (activeStrat.lateMode === "always" || isBelowThreshold) {
-          // [BUY] Second Half Condition Met
+        if (activeStrat.lateMode === "always" || isBelow) {
+          signalCard.classList.add("buy");
           signalPulse.style.backgroundColor = "var(--accent-green)";
-          signalStatusText.innerHTML = `<i class="fa-solid fa-cart-shopping" style="color:var(--accent-green);"></i> 오늘의 신호: ${curRound}회차 조건부 매수`;
-          signalGuideTitle.innerText = `후반부 저점 매수 기회 (${curRound} / ${activeStrat.portions}회차)`;
-          signalGuideDesc.innerHTML = `현재가(${fmtUSD(closePrice)})가 평단가 대비 조건(${activeStrat.lateThresholdPct}%, ${fmtUSD(thresholdPrice)}) 이하이므로 1회분을 적극 매수합니다.`;
+          signalStatusText.innerHTML = `<i class="fa-solid fa-cart-shopping" style="color:var(--accent-green);"></i> 오늘의 신호: 조건부 매수 (${curRound}회차)`;
+          signalGuideTitle.innerText = `후반부 저점 매수 기회 (${curRound} / ${activeStrat.portions}회차 진도)`;
+          signalGuideDesc.innerHTML = `현재가(${fmtUSD(closePrice)})가 평단가 대비 조건(${activeStrat.lateThresholdPct}%, ${fmtUSD(thresholdPrice)}) 이하이므로 1회분 매수합니다.`;
         } else {
-          // [WAIT] Second Half Skip (Hold Cash)
           signalCard.classList.add("wait");
           signalPulse.style.backgroundColor = "var(--text-muted)";
           signalStatusText.innerHTML = `<i class="fa-solid fa-hand" style="color:var(--text-muted);"></i> 오늘의 신호: 매수 스킵 (현금 관망)`;
-          signalGuideTitle.innerText = `후반부 방어 구간 (${curRound}회차 대기)`;
-          signalGuideDesc.innerHTML = `현재가가 평단가 기준선(${activeStrat.lateThresholdPct}%, ${fmtUSD(thresholdPrice)})을 초과하여 추가 매수를 스킵하고 현금을 보존합니다.`;
+          signalGuideTitle.innerText = `후반부 기준 미달 (${curRound}회차 구간)`;
+          signalGuideDesc.innerHTML = `현재가가 평단가 기준선(${fmtUSD(thresholdPrice)})을 초과하여 오늘은 매수를 건너뛰고 현금을 보존합니다.`;
         }
 
       } else {
-        // [HOLD] Exhausted Portions
+        // [HOLD] Portions Exhausted
         signalCard.classList.add("wait");
         signalPulse.style.backgroundColor = "var(--accent-purple)";
         signalStatusText.innerHTML = `<i class="fa-solid fa-shield-halved" style="color:var(--accent-purple);"></i> 오늘의 신호: 분할 소진 (익절 대기)`;
-        signalGuideTitle.innerText = `모든 분할(${activeStrat.portions}회)이 소진되었습니다.`;
-        signalGuideDesc.innerHTML = `추가 매수를 중단하고 목표 익절가(${fmtUSD(targetPrice)})까지 보유(존버)합니다.`;
-        btnBuy.disabled = true;
+        signalGuideTitle.innerText = `총 ${activeStrat.portions}회 분할이 모두 진행되었습니다.`;
+        signalGuideDesc.innerHTML = `추가 매수를 중단하고 목표 익절가(${fmtUSD(targetPrice)})까지 보유합니다.`;
       }
 
-      document.getElementById("signalSharesVal").innerText = `${estShares}주`;
-      document.getElementById("signalAmountVal").innerText = fmtKRW(portionCapital);
+      document.getElementById("signalProgressBar").style.width = `${progressPct}%`;
 
-      // 4. Update KPI Cards
+      // 5. Update KPI Cards
       document.getElementById("kpiRound").innerText = `${curRound} / ${activeStrat.portions}회`;
-      document.getElementById("kpiRoundPct").innerText = `진행률 ${Math.round((curRound / activeStrat.portions) * 100)}%`;
+      document.getElementById("kpiRoundPct").innerText = `진행률 ${progressPct}%`;
 
-      document.getElementById("kpiInvested").innerText = fmtKRW(invested);
-      const remaining = Math.max(0, activeStrat.seedCapital - invested);
-      document.getElementById("kpiRemainingCapital").innerText = `잔여: ${fmtKRW(remaining)}`;
+      document.getElementById("kpiInvested").innerText = fmtKRW(investedCapital);
+      document.getElementById("kpiRemainingCapital").innerText = `잔여: ${fmtKRW(remainingCapital)}`;
 
       document.getElementById("kpiAvgCost").innerText = fmtUSD(avgPrice);
-      document.getElementById("kpiHoldQty").innerText = `보유: ${holdQty.toFixed(1)}주`;
+      document.getElementById("kpiEstShares").innerText = `추정 보유: 약 ${totalShares.toFixed(1)}주`;
 
-      const pnlValEl = document.getElementById("kpiPnlPct");
-      pnlValEl.innerText = `${pnlPct >= 0 ? "+" : ""}${pnlPct.toFixed(2)}%`;
-      pnlValEl.style.color = pnlPct >= 0 ? "var(--accent-green)" : "var(--accent-red)";
-      document.getElementById("kpiPnlAmount").innerText = `${pnlAmount >= 0 ? "+" : ""}${fmtKRW(pnlAmount)}`;
+      const pnlEl = document.getElementById("kpiPnlPct");
+      pnlEl.innerText = `${pnlPct >= 0 ? "+" : ""}${pnlPct.toFixed(2)}%`;
+      pnlEl.style.color = pnlPct >= 0 ? "var(--accent-green)" : "var(--accent-red)";
+      document.getElementById("kpiPnlStatus").innerText = pnlPct >= 0 ? "수익 구간" : "평가 손실 구간";
 
       document.getElementById("kpiTargetPrice").innerText = fmtUSD(targetPrice);
-      document.getElementById("kpiTargetDelta").innerText = `도달까지 ${targetDeltaPct >= 0 ? "+" : ""}${targetDeltaPct.toFixed(1)}%`;
+      document.getElementById("kpiTargetDelta").innerText = `도달까지 ${targetDelta >= 0 ? "+" : ""}${targetDelta.toFixed(1)}%`;
 
+      const cycles = activeStrat.completedCycles || [];
       let totalProfit = 0;
-      completedCycles.forEach(c => totalProfit += (c.profit || 0));
+      cycles.forEach(c => totalProfit += (c.profit || 0));
       document.getElementById("kpiCumulativeProfit").innerText = fmtKRW(totalProfit);
-      document.getElementById("kpiCompletedCycles").innerText = `완료: ${completedCycles.length}사이클`;
+      document.getElementById("kpiCompletedCycles").innerText = `완료: ${cycles.length}사이클`;
     }
 
     // -------------------------------------------------------------------------
-    // Execution Actions (Buy & Sell)
+    // Complete Cycle (Reset for Next Cycle)
     // -------------------------------------------------------------------------
-    async function handleExecuteBuy() {
-      const curPrice = currentLatestCandle ? currentLatestCandle.close : 50.0;
-      const portionCapital = Math.round(activeStrat.seedCapital / activeStrat.portions);
-      const usdRate = 1350;
-      const buyQty = Number(((portionCapital / usdRate) / curPrice).toFixed(2));
-
-      if (!confirm(`[${activeStrat.ticker}] ${activeStrat.currentRound}회차 매수를 완료 처리하시겠습니까?\n체결가: $${curPrice.toFixed(2)} | 수량: 약 ${buyQty}주`)) return;
-
-      const prevQty = Number(activeStrat.holdQty) || 0;
-      const prevAvg = Number(activeStrat.avgPrice) || 0;
-      const newQty = prevQty + buyQty;
-      const newAvg = ((prevAvg * prevQty) + (curPrice * buyQty)) / newQty;
-
-      activeStrat.holdQty = Number(newQty.toFixed(2));
-      activeStrat.avgPrice = Number(newAvg.toFixed(2));
-      activeStrat.investedCapital = (activeStrat.investedCapital || 0) + portionCapital;
-
-      const logItem = {
-        date: new Date().toISOString().substring(0, 10),
-        cycleNo: activeStrat.currentCycleNo || 1,
-        round: activeStrat.currentRound,
-        action: "BUY",
-        price: curPrice,
-        qty: buyQty,
-        amount: portionCapital,
-        avgPrice: activeStrat.avgPrice,
-        profit: 0,
-        memo: `${activeStrat.currentRound}회차 분할매수`
-      };
-
-      activeStrat.currentRound += 1;
-      tradeJournal.unshift(logItem);
-      saveLocalState();
-
-      // Cloud Sync
-      if (GAS_WEBAPP_URL) {
-        try {
-          await fetch(GAS_WEBAPP_URL, {
-            method: "POST",
-            mode: "no-cors",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ action: "log_trade_action", trade: logItem })
-          });
-        } catch (e) {
-          console.warn("Cloud log error", e);
-        }
-      }
-
-      calculateAndRenderSignal();
-      renderTables();
-      alert(`${logItem.round}회차 매수 완료가 성공적으로 기록되었습니다!`);
-    }
-
     async function handleExecuteSell() {
-      const curPrice = currentLatestCandle ? currentLatestCandle.close : 50.0;
-      const usdRate = 1350;
-      const holdQty = Number(activeStrat.holdQty) || 0;
-      const avgPrice = Number(activeStrat.avgPrice) || 0;
-      const invested = Number(activeStrat.investedCapital) || 0;
+      const todayStr = new Date().toISOString().substring(0, 10);
+      const profitPct = activeStrat.targetProfitPct;
+      const profitKRW = Math.round(activeStrat.seedCapital * (profitPct / 100.0));
 
-      const totalProceeds = holdQty * curPrice * usdRate;
-      const netProfit = Math.round(totalProceeds - invested);
-      const retPct = ((curPrice - avgPrice) / avgPrice) * 100.0;
+      if (!confirm(`축하합니다! 제 ${activeStrat.currentCycleNo || 1}사이클 목표 익절을 확정하고 다음 사이클로 리셋하시겠습니까?\n실현 수익: 약 +${fmtKRW(profitKRW)} (+${profitPct}%)`)) return;
 
-      if (!confirm(`축하합니다! 목표 익절을 완료하고 다음 사이클로 리셋하시겠습니까?\n실현 수익: 약 ${fmtKRW(netProfit)} (+${retPct.toFixed(2)}%)`)) return;
-
-      const logItem = {
-        date: new Date().toISOString().substring(0, 10),
-        cycleNo: activeStrat.currentCycleNo || 1,
-        round: activeStrat.currentRound,
-        action: "SELL (익절)",
-        price: curPrice,
-        qty: holdQty,
-        amount: Math.round(totalProceeds),
-        avgPrice: avgPrice,
-        profit: netProfit,
-        memo: `목표 익절 전량 매도 (+${retPct.toFixed(2)}%)`
-      };
-
-      tradeJournal.unshift(logItem);
-
-      // Completed cycle record
-      const cycleItem = {
+      if (!activeStrat.completedCycles) activeStrat.completedCycles = [];
+      activeStrat.completedCycles.unshift({
         cycleNo: activeStrat.currentCycleNo || 1,
         startDate: activeStrat.startDate,
-        endDate: new Date().toISOString().substring(0, 10),
-        durationDays: 30, // est
-        maxRounds: activeStrat.currentRound,
-        invested: invested,
-        profit: netProfit,
-        retPct: retPct
-      };
-      completedCycles.unshift(cycleItem);
+        endDate: todayStr,
+        durationDays: calculateTradingDays(activeStrat.startDate),
+        maxRounds: Math.min(calculateTradingDays(activeStrat.startDate), activeStrat.portions),
+        invested: activeStrat.seedCapital,
+        profit: profitKRW,
+        retPct: profitPct
+      });
 
-      // Reset for Next Cycle
       activeStrat.currentCycleNo = (activeStrat.currentCycleNo || 1) + 1;
-      activeStrat.currentRound = 1;
-      activeStrat.holdQty = 0;
-      activeStrat.avgPrice = 0;
-      activeStrat.investedCapital = 0;
+      activeStrat.startDate = todayStr;
       if (activeStrat.compoundMode === "compound") {
-        activeStrat.seedCapital += netProfit;
+        activeStrat.seedCapital += profitKRW;
       }
-      activeStrat.startDate = new Date().toISOString().substring(0, 10);
 
       saveLocalState();
 
-      // Cloud Sync
       if (GAS_WEBAPP_URL) {
         try {
           await fetch(GAS_WEBAPP_URL, {
             method: "POST",
             mode: "no-cors",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ action: "log_trade_action", trade: logItem })
+            body: JSON.stringify({
+              action: "set_active_strategy",
+              strategy: { ...activeStrat }
+            })
           });
         } catch (e) {
-          console.warn("Cloud log error", e);
+          console.warn("Sync cycle reset error", e);
         }
       }
 
-      calculateAndRenderSignal();
-      renderTables();
-      alert(`성공적으로 익절 처리되었습니다!\n새로운 사이클(제 ${activeStrat.currentCycleNo}사이클) 1회차가 시작됩니다.`);
+      evaluateProgressAndSignal();
+      renderCyclesTable();
+      alert(`제 ${activeStrat.currentCycleNo}사이클이 오늘부터 새롭게 시작됩니다!`);
     }
 
     // -------------------------------------------------------------------------
-    // Render Tables (Journal & Completed Cycles)
+    // Render Cycles Table
     // -------------------------------------------------------------------------
-    function renderTables() {
-      // 1. Journal Table
-      document.getElementById("journalCountBadge").innerText = tradeJournal.length;
-      const jBody = document.getElementById("journalTableBody");
-      jBody.innerHTML = "";
+    function renderCyclesTable() {
+      const cycles = activeStrat.completedCycles || [];
+      document.getElementById("cyclesCountBadge").innerText = cycles.length;
+      const tBody = document.getElementById("cyclesTableBody");
+      tBody.innerHTML = "";
 
-      if (tradeJournal.length === 0) {
-        jBody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding:24px; color:var(--text-muted);">아직 기록된 매매 일지가 없습니다. [오늘 매수 완료] 버튼을 눌러 첫 매수를 기록해보세요!</td></tr>`;
-      } else {
-        tradeJournal.slice(0, 50).forEach(j => {
-          const isSell = j.action.includes("SELL") || j.action.includes("매도");
-          const tr = document.createElement("tr");
-          tr.innerHTML = `
-            <td><strong>${j.date}</strong></td>
-            <td>Cycle #${j.cycleNo}</td>
-            <td>${j.round}회차</td>
-            <td><span class="badge ${isSell ? 'badge-red' : 'badge-cyan'}">${j.action}</span></td>
-            <td>${fmtUSD(j.price)}</td>
-            <td>${Number(j.qty).toFixed(2)}주</td>
-            <td style="font-weight:600;">${fmtKRW(j.amount)}</td>
-            <td>${fmtUSD(j.avgPrice)}</td>
-            <td style="color:${j.profit > 0 ? 'var(--accent-green)' : 'inherit'}; font-weight:600;">${j.profit ? fmtKRW(j.profit) : '-'}</td>
-          `;
-          jBody.appendChild(tr);
-        });
+      if (cycles.length === 0) {
+        tBody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:24px; color:var(--text-muted);">완료된 사이클 이력이 없습니다. 목표 수익률 도달 시 여기에 기록됩니다.</td></tr>`;
+        return;
       }
 
-      // 2. Completed Cycles Table
-      document.getElementById("cyclesCountBadge").innerText = completedCycles.length;
-      const cBody = document.getElementById("cyclesTableBody");
-      cBody.innerHTML = "";
-
-      if (completedCycles.length === 0) {
-        cBody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:24px; color:var(--text-muted);">아직 완료된 사이클이 없습니다. 목표 수익률에 도달하면 사이클 기록이 생성됩니다.</td></tr>`;
-      } else {
-        completedCycles.forEach(c => {
-          const tr = document.createElement("tr");
-          tr.innerHTML = `
-            <td><strong>Cycle #${c.cycleNo}</strong></td>
-            <td>${c.startDate}</td>
-            <td>${c.endDate}</td>
-            <td>${c.durationDays}일</td>
-            <td>${c.maxRounds}회 소진</td>
-            <td>${fmtKRW(c.invested)}</td>
-            <td style="color:var(--accent-green); font-weight:700;">+${fmtKRW(c.profit)}</td>
-            <td><span class="badge badge-green">+${Number(c.retPct).toFixed(2)}%</span></td>
-          `;
-          cBody.appendChild(tr);
-        });
-      }
+      cycles.forEach(c => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td><strong>Cycle #${c.cycleNo}</strong></td>
+          <td>${c.startDate}</td>
+          <td>${c.endDate}</td>
+          <td>${c.durationDays}일</td>
+          <td>${c.maxRounds}회 소진</td>
+          <td>${fmtKRW(c.invested)}</td>
+          <td style="color:var(--accent-green); font-weight:700;">+${fmtKRW(c.profit)}</td>
+          <td><span class="badge badge-green">+${c.retPct}%</span></td>
+        `;
+        tBody.appendChild(tr);
+      });
     }
 
-    function switchDashboardTab(tab) {
-      document.getElementById("btnTabJournal").classList.toggle("active", tab === "journal");
-      document.getElementById("btnTabCycles").classList.toggle("active", tab === "cycles");
-      document.getElementById("tabContentJournal").classList.toggle("active", tab === "journal");
-      document.getElementById("tabContentCycles").classList.toggle("active", tab === "cycles");
-    }
-
-    // -------------------------------------------------------------------------
-    // Sync Settings Modal
-    // -------------------------------------------------------------------------
-    function openSyncModal() {
-      document.getElementById("inputGasUrl").value = GAS_WEBAPP_URL;
-      document.getElementById("syncModal").style.display = "flex";
-    }
-
-    function closeSyncModal() {
-      document.getElementById("syncModal").style.display = "none";
-    }
-
-    function saveGasUrl() {
-      const url = document.getElementById("inputGasUrl").value.trim();
-      GAS_WEBAPP_URL = url;
-      localStorage.setItem("dca_gas_url", url);
-      closeSyncModal();
-      updateSyncStatusUI();
-      initDashboard();
-      alert("구글 시트 연동 주소가 저장되었습니다!");
-    }
-
-    // Auto initialize on load
     window.addEventListener("DOMContentLoaded", () => {
       initDashboard();
     });

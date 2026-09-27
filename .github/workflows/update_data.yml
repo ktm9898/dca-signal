@@ -1,0 +1,49 @@
+name: Auto Update DCA ETF Data
+
+on:
+  workflow_dispatch:
+  schedule:
+    # 매주 화~토요일 06:30 KST (월~금 21:30 UTC, 미국 장 마감 후)
+    - cron: '30 21 * * 1-5'
+
+permissions:
+  contents: write
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pandas numpy yfinance requests
+
+      - name: Fetch Latest ETF Historical Prices
+        run: |
+          python fetch_data.py
+
+      - name: Build Data Bundle
+        run: |
+          python build_presets.py
+
+      - name: Commit and Push Changes
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add data/ data_bundle.js
+          if git diff --staged --quiet; then
+            echo "No new data changes to commit."
+          else
+            git commit -m "chore(data): auto-update DCA ETF price dataset [skip ci]"
+            git push origin main
+          fi

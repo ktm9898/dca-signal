@@ -185,6 +185,37 @@
       color: #ffffff;
     }
 
+    .icon-tool-btn {
+      width: 30px;
+      height: 30px;
+      border-radius: 7px;
+      border: 1px solid var(--card-border);
+      background: var(--bg-surface);
+      color: var(--text-sub);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.2s;
+    }
+
+    .icon-tool-btn:hover {
+      background: var(--bg-card-hover);
+      color: var(--accent-blue);
+      border-color: var(--accent-blue);
+    }
+
+    .icon-tool-btn.highlight {
+      background: var(--accent-blue);
+      color: #fff;
+      border-color: var(--accent-blue);
+    }
+
+    .icon-tool-btn.highlight:hover {
+      background: #1d4ed8;
+    }
+
     /* Main Layout Grid */
     .dashboard-grid {
       display: grid;
@@ -861,29 +892,30 @@
         <a href="backtest.html" class="nav-btn active">
           <i class="fa-solid fa-sliders"></i> 백테스트
         </a>
-        <a href="backtest.html?tab=data" class="nav-btn" onclick="openDataTab(event)">
+        <a href="data.html" class="nav-btn">
           <i class="fa-solid fa-table-list"></i> 데이터조회
         </a>
-        <button id="btnOpenSaveModal" class="btn" onclick="openSaveModal()" title="전략 저장">
-          <i class="fa-solid fa-floppy-disk"></i> 저장
-        </button>
-        <button id="btnOpenLoadModal" class="btn" onclick="openLoadModal()" title="전략 불러오기">
-          <i class="fa-solid fa-folder-open"></i> 불러오기
-        </button>
-        <button id="btnApplyToLive" class="btn btn-primary" onclick="applyCurrentStrategyToDashboard()" title="현재 전략을 실전 대시보드에 적용">
-          <i class="fa-solid fa-bolt"></i> 실전 적용
-        </button>
-        <button id="exportCsvBtn" class="btn" title="CSV 다운로드">
-          <i class="fa-solid fa-file-csv"></i> CSV
-        </button>
       </div>
     </header>
 
     <div class="dashboard-grid">
       <!-- Left Control Panel -->
       <aside class="control-panel">
-        <div class="panel-section-title">
-          <i class="fa-solid fa-sliders"></i> 전략 설정
+        <div class="panel-section-title" style="display: flex; justify-content: space-between; align-items: center;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <i class="fa-solid fa-sliders"></i> 전략 설정
+          </div>
+          <div style="display: flex; gap: 6px;">
+            <button class="icon-tool-btn" onclick="openSaveModal()" title="전략 저장">
+              <i class="fa-solid fa-floppy-disk"></i>
+            </button>
+            <button class="icon-tool-btn" onclick="openLoadModal()" title="전략 불러오기">
+              <i class="fa-solid fa-folder-open"></i>
+            </button>
+            <button class="icon-tool-btn highlight" onclick="applyCurrentStrategyToDashboard()" title="실전 대시보드에 적용">
+              <i class="fa-solid fa-bolt"></i>
+            </button>
+          </div>
         </div>
 
         <!-- Target Ticker -->
@@ -963,27 +995,14 @@
         <!-- Second-Half Rule (Condition relative to Average Cost) -->
         <div class="form-group">
           <label>후반부 매수</label>
-          <div class="radio-card-group">
-            <label class="radio-card active">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+            <label class="radio-card active" style="padding: 8px 10px; justify-content: center; align-items: center;">
               <input type="radio" name="secondHalfRule" value="below_threshold" checked>
-              <div class="radio-card-desc">
-                <strong>조건부 매수</strong>
-                <small>기준 이하 시 매수 (미달 시 관망)</small>
-              </div>
+              <strong>조건부</strong>
             </label>
-            <label class="radio-card">
-              <input type="radio" name="secondHalfRule" value="below_threshold_or_half">
-              <div class="radio-card-desc">
-                <strong>완충 매수</strong>
-                <small>기준 이하 1회 / 초과 시 0.5회</small>
-              </div>
-            </label>
-            <label class="radio-card">
+            <label class="radio-card" style="padding: 8px 10px; justify-content: center; align-items: center;">
               <input type="radio" name="secondHalfRule" value="always">
-              <div class="radio-card-desc">
-                <strong>균등분할 매수</strong>
-                <small>조건 없이 매일 1회분 매수</small>
-              </div>
+              <strong>균등분할</strong>
             </label>
           </div>
 
@@ -1009,20 +1028,14 @@
         <!-- Profit Reinvestment Mode -->
         <div class="form-group">
           <label>수익금 운용</label>
-          <div class="radio-card-group">
-            <label class="radio-card active">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+            <label class="radio-card active" style="padding: 8px 10px; justify-content: center; align-items: center;">
               <input type="radio" name="reinvestProfit" value="false" checked>
-              <div class="radio-card-desc">
-                <strong>단리</strong>
-                <small>원금 고정 운용</small>
-              </div>
+              <strong>단리</strong>
             </label>
-            <label class="radio-card">
+            <label class="radio-card" style="padding: 8px 10px; justify-content: center; align-items: center;">
               <input type="radio" name="reinvestProfit" value="true">
-              <div class="radio-card-desc">
-                <strong>복리</strong>
-                <small>수익금 재투자</small>
-              </div>
+              <strong>복리</strong>
             </label>
           </div>
         </div>
@@ -1109,11 +1122,11 @@
             <div class="chart-legend-custom">
               <div class="legend-item">
                 <div class="legend-color" style="background:#2563eb;"></div>
-                <span>DCA 분할 적립 전략</span>
+                <span>DCA 전략</span>
               </div>
               <div class="legend-item">
                 <div class="legend-color" style="background:#94a3b8;"></div>
-                <span>단순 보유 (Buy & Hold)</span>
+                <span>단순 보유</span>
               </div>
             </div>
           </div>
@@ -1122,7 +1135,7 @@
           </div>
         </div>
 
-        <!-- Tabs Section: 4 Tabs -->
+        <!-- Tabs Section: 3 Tabs (Yearly, Cycles, Trade Log) -->
         <div class="tabs-card">
           <div class="tabs-header">
             <div class="nav-tabs">
@@ -1134,9 +1147,6 @@
               </button>
               <button class="tab-btn" data-tab="tab-tradelog" id="btnTabTradeLog">
                 <i class="fa-solid fa-book-bookmark"></i> 매매 일지 (<span id="tradeCountBadge">0</span>)
-              </button>
-              <button class="tab-btn" data-tab="tab-dataviewer" id="btnTabDataViewer">
-                <i class="fa-solid fa-table"></i> 데이터 조회
               </button>
             </div>
             <div style="font-size: 11px; color: var(--text-muted);">
@@ -1228,52 +1238,6 @@
                   </tr>
                 </thead>
                 <tbody id="tradesTableBody">
-                  <!-- Populated dynamically -->
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <!-- Tab 4: Price Data Viewer (OHLCV) -->
-          <div id="tab-dataviewer" class="tab-content">
-            <div class="tab-toolbar">
-              <div class="tab-toolbar-left">
-                <select id="dataviewerTickerSelect" style="width: auto; padding: 6px 10px; font-size: 12px; font-weight: 700;">
-                  <option value="TQQQ">TQQQ (나스닥 3배)</option>
-                  <option value="SOXL">SOXL (반도체 3배)</option>
-                  <option value="UPRO">UPRO (S&P 3배)</option>
-                  <option value="QLD">QLD (나스닥 2배)</option>
-                  <option value="QQQ">QQQ (나스닥 1배)</option>
-                  <option value="SPY">SPY (S&P 1배)</option>
-                  <option value="122630.KS">122630.KS (KODEX 레버리지)</option>
-                </select>
-                <div class="preset-pill-group" style="display: flex; gap: 4px;">
-                  <button class="preset-pill active" data-vrange="30" style="padding: 4px 8px; font-size: 11px;">30일</button>
-                  <button class="preset-pill" data-vrange="100" style="padding: 4px 8px; font-size: 11px;">100일</button>
-                  <button class="preset-pill" data-vrange="250" style="padding: 4px 8px; font-size: 11px;">1년</button>
-                  <button class="preset-pill" data-vrange="750" style="padding: 4px 8px; font-size: 11px;">3년</button>
-                  <button class="preset-pill" data-vrange="all" style="padding: 4px 8px; font-size: 11px;">전체</button>
-                </div>
-              </div>
-              <div id="dataViewerSummaryText" style="font-size: 12px; color: var(--text-sub);">
-                데이터 로딩 중...
-              </div>
-            </div>
-
-            <div class="table-container">
-              <table id="dataviewerTable">
-                <thead>
-                  <tr>
-                    <th>거래일자</th>
-                    <th>시가 (Open)</th>
-                    <th>고가 (High)</th>
-                    <th>저가 (Low)</th>
-                    <th>종가 (Close)</th>
-                    <th>전일비 (Change)</th>
-                    <th>거래량 (Volume)</th>
-                  </tr>
-                </thead>
-                <tbody id="dataviewerTableBody">
                   <!-- Populated dynamically -->
                 </tbody>
               </table>
@@ -2230,72 +2194,6 @@
           <td style="font-size:12px; color:var(--text-muted);">${t.reason}</td>
         `;
         tBody.appendChild(tr);
-      });
-    }
-
-    // -------------------------------------------------------------------------
-    // ETF Price Data Viewer (OHLCV) Tab
-    // -------------------------------------------------------------------------
-    function renderDataViewerTab(ticker) {
-      const t = ticker || params.ticker;
-      document.getElementById("dataviewerTickerSelect").value = t;
-
-      if (!window.DCA_PRESETS || !window.DCA_PRESETS[t]) {
-        document.getElementById("dataViewerSummaryText").innerText = "데이터가 없습니다.";
-        return;
-      }
-
-      const tData = window.DCA_PRESETS[t];
-      const candles = tData.candles;
-      if (!candles || candles.length === 0) return;
-
-      // Filter by range
-      let displayCandles = candles;
-      if (currentViewerRange === "30") displayCandles = candles.slice(-30);
-      else if (currentViewerRange === "100") displayCandles = candles.slice(-100);
-      else if (currentViewerRange === "250") displayCandles = candles.slice(-250);
-      else if (currentViewerRange === "750") displayCandles = candles.slice(-750);
-
-      // Calculate stats
-      const lastCandle = candles[candles.length - 1];
-      const prevCandle = candles.length > 1 ? candles[candles.length - 2] : lastCandle;
-      const dayChgPct = ((lastCandle.close - prevCandle.close) / prevCandle.close) * 100.0;
-
-      // 52-week high/low
-      const recent1y = candles.slice(-250);
-      const high52 = Math.max(...recent1y.map(c => c.high));
-      const low52 = Math.min(...recent1y.map(c => c.low));
-
-      document.getElementById("dataViewerSummaryText").innerHTML = `
-        종가: <strong>${fmtPrice(lastCandle.close, t)}</strong> (${dayChgPct >= 0 ? '+' : ''}${dayChgPct.toFixed(2)}%) | 
-        52주 최고: <strong>${fmtPrice(high52, t)}</strong> | 최저: <strong>${fmtPrice(low52, t)}</strong> | 
-        전체 기간: ${tData.start_date} ~ ${tData.end_date} (총 ${candles.length.toLocaleString()}일)
-      `;
-
-      const vBody = document.getElementById("dataviewerTableBody");
-      vBody.innerHTML = "";
-
-      // Reverse order (newest date first)
-      const reversed = [...displayCandles].reverse();
-      reversed.forEach((c, idx) => {
-        const nextIdx = reversed.length - 1 - idx; // actual original index
-        const prevClose = nextIdx > 0 ? candles[nextIdx - 1].close : c.open;
-        const chgPct = ((c.close - prevClose) / prevClose) * 100.0;
-        const chgBadge = chgPct >= 0 
-          ? `<span class="badge badge-green">+${chgPct.toFixed(2)}%</span>`
-          : `<span class="badge badge-red">${chgPct.toFixed(2)}%</span>`;
-
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td><strong>${c.date}</strong></td>
-          <td>${fmtPrice(c.open, t)}</td>
-          <td>${fmtPrice(c.high, t)}</td>
-          <td>${fmtPrice(c.low, t)}</td>
-          <td style="font-weight:700;">${fmtPrice(c.close, t)}</td>
-          <td>${chgBadge}</td>
-          <td style="font-family:'JetBrains Mono';">${c.volume.toLocaleString()}</td>
-        `;
-        vBody.appendChild(tr);
       });
     }
 

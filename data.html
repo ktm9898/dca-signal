@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DCA Signal | ETF 가격 데이터 조회</title>
+
+  <!-- Google Fonts & Font Awesome Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Pre-bundled ETF Historical Price Data -->
+  <script src="data_bundle.js"></script>
+
+  <style>
+    :root {
+      --bg-base: #f8fafc;
+      --bg-surface: #ffffff;
+      --bg-card: #ffffff;
+      --bg-card-hover: #f1f5f9;
+      --card-border: #e2e8f0;
+
+      --accent-blue: #2563eb;
+      --accent-indigo: #4f46e5;
+      --accent-green: #059669;
+      --accent-red: #dc2626;
+
+      --text-main: #0f172a;
+      --text-sub: #475569;
+      --text-muted: #94a3b8;
+
+      --badge-green: rgba(5, 150, 105, 0.1);
+      --badge-red: rgba(220, 38, 38, 0.1);
+      --badge-blue: rgba(37, 99, 235, 0.1);
+
+      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Outfit', 'Noto Sans KR', sans-serif;
+      background-color: var(--bg-base);
+      color: var(--text-main);
+      line-height: 1.5;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 16px 16px 60px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Top Navigation Header */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 18px;
+      background: var(--bg-surface);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      box-shadow: var(--shadow-sm);
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .logo-icon {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-indigo));
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 17px;
+      box-shadow: 0 3px 8px rgba(37, 99, 235, 0.25);
+    }
+
+    .brand-title {
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: var(--text-main);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .nav-btn {
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      text-decoration: none;
+      transition: all 0.2s;
+      border: 1px solid var(--card-border);
+      background: var(--bg-surface);
+      color: var(--text-sub);
+    }
+
+    .nav-btn:hover {
+      background: var(--bg-card-hover);
+      color: var(--text-main);
+    }
+
+    .nav-btn.active {
+      background: var(--accent-blue);
+      border-color: var(--accent-blue);
+      color: #fff;
+    }
+
+    /* Main Data Card */
+    .data-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 20px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .toolbar-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .toolbar-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    select {
+      padding: 7px 12px;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-main);
+      background: var(--bg-surface);
+      outline: none;
+    }
+
+    select:focus {
+      border-color: var(--accent-blue);
+    }
+
+    .pill-group {
+      display: flex;
+      gap: 4px;
+    }
+
+    .pill-btn {
+      padding: 6px 12px;
+      background: var(--bg-base);
+      border: 1px solid var(--card-border);
+      border-radius: 7px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-sub);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .pill-btn:hover, .pill-btn.active {
+      background: var(--accent-blue);
+      border-color: var(--accent-blue);
+      color: #fff;
+    }
+
+    /* KPI Summary Row */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    @media (max-width: 768px) {
+      .summary-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .summary-item {
+      background: var(--bg-base);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .summary-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .summary-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 17px;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    /* Table */
+    .table-container {
+      overflow-x: auto;
+      max-height: 580px;
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      text-align: left;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      background: #f1f5f9;
+      color: var(--text-sub);
+      font-weight: 600;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--card-border);
+      white-space: nowrap;
+      z-index: 2;
+    }
+
+    td {
+      padding: 9px 12px;
+      border-bottom: 1px solid var(--card-border);
+      white-space: nowrap;
+      color: var(--text-main);
+    }
+
+    tr:hover td {
+      background: var(--bg-card-hover);
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 7px;
+      border-radius: 5px;
+      font-size: 11px;
+      font-weight: 600;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .badge-green { background: var(--badge-green); color: var(--accent-green); }
+    .badge-red { background: var(--badge-red); color: var(--accent-red); }
+
+    footer {
+      text-align: center;
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 10px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <!-- Top Header -->
+    <header>
+      <a href="index.html" class="brand">
+        <div class="logo-icon">
+          <i class="fa-solid fa-chart-pie"></i>
+        </div>
+        <span class="brand-title">DCA Signal</span>
+      </a>
+
+      <div class="header-actions">
+        <a href="index.html" class="nav-btn">
+          <i class="fa-solid fa-gauge-high"></i> 대시보드
+        </a>
+        <a href="backtest.html" class="nav-btn">
+          <i class="fa-solid fa-sliders"></i> 백테스트
+        </a>
+        <a href="data.html" class="nav-btn active">
+          <i class="fa-solid fa-table-list"></i> 데이터조회
+        </a>
+      </div>
+    </header>
+
+    <!-- Main Card -->
+    <div class="data-card">
+      <div class="toolbar-row">
+        <div class="toolbar-left">
+          <select id="tickerSelect" onchange="changeTicker(this.value)">
+            <option value="TQQQ" selected>TQQQ (나스닥 100 3배)</option>
+            <option value="SOXL">SOXL (반도체 3배)</option>
+            <option value="UPRO">UPRO (S&P 500 3배)</option>
+            <option value="QLD">QLD (나스닥 100 2배)</option>
+            <option value="QQQ">QQQ (나스닥 100 1배)</option>
+            <option value="SPY">SPY (S&P 500 1배)</option>
+            <option value="122630.KS">122630.KS (KODEX 레버리지 2배)</option>
+          </select>
+
+          <div class="pill-group">
+            <button class="pill-btn active" data-range="30" onclick="changeRange('30')">30일</button>
+            <button class="pill-btn" data-range="100" onclick="changeRange('100')">100일</button>
+            <button class="pill-btn" data-range="250" onclick="changeRange('250')">1년</button>
+            <button class="pill-btn" data-range="750" onclick="changeRange('750')">3년</button>
+            <button class="pill-btn" data-range="all" onclick="changeRange('all')">전체</button>
+          </div>
+        </div>
+
+        <div style="font-size: 12px; color: var(--text-muted);" id="dateRangeInfo">
+          로딩 중...
+        </div>
+      </div>
+
+      <!-- Summary KPI Row -->
+      <div class="summary-grid">
+        <div class="summary-item">
+          <div class="summary-label">최근 종가</div>
+          <div class="summary-val" id="valClosePrice">-</div>
+        </div>
+        <div class="summary-item">
+          <div class="summary-label">전일 대비 등락</div>
+          <div class="summary-val" id="valChangePct">-</div>
+        </div>
+        <div class="summary-item">
+          <div class="summary-label">52주 최고가</div>
+          <div class="summary-val" id="valHigh52">-</div>
+        </div>
+        <div class="summary-item">
+          <div class="summary-label">52주 최저가</div>
+          <div class="summary-val" id="valLow52">-</div>
+        </div>
+      </div>
+
+      <!-- OHLCV Table -->
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>거래일자</th>
+              <th>시가 (Open)</th>
+              <th>고가 (High)</th>
+              <th>저가 (Low)</th>
+              <th>종가 (Close)</th>
+              <th>전일비 (Change)</th>
+              <th>거래량 (Volume)</th>
+            </tr>
+          </thead>
+          <tbody id="ohlcvTableBody">
+            <!-- Populated dynamically -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <footer>
+      <p>DCA Signal &copy; 2026. ETF Historical OHLCV Price Viewer.</p>
+    </footer>
+  </div>
+
+  <script>
+    let currentTicker = "TQQQ";
+    let currentRange = "30";
+
+    function fmtPrice(val, ticker) {
+      if (val == null || isNaN(val)) return "-";
+      const isKRW = (ticker || currentTicker).includes(".KS");
+      return isKRW ? `${Math.round(val).toLocaleString()}원` : `$${Number(val).toFixed(2)}`;
+    }
+
+    function changeTicker(ticker) {
+      currentTicker = ticker;
+      renderData();
+    }
+
+    function changeRange(range) {
+      currentRange = range;
+      document.querySelectorAll(".pill-btn").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.range === range);
+      });
+      renderData();
+    }
+
+    function renderData() {
+      if (!window.DCA_PRESETS || !window.DCA_PRESETS[currentTicker]) {
+        document.getElementById("dateRangeInfo").innerText = "데이터가 없습니다.";
+        return;
+      }
+
+      const tData = window.DCA_PRESETS[currentTicker];
+      const candles = tData.candles;
+      if (!candles || candles.length === 0) return;
+
+      document.getElementById("dateRangeInfo").innerText = `전체 기간: ${tData.start_date} ~ ${tData.end_date} (총 ${candles.length.toLocaleString()}일)`;
+
+      // Filter by range
+      let displayCandles = candles;
+      if (currentRange === "30") displayCandles = candles.slice(-30);
+      else if (currentRange === "100") displayCandles = candles.slice(-100);
+      else if (currentRange === "250") displayCandles = candles.slice(-250);
+      else if (currentRange === "750") displayCandles = candles.slice(-750);
+
+      // Latest stats
+      const lastCandle = candles[candles.length - 1];
+      const prevCandle = candles.length > 1 ? candles[candles.length - 2] : lastCandle;
+      const dayChgPct = ((lastCandle.close - prevCandle.close) / prevCandle.close) * 100.0;
+
+      // 52-week High/Low
+      const recent1y = candles.slice(-250);
+      const high52 = Math.max(...recent1y.map(c => c.high));
+      const low52 = Math.min(...recent1y.map(c => c.low));
+
+      document.getElementById("valClosePrice").innerText = fmtPrice(lastCandle.close);
+      const chgEl = document.getElementById("valChangePct");
+      chgEl.innerHTML = `<span class="badge ${dayChgPct >= 0 ? 'badge-green' : 'badge-red'}">${dayChgPct >= 0 ? '+' : ''}${dayChgPct.toFixed(2)}%</span>`;
+      document.getElementById("valHigh52").innerText = fmtPrice(high52);
+      document.getElementById("valLow52").innerText = fmtPrice(low52);
+
+      // Render Table (Newest date first)
+      const tBody = document.getElementById("ohlcvTableBody");
+      tBody.innerHTML = "";
+
+      const reversed = [...displayCandles].reverse();
+      reversed.forEach((c, idx) => {
+        const nextIdx = reversed.length - 1 - idx;
+        const prevClose = nextIdx > 0 ? candles[nextIdx - 1].close : c.open;
+        const chgPct = ((c.close - prevClose) / prevClose) * 100.0;
+        const chgBadge = chgPct >= 0 
+          ? `<span class="badge badge-green">+${chgPct.toFixed(2)}%</span>`
+          : `<span class="badge badge-red">${chgPct.toFixed(2)}%</span>`;
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td><strong>${c.date}</strong></td>
+          <td>${fmtPrice(c.open)}</td>
+          <td>${fmtPrice(c.high)}</td>
+          <td>${fmtPrice(c.low)}</td>
+          <td style="font-weight:700;">${fmtPrice(c.close)}</td>
+          <td>${chgBadge}</td>
+          <td style="font-family:'JetBrains Mono';">${c.volume ? c.volume.toLocaleString() : '-'}</td>
+        `;
+        tBody.appendChild(tr);
+      });
+    }
+
+    // Auto initialize on load
+    window.addEventListener("DOMContentLoaded", () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const t = urlParams.get("ticker");
+      if (t && window.DCA_PRESETS && window.DCA_PRESETS[t]) {
+        currentTicker = t;
+        document.getElementById("tickerSelect").value = t;
+      }
+      renderData();
+    });
+  </script>
+</body>
+
+</html>
