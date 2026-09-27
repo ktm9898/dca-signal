@@ -967,12 +967,10 @@
           <table style="width:100%; border-collapse:collapse; font-size:12px; text-align:left;">
             <thead>
               <tr style="background:#f1f5f9; color:var(--text-sub);">
-                <th style="padding:10px 8px; width:70px; text-align:center;">슬롯</th>
-                <th style="padding:10px 8px; width:80px; text-align:center;">종목</th>
-                <th style="padding:10px 10px;">전략 명칭 &amp; 메모</th>
-                <th style="padding:10px 10px; width:180px;">주요 설정</th>
-                <th style="padding:10px 8px; width:95px; text-align:center;">저장일시</th>
-                <th style="padding:10px 8px; width:125px; text-align:center;">관리</th>
+                <th style="padding:10px 10px; width:70px; text-align:center;">슬롯</th>
+                <th style="padding:10px 12px;">전략 명칭 &amp; 메모</th>
+                <th style="padding:10px 10px; width:125px; text-align:center;">저장일시</th>
+                <th style="padding:10px 10px; width:95px; text-align:center;">관리</th>
               </tr>
             </thead>
             <tbody id="dashboard-slots-tbody">
@@ -1470,41 +1468,34 @@
         tr.style.borderBottom = "1px solid var(--card-border)";
 
         const activeBadge = s.isActive 
-          ? `<span class="badge badge-green" style="font-size:10px; padding:2px 5px;"><i class="fa-solid fa-bolt"></i> 가동중</span>` 
+          ? `<span class="badge badge-green" style="font-size:10px; padding:1px 5px; margin-left:2px;"><i class="fa-solid fa-bolt"></i> 가동중</span>` 
           : '';
 
-        const lateText = s.lateMode === "always" ? "균등" : `${s.lateThresholdPct}% 이하`;
-        const settingText = `${s.portions}분할 &bull; ${lateText} &bull; 익절 +${s.targetProfitPct}% &bull; ${s.compoundMode === "compound" ? "복리" : "단리"}`;
-
         let actionHtml = '';
-        if (s.isActive) {
-          actionHtml = `<span class="badge badge-green" style="font-size:11px; padding:3px 7px;"><i class="fa-solid fa-check"></i> 적용중</span>`;
-        } else {
-          actionHtml = `<button class="btn btn-primary" style="font-size:11px; padding:3px 8px;" onclick="applySlotFromDashboard(${s.slotId})" title="실전 전략으로 대시보드에 적용"><i class="fa-solid fa-bolt"></i> 적용</button>`;
+        if (!s.isActive) {
+          actionHtml += `<button class="btn btn-primary" style="padding:5px 9px; font-size:12px;" onclick="applySlotFromDashboard(${s.slotId})" title="실전 전략으로 대시보드에 적용"><i class="fa-solid fa-bolt"></i></button>`;
         }
-
-        actionHtml += `<button class="btn" style="color:#ef4444; border-color:#fca5a5; font-size:11px; padding:3px 6px; margin-left:4px;" onclick="deleteSlotFromDashboard(${s.slotId})" title="슬롯 삭제"><i class="fa-solid fa-trash-can"></i></button>`;
+        actionHtml += `<button class="btn" style="color:#ef4444; border-color:#fca5a5; padding:5px 8px; font-size:12px; margin-left:4px;" onclick="deleteSlotFromDashboard(${s.slotId})" title="슬롯 삭제"><i class="fa-solid fa-trash-can"></i></button>`;
 
         tr.innerHTML = `
           <td style="text-align:center; font-weight:700; color:var(--accent-blue); padding:10px 8px;">
             슬롯 ${s.slotId}
-            <div style="margin-top:2px;">${activeBadge}</div>
           </td>
-          <td style="text-align:center; padding:10px 8px;">
-            <span class="badge badge-blue" style="font-size:11px;">${s.ticker}</span>
-          </td>
-          <td style="padding:10px 10px;">
-            <div style="font-weight:700; color:var(--text-main); font-size:13px;">${s.name}</div>
-            ${s.memo ? `<div style="font-size:11px; color:var(--text-muted); margin-top:2px;">${s.memo}</div>` : ''}
-          </td>
-          <td style="padding:10px 10px; font-size:11px; color:var(--text-sub);">
-            ${settingText}
+          <td style="padding:10px 12px;">
+            <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+              <span style="font-weight:700; color:var(--text-main); font-size:13px;">${s.name}</span>
+              <span class="badge badge-blue" style="font-size:11px; font-weight:700;">${s.ticker}</span>
+              ${activeBadge}
+            </div>
+            ${s.memo ? `<div style="font-size:11px; color:var(--text-muted); margin-top:3px;">${s.memo}</div>` : ''}
           </td>
           <td style="text-align:center; font-size:11px; color:var(--text-muted); padding:10px 8px; white-space:nowrap;">
             ${s.updatedAt ? s.updatedAt.substring(0, 16) : '-'}
           </td>
           <td style="text-align:center; padding:10px 8px; white-space:nowrap;">
-            ${actionHtml}
+            <div style="display:flex; gap:6px; justify-content:center;">
+              ${actionHtml}
+            </div>
           </td>
         `;
         tbody.appendChild(tr);

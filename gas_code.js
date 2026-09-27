@@ -285,7 +285,10 @@ function doGet(e) {
         phaseSplitRound: Number(getCol(r, "phasesplitround", 8, 0)) || 0,
         lateMode: String(getCol(r, "latemode", 9, "cond")),
         lateThresholdPct: Number(getCol(r, "latethresholdpct", 10, 0)) || 0,
-        targetProfitPct: Number(getCol(r, "targetprofitpct", 11, 0)) || 0,
+        targetProfitPct: (() => {
+          const raw = Number(getCol(r, "targetprofitpct", 11, 10));
+          return (isNaN(raw) || Math.abs(raw) > 500) ? 10 : raw;
+        })(),
         compoundMode: String(getCol(r, "compoundmode", 12, "simple")),
         currentCycleNo: Number(getCol(r, "currentcycleno", 13, 1)) || 1,
         updatedAt: formatDateVal(getCol(r, "updatedat", 14, ""))
