@@ -1474,10 +1474,11 @@
           : '';
 
         let actionHtml = '';
-        if (!s.isActive) {
-          actionHtml += `<button class="btn btn-primary" style="padding:5px 9px; font-size:12px;" onclick="applySlotFromDashboard(${s.slotId})" title="실전 전략으로 대시보드에 적용"><i class="fa-solid fa-bolt"></i></button>`;
+        if (s.isActive) {
+          actionHtml = `<button class="btn" disabled style="padding:5px 12px; font-size:12px; font-weight:600; opacity:0.7; cursor:default; background:var(--bg-base); color:var(--text-muted); border-color:var(--card-border);"><i class="fa-solid fa-check"></i> 적용중</button>`;
+        } else {
+          actionHtml = `<button class="btn btn-primary" style="padding:5px 12px; font-size:12px; font-weight:600;" onclick="applySlotFromDashboard(${s.slotId})" title="이 전략을 실전 대시보드에 적용"><i class="fa-solid fa-bolt"></i> 적용</button>`;
         }
-        actionHtml += `<button class="btn" style="color:#ef4444; border-color:#fca5a5; padding:5px 8px; font-size:12px; margin-left:4px;" onclick="deleteSlotFromDashboard(${s.slotId})" title="슬롯 삭제"><i class="fa-solid fa-trash-can"></i></button>`;
 
         tr.innerHTML = `
           <td style="text-align:center; font-weight:700; color:var(--accent-blue); padding:10px 8px; white-space:nowrap;">
