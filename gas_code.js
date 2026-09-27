@@ -27,15 +27,6 @@ function setupSheets() {
       "CurrentCycleNo", "UpdatedAt"
     ]]);
     activeSheet.getRange("A1:K1").setFontWeight("bold").setBackground("#e0f2fe");
-
-    activeSheet.appendRow([
-      "TQQQ", 
-      Utilities.formatDate(new Date(), "GMT+9", "yyyy-MM-dd"),
-      10000000, 40, 20,
-      "cond", -5.0, 10.0, "simple",
-      1,
-      Utilities.formatDate(new Date(), "GMT+9", "yyyy-MM-dd HH:mm:ss")
-    ]);
   }
 
   // 2. 전략 슬롯 (1~10번 보관함)
@@ -48,17 +39,7 @@ function setupSheets() {
       "CompoundMode", "UpdatedAt"
     ]]);
     slotsSheet.getRange("A1:L1").setFontWeight("bold").setBackground("#dbeafe");
-
-    slotsSheet.appendRow([
-      1, "TQQQ 정석 40분할", "20회차 후 -5% 이하만 매수, 목표 10%", 
-      "TQQQ", 10000000, 40, 20, "cond", -5.0, 10.0, "simple",
-      Utilities.formatDate(new Date(), "GMT+9", "yyyy-MM-dd HH:mm:ss")
-    ]);
-    slotsSheet.appendRow([
-      2, "SOXL 공격형 50분할", "25회차 후 -7% 이하 매수, 목표 12%", 
-      "SOXL", 10000000, 50, 25, "cond", -7.0, 12.0, "simple",
-      Utilities.formatDate(new Date(), "GMT+9", "yyyy-MM-dd HH:mm:ss")
-    ]);
+    // 사용자가 직접 저장한 전략만 보관 (초기 예시 행 없음)
   }
 
   // 3. 최신 시세 캐시 시트 (DCA_Latest_Quotes)
@@ -83,7 +64,7 @@ function setupSheets() {
 }
 
 /**
- * ⏰ 매일 아침 06:30 KST 자동 실행 시간 트리거 등록 함수
+ * ⏰ 매일 아침 07:00~08:00 KST 자동 실행 시간 트리거 등록 함수
  */
 function setupDailyTrigger() {
   // 기존 중복 트리거 삭제
@@ -94,16 +75,16 @@ function setupDailyTrigger() {
     }
   }
 
-  // 매일 오전 6시~7시 사이에 실행되는 일일 타이머 등록
+  // 매일 오전 7시~8시 사이에 실행되는 일일 타이머 등록
   ScriptApp.newTrigger("updateDailyQuotes")
     .timeBased()
-    .atHour(6)
+    .atHour(7)
     .nearMinute(30)
     .everyDays(1)
     .inTimezone("Asia/Seoul")
     .create();
 
-  Logger.log("매일 아침 06:30 시세 자동 업데이트 트리거 등록 완료!");
+  Logger.log("매일 아침 07:30 시세 자동 업데이트 트리거 등록 완료!");
   updateDailyQuotes(); // 즉시 1회 실행
 }
 
@@ -194,21 +175,10 @@ function fetchYahooQuote(ticker) {
 
 function doGet(e) {
   const action = (e && e.parameter && e.parameter.action) || "all";
-  const tickerParam = (e && e.parameter && e.parameter.ticker) || "";
   const ss = SpreadsheetApp.getActiveSpreadsheet();
 
   try {
-    // 0. 실시간 시세 조회 (온디맨드 초고속 조회)
-    if (action === "get_quote") {
-      const target = tickerParam.toUpperCase() || "TQQQ";
-      const q = fetchYahooQuote(target);
-      if (q) {
-        return respondJSON({ success: true, quote: q });
-      }
-      return respondJSON({ success: false, message: "Quote fetch failed" });
-    }
-
-    // 1. 대시보드 전체 데이터 일괄 로드 (활성 전략 + 최신 시세)
+    // 1. 대시보드 전체 데이터 일괄 로드 (활성 전략 + 시트에 저장된 종가 + 슬롯 + 이력)
     if (action === "get_active_strategy" || action === "all") {
       let activeSheet = ss.getSheetByName("DCA_Active_Strategy");
       if (!activeSheet) {
@@ -234,10 +204,24 @@ function doGet(e) {
         };
       }
 
-      // 최신 시세 정보
+      // 시트(DCA_Latest_Quotes)에 캐시된 최신 종가 읽기 (온디맨드 실시간 조회 불필요)
       let quoteObj = null;
-      if (activeStrat && activeStrat.ticker) {
-        quoteObj = fetchYahooQuote(activeStrat.ticker);
+      let quoteSheet = ss.getSheetByName("DCA_Latest_Quotes");
+      if (quoteSheet && activeStrat && activeStrat.ticker) {
+        const qData = quoteSheet.getDataRange().getValues();
+        for (let i = 1; i < qData.length; i++) {
+          if (String(qData[i][0]).toUpperCase() === activeStrat.ticker.toUpperCase()) {
+            quoteObj = {
+              ticker: qData[i][0],
+              close: Number(qData[i][1]),
+              changePct: Number(qData[i][2]),
+              high52: Number(qData[i][3]),
+              low52: Number(qData[i][4]),
+              date: String(qData[i][5])
+            };
+            break;
+          }
+        }
       }
 
       // 슬롯 목록
@@ -355,16 +339,16 @@ function doPost(e) {
       const nowStr = Utilities.formatDate(new Date(), "GMT+9", "yyyy-MM-dd HH:mm:ss");
 
       activeSheet.getRange(2, 1, 1, 11).setValues([[
-        p.ticker || "TQQQ",
+        p.ticker || "",
         p.startDate || Utilities.formatDate(new Date(), "GMT+9", "yyyy-MM-dd"),
-        p.seedCapital || 10000000,
-        p.portions || 40,
-        p.phaseSplitRound || 20,
+        Number(p.seedCapital) || 0,
+        Number(p.portions) || 0,
+        Number(p.phaseSplitRound) || 0,
         p.lateMode || "cond",
-        p.lateThresholdPct != null ? p.lateThresholdPct : -5,
-        p.targetProfitPct || 10,
+        p.lateThresholdPct != null ? Number(p.lateThresholdPct) : 0,
+        Number(p.targetProfitPct) || 0,
         p.compoundMode || "simple",
-        p.currentCycleNo || 1,
+        Number(p.currentCycleNo) || 1,
         nowStr
       ]]);
 
@@ -375,7 +359,7 @@ function doPost(e) {
           const lastCycle = p.completedCycles[0];
           cyclesSheet.appendRow([
             lastCycle.cycleNo || 1,
-            p.ticker || "TQQQ",
+            p.ticker || "",
             lastCycle.startDate || "",
             lastCycle.endDate || "",
             lastCycle.durationDays || 0,
@@ -412,15 +396,15 @@ function doPost(e) {
 
       const rowValues = [
         slotId,
-        body.name || `전략 슬롯 ${slotId}`,
+        body.name || `슬롯 ${slotId}`,
         body.memo || "",
-        p.ticker || "TQQQ",
-        p.seedCapital || 10000000,
-        p.portions || 40,
-        p.phaseSplitRound || 20,
+        p.ticker || "",
+        Number(p.seedCapital) || 0,
+        Number(p.portions) || 0,
+        Number(p.phaseSplitRound) || 0,
         p.lateMode || "cond",
-        p.lateThresholdPct != null ? p.lateThresholdPct : -5,
-        p.targetProfitPct || 10,
+        p.lateThresholdPct != null ? Number(p.lateThresholdPct) : 0,
+        Number(p.targetProfitPct) || 0,
         p.compoundMode || "simple",
         nowStr
       ];

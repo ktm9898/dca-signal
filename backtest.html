@@ -1299,53 +1299,29 @@
       </div>
     </div>
 
-    <!-- Modal 2: Strategy Load Modal -->
+    <!-- Modal 2: Strategy Load Modal (Google Sheet Slots Only) -->
     <div id="loadStrategyModal" class="modal-backdrop">
-      <div class="modal-box" style="max-width: 680px;">
+      <div class="modal-box" style="max-width: 580px;">
         <div class="modal-header">
           <div class="modal-title">
-            <i class="fa-solid fa-folder-open" style="color:var(--accent-emerald);"></i> 전략 불러오기
+            <i class="fa-solid fa-cloud" style="color:var(--accent-blue);"></i> 구글 시트 저장 전략 불러오기
           </div>
           <button class="modal-close-btn" onclick="closeLoadModal()">&times;</button>
         </div>
 
-        <div class="nav-tabs" style="border-bottom:1px solid var(--card-border); padding-bottom:8px;">
-          <button class="tab-btn active" id="btnTabPresets" onclick="switchLoadTab('presets')">
-            <i class="fa-solid fa-cube"></i> 추천 프리셋
-          </button>
-          <button class="tab-btn" id="btnTabSlots" onclick="switchLoadTab('slots')">
-            <i class="fa-solid fa-table"></i> 구글 시트 슬롯 (<span id="sheetSlotCountBadge">0</span>)
-          </button>
-          <button class="tab-btn" id="btnTabMyStrat" onclick="switchLoadTab('mystrat')">
-            <i class="fa-solid fa-bookmark"></i> 내 로컬 저장 (<span id="myStratCountBadge">0</span>)
-          </button>
-        </div>
-
-        <!-- Presets List -->
-        <div id="loadSectionPresets" style="display:flex; flex-direction:column; gap:10px; max-height:400px; overflow-y:auto;">
-          <!-- Populated dynamically -->
+        <div style="font-size:12px; color:var(--text-muted); margin-bottom:4px;">
+          구글 시트(1~10번 슬롯)에 저장된 사용자 전략 목록입니다.
         </div>
 
         <!-- Google Sheet Slots List -->
-        <div id="loadSectionSlots" style="display:none; flex-direction:column; gap:10px; max-height:400px; overflow-y:auto;">
-          <!-- Populated dynamically -->
-        </div>
-
-        <!-- My Saved Strategies List -->
-        <div id="loadSectionMyStrat" style="display:none; flex-direction:column; gap:10px; max-height:400px; overflow-y:auto;">
-          <!-- Populated dynamically -->
+        <div id="loadSectionSlots" style="display:flex; flex-direction:column; gap:10px; max-height:420px; overflow-y:auto;">
+          <!-- Populated dynamically from GAS -->
         </div>
 
         <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; border-top:1px solid var(--card-border); padding-top:10px;">
-          <div style="display:flex; gap:6px;">
-            <button class="btn" onclick="exportStrategiesJson()" style="font-size:11px; padding:6px 10px;">
-              <i class="fa-solid fa-download"></i> 백업(JSON)
-            </button>
-            <button class="btn" onclick="triggerImportJson()" style="font-size:11px; padding:6px 10px;">
-              <i class="fa-solid fa-upload"></i> 복구(JSON)
-            </button>
-            <input type="file" id="importJsonFileInput" accept=".json" style="display:none;" onchange="handleImportJson(event)">
-          </div>
+          <button class="btn" onclick="fetchSheetSlots()" title="구글 시트에서 다시 읽기" style="font-size:12px;">
+            <i class="fa-solid fa-arrows-rotate"></i> 새로고침
+          </button>
           <button class="btn" onclick="closeLoadModal()">닫기</button>
         </div>
       </div>
@@ -1380,66 +1356,6 @@
       feePct: 0.1,
       slippagePct: 0.05
     };
-
-    // Built-in Presets
-    const BUILTIN_PRESETS = [
-      {
-        id: "preset_1",
-        name: "스탠다드 DCA (40분할 + 평단가 이하 매수)",
-        memo: "가장 균형 잡힌 정석 분할 매수. 전반부 정량 매수 후 21회차부터 평단가 이하에서만 진입",
-        params: {
-          ticker: "TQQQ",
-          portions: 40,
-          phaseSplitRound: 20,
-          secondHalfRule: "below_threshold",
-          secondHalfThresholdPct: 0.0,
-          targetProfitPct: 10.0,
-          reinvestProfit: false
-        }
-      },
-      {
-        id: "preset_2",
-        name: "하락장 방어형 (50분할 + 딥다이브 -5%)",
-        memo: "원금을 50분할하고, 후반부에는 평단가 대비 -5% 이상 하락한 과매도 구간에서만 매수하여 현금 보존",
-        params: {
-          ticker: "TQQQ",
-          portions: 50,
-          phaseSplitRound: 25,
-          secondHalfRule: "below_threshold",
-          secondHalfThresholdPct: -5.0,
-          targetProfitPct: 10.0,
-          reinvestProfit: false
-        }
-      },
-      {
-        id: "preset_3",
-        name: "단기 고속 회전형 (20분할 + 5% 조기익절)",
-        memo: "자본을 20회분으로 빠르게 회전시키며 +5% 익절 시 신속하게 사이클을 리셋하여 회전율 극대화",
-        params: {
-          ticker: "TQQQ",
-          portions: 20,
-          phaseSplitRound: 10,
-          secondHalfRule: "below_threshold",
-          secondHalfThresholdPct: 0.0,
-          targetProfitPct: 5.0,
-          reinvestProfit: true
-        }
-      },
-      {
-        id: "preset_4",
-        name: "대폭락 극복형 (60분할 + -15% 폭락 매수)",
-        memo: "2022년급 대세 하락장을 정면 돌파. 후반부 평단가 대비 -15% 이하 폭락 구간에서만 담아 MDD 최소화",
-        params: {
-          ticker: "TQQQ",
-          portions: 60,
-          phaseSplitRound: 30,
-          secondHalfRule: "below_threshold",
-          secondHalfThresholdPct: -15.0,
-          targetProfitPct: 15.0,
-          reinvestProfit: false
-        }
-      }
-    ];
 
     // Currency & Price Formatters
     function fmtKRW(val) {
@@ -2287,71 +2203,48 @@
     }
 
     async function confirmSaveStrategy() {
-      const name = document.getElementById("saveStrategyName").value.trim() || `${params.ticker} 커스텀 전략`;
+      const name = document.getElementById("saveStrategyName").value.trim() || `${params.ticker} 전략`;
       const memo = document.getElementById("saveStrategyMemo").value.trim();
       const slotId = parseInt(document.getElementById("saveSheetSlotSelect").value) || 1;
 
-      const newStrat = {
-        id: "strat_" + Date.now(),
-        slotId: slotId,
-        name: name,
-        memo: memo,
-        savedAt: new Date().toISOString().substring(0, 19).replace('T', ' '),
-        params: { ...params }
-      };
-
-      // 1. Save to LocalStorage
-      const saved = getSavedStrategies();
-      saved.unshift(newStrat);
-      localStorage.setItem("dca_saved_strategies", JSON.stringify(saved));
-
-      // 2. Save to Google Sheet if GAS_WEBAPP_URL is present
-      if (GAS_WEBAPP_URL) {
-        try {
-          await fetch(GAS_WEBAPP_URL, {
-            method: "POST",
-            mode: "no-cors",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              action: "save_slot",
-              slotId: slotId,
-              name: name,
-              memo: memo,
-              strategy: {
-                ticker: params.ticker,
-                seedCapital: params.initialCapital,
-                portions: params.portions,
-                phaseSplitRound: params.phaseSplitRound,
-                lateMode: params.secondHalfRule === "below_threshold" ? "cond" : (params.secondHalfRule === "below_threshold_or_half" ? "half" : "always"),
-                lateThresholdPct: params.secondHalfThresholdPct,
-                targetProfitPct: params.targetProfitPct,
-                compoundMode: params.reinvestProfit ? "compound" : "simple"
-              }
-            })
-          });
-        } catch (e) {
-          console.warn("GAS save slot error", e);
-        }
+      if (!GAS_WEBAPP_URL) {
+        alert("구글 시트 연동 주소가 설정되어 있지 않습니다.");
+        return;
       }
 
-      closeSaveModal();
-      alert(`[${name}] 전략이 슬롯 ${slotId} 및 로컬에 저장되었습니다!`);
-    }
-
-    function getSavedStrategies() {
       try {
-        const raw = localStorage.getItem("dca_saved_strategies");
-        return raw ? JSON.parse(raw) : [];
+        await fetch(GAS_WEBAPP_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "save_slot",
+            slotId: slotId,
+            name: name,
+            memo: memo,
+            strategy: {
+              ticker: params.ticker,
+              seedCapital: params.initialCapital,
+              portions: params.portions,
+              phaseSplitRound: params.phaseSplitRound,
+              lateMode: params.secondHalfRule === "below_threshold" ? "cond" : "always",
+              lateThresholdPct: params.secondHalfThresholdPct,
+              targetProfitPct: params.targetProfitPct,
+              compoundMode: params.reinvestProfit ? "compound" : "simple"
+            }
+          })
+        });
+
+        closeSaveModal();
+        alert(`[${name}] 전략이 구글 시트 슬롯 ${slotId}에 저장되었습니다!`);
       } catch (e) {
-        return [];
+        console.warn("GAS save slot error", e);
+        alert("구글 시트 저장 중 통신 오류가 발생했습니다.");
       }
     }
 
     function openLoadModal() {
-      renderPresetsList();
-      renderMyStrategiesList();
       fetchSheetSlots();
-      switchLoadTab("presets");
       document.getElementById("loadStrategyModal").style.display = "flex";
     }
 
@@ -2359,65 +2252,55 @@
       document.getElementById("loadStrategyModal").style.display = "none";
     }
 
-    function switchLoadTab(tabName) {
-      document.getElementById("btnTabPresets").classList.remove("active");
-      document.getElementById("btnTabSlots").classList.remove("active");
-      document.getElementById("btnTabMyStrat").classList.remove("active");
-
-      document.getElementById("loadSectionPresets").style.display = "none";
-      document.getElementById("loadSectionSlots").style.display = "none";
-      document.getElementById("loadSectionMyStrat").style.display = "none";
-
-      if (tabName === "presets") {
-        document.getElementById("btnTabPresets").classList.add("active");
-        document.getElementById("loadSectionPresets").style.display = "flex";
-      } else if (tabName === "slots") {
-        document.getElementById("btnTabSlots").classList.add("active");
-        document.getElementById("loadSectionSlots").style.display = "flex";
-        renderSheetSlotsList();
-      } else {
-        document.getElementById("btnTabMyStrat").classList.add("active");
-        document.getElementById("loadSectionMyStrat").style.display = "flex";
-      }
-    }
-
     async function fetchSheetSlots() {
+      const container = document.getElementById("loadSectionSlots");
+      if (container) {
+        container.innerHTML = `<div style="text-align:center; padding:20px; color:var(--text-muted); font-size:13px;"><i class="fa-solid fa-spinner fa-spin"></i> 구글 시트에서 슬롯을 조회 중...</div>`;
+      }
+
       if (!GAS_WEBAPP_URL) {
-        document.getElementById("sheetSlotCountBadge").innerText = "미연동";
+        if (container) {
+          container.innerHTML = `
+            <div style="text-align:center; padding:30px 10px; color:var(--text-muted); font-size:13px;">
+              <i class="fa-solid fa-cloud" style="font-size:24px; margin-bottom:8px; display:block;"></i>
+              구글 시트 연동 주소가 아직 설정되지 않았습니다.
+            </div>
+          `;
+        }
         return;
       }
+
       try {
         const res = await fetch(`${GAS_WEBAPP_URL}?action=get_slots`);
         const data = await res.json();
         if (data.success && data.slots) {
           cachedSheetSlots = data.slots;
-          document.getElementById("sheetSlotCountBadge").innerText = cachedSheetSlots.length;
+          renderSheetSlotsList();
+        } else {
           renderSheetSlotsList();
         }
       } catch (e) {
         console.warn("fetch slots error", e);
+        if (container) {
+          container.innerHTML = `
+            <div style="text-align:center; padding:20px; color:var(--text-muted); font-size:13px;">
+              슬롯 목록을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.
+            </div>
+          `;
+        }
       }
     }
 
     function renderSheetSlotsList() {
       const container = document.getElementById("loadSectionSlots");
+      if (!container) return;
       container.innerHTML = "";
-
-      if (!GAS_WEBAPP_URL) {
-        container.innerHTML = `
-          <div style="text-align:center; padding:30px 10px; color:var(--text-muted); font-size:13px;">
-            <i class="fa-solid fa-cloud" style="font-size:24px; margin-bottom:8px; display:block;"></i>
-            구글 시트 연동 주소가 아직 설정되지 않았습니다.<br>
-            대시보드 또는 설정에서 웹앱 URL을 연동하면 클라우드 슬롯이 표시됩니다.
-          </div>
-        `;
-        return;
-      }
 
       if (cachedSheetSlots.length === 0) {
         container.innerHTML = `
           <div style="text-align:center; padding:30px 10px; color:var(--text-muted); font-size:13px;">
-            구글 시트에 저장된 슬롯이 없습니다.<br>[전략 저장]에서 슬롯을 지정해 저장해 보세요.
+            <i class="fa-regular fa-folder-open" style="font-size:24px; margin-bottom:8px; display:block;"></i>
+            구글 시트에 저장된 전략이 없습니다.<br>[전략 저장]에서 슬롯(1~10)을 지정해 저장해보세요.
           </div>
         `;
         return;
@@ -2443,6 +2326,7 @@
             <span class="badge badge-cyan">${s.portions}회차</span>
             <span class="badge badge-amber">기준: ${s.lateThresholdPct}%</span>
             <span class="badge badge-green">익절: +${s.targetProfitPct}%</span>
+            <span class="badge badge-cyan">${s.compoundMode === "compound" ? "복리" : "단리"}</span>
           </div>
         `;
         container.appendChild(card);
@@ -2457,111 +2341,13 @@
         initialCapital: s.seedCapital,
         portions: s.portions,
         phaseSplitRound: s.phaseSplitRound,
-        secondHalfRule: s.lateMode === "half" ? "below_threshold_or_half" : (s.lateMode === "always" ? "always" : "below_threshold"),
+        secondHalfRule: s.lateMode === "always" ? "always" : "below_threshold",
         secondHalfThresholdPct: s.lateThresholdPct,
         targetProfitPct: s.targetProfitPct,
         reinvestProfit: s.compoundMode === "compound"
       });
       closeLoadModal();
       alert(`[슬롯 ${slotId}: ${s.name}] 전략이 적용되었습니다!`);
-    }
-
-    function renderPresetsList() {
-      const container = document.getElementById("loadSectionPresets");
-      container.innerHTML = "";
-
-      BUILTIN_PRESETS.forEach(p => {
-        const card = document.createElement("div");
-        card.className = "strategy-card-item";
-        card.innerHTML = `
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <strong style="color:var(--accent-blue); font-size:14px;">${p.name}</strong>
-            <button class="btn btn-primary" onclick="applyStrategyPreset('${p.id}')" style="padding:4px 10px; font-size:12px;">
-              <i class="fa-solid fa-check"></i> 적용
-            </button>
-          </div>
-          <div style="font-size:12px; color:var(--text-sub);">${p.memo}</div>
-          <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:2px;">
-            <span class="badge badge-cyan">${p.params.portions}회 분할</span>
-            <span class="badge badge-cyan">${p.params.phaseSplitRound}회 분기</span>
-            <span class="badge badge-amber">기준: ${p.params.secondHalfThresholdPct}% 이하</span>
-            <span class="badge badge-green">익절: +${p.params.targetProfitPct}%</span>
-            <span class="badge badge-cyan">${p.params.reinvestProfit ? "복리" : "단리"}</span>
-          </div>
-        `;
-        container.appendChild(card);
-      });
-    }
-
-    function renderMyStrategiesList() {
-      const container = document.getElementById("loadSectionMyStrat");
-      const list = getSavedStrategies();
-      document.getElementById("myStratCountBadge").innerText = list.length;
-      container.innerHTML = "";
-
-      if (list.length === 0) {
-        container.innerHTML = `
-          <div style="text-align:center; padding:30px 10px; color:var(--text-muted); font-size:13px;">
-            <i class="fa-regular fa-folder-open" style="font-size:24px; margin-bottom:8px; display:block;"></i>
-            아직 직접 저장한 전략이 없습니다.<br>좌측 설정 후 [전략 저장] 버튼을 눌러보세요!
-          </div>
-        `;
-        return;
-      }
-
-      list.forEach(item => {
-        const card = document.createElement("div");
-        card.className = "strategy-card-item";
-        card.innerHTML = `
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <div>
-              <strong style="color:var(--text-main); font-size:14px;">${item.name}</strong>
-              <small style="color:var(--text-muted); margin-left:6px;">(${item.savedAt})</small>
-            </div>
-            <div style="display:flex; gap:6px;">
-              <button class="btn btn-primary" onclick="applyUserStrategy('${item.id}')" style="padding:4px 10px; font-size:12px;">
-                <i class="fa-solid fa-check"></i> 적용
-              </button>
-              <button class="btn" onclick="deleteUserStrategy('${item.id}')" style="padding:4px 8px; font-size:12px; color:var(--accent-red);">
-                <i class="fa-solid fa-trash"></i>
-              </button>
-            </div>
-          </div>
-          ${item.memo ? `<div style="font-size:12px; color:var(--text-sub);">${item.memo}</div>` : ''}
-          <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:2px;">
-            <span class="badge badge-cyan">${item.params.ticker}</span>
-            <span class="badge badge-cyan">${item.params.portions}회 분할</span>
-            <span class="badge badge-amber">기준: ${item.params.secondHalfThresholdPct}% 이하</span>
-            <span class="badge badge-green">익절: +${item.params.targetProfitPct}%</span>
-          </div>
-        `;
-        container.appendChild(card);
-      });
-    }
-
-    function applyStrategyPreset(presetId) {
-      const p = BUILTIN_PRESETS.find(x => x.id === presetId);
-      if (!p) return;
-      applyStrategyParams(p.params);
-      closeLoadModal();
-      alert(`[${p.name}] 전략이 적용되었습니다!`);
-    }
-
-    function applyUserStrategy(stratId) {
-      const list = getSavedStrategies();
-      const item = list.find(x => x.id === stratId);
-      if (!item) return;
-      applyStrategyParams(item.params);
-      closeLoadModal();
-      alert(`[${item.name}] 전략이 적용되었습니다!`);
-    }
-
-    function deleteUserStrategy(stratId) {
-      if (!confirm("해당 저장 전략을 삭제하시겠습니까?")) return;
-      let list = getSavedStrategies();
-      list = list.filter(x => x.id !== stratId);
-      localStorage.setItem("dca_saved_strategies", JSON.stringify(list));
-      renderMyStrategiesList();
     }
 
     function applyStrategyParams(newParams) {
@@ -2611,46 +2397,6 @@
       }
 
       loadTickerData(params.ticker);
-    }
-
-    function exportStrategiesJson() {
-      const list = getSavedStrategies();
-      const blob = new Blob([JSON.stringify(list, null, 2)], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `dca_signal_my_strategies_${new Date().toISOString().substring(0,10)}.json`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-    }
-
-    function triggerImportJson() {
-      document.getElementById("importJsonFileInput").click();
-    }
-
-    function handleImportJson(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        try {
-          const parsed = JSON.parse(e.target.result);
-          if (Array.isArray(parsed)) {
-            const current = getSavedStrategies();
-            const merged = [...parsed, ...current];
-            localStorage.setItem("dca_saved_strategies", JSON.stringify(merged));
-            renderMyStrategiesList();
-            alert(`${parsed.length}개의 전략을 성공적으로 복구/불러왔습니다!`);
-          } else {
-            alert("유효하지 않은 전략 백업 파일 형식입니다.");
-          }
-        } catch (err) {
-          alert("JSON 파일 파싱 실패: " + err);
-        }
-      };
-      reader.readAsText(file);
     }
 
     // -------------------------------------------------------------------------
