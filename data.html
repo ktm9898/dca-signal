@@ -401,6 +401,9 @@
   </div>
 
   <script>
+    const DEFAULT_GAS_URL = "https://script.google.com/macros/s/AKfycbw_mOf0ej-maqAf7HIxZBSjcc4tnFPrH-_CjwzcVar-kxR5KepZDvou_EQKvRJMAykUYg/exec";
+    const GAS_WEBAPP_URL = localStorage.getItem("dca_gas_url") || DEFAULT_GAS_URL;
+
     let currentTicker = "TQQQ";
     let currentRange = "30";
 
@@ -410,9 +413,10 @@
       return isKRW ? `${Math.round(val).toLocaleString()}원` : `$${Number(val).toFixed(2)}`;
     }
 
-    function changeTicker(ticker) {
+    async function changeTicker(ticker) {
       currentTicker = ticker;
       renderData();
+      await fetchLiveQuote(ticker);
     }
 
     function changeRange(range) {
@@ -421,6 +425,24 @@
         btn.classList.toggle("active", btn.dataset.range === range);
       });
       renderData();
+    }
+
+    async function fetchLiveQuote(ticker) {
+      if (!GAS_WEBAPP_URL) return;
+      try {
+        const res = await fetch(`${GAS_WEBAPP_URL}?action=get_quote&ticker=${ticker}`);
+        const data = await res.json();
+        if (data.success && data.quote) {
+          const q = data.quote;
+          document.getElementById("valClosePrice").innerText = fmtPrice(q.close, ticker);
+          const chgEl = document.getElementById("valChangePct");
+          chgEl.innerHTML = `<span class="badge ${q.changePct >= 0 ? 'badge-green' : 'badge-red'}">${q.changePct >= 0 ? '+' : ''}${q.changePct.toFixed(2)}%</span>`;
+          if (q.high52) document.getElementById("valHigh52").innerText = fmtPrice(q.high52, ticker);
+          if (q.low52) document.getElementById("valLow52").innerText = fmtPrice(q.low52, ticker);
+        }
+      } catch (e) {
+        console.warn("Live quote fetch error", e);
+      }
     }
 
     function renderData() {
@@ -494,6 +516,7 @@
         document.getElementById("tickerSelect").value = t;
       }
       renderData();
+      fetchLiveQuote(currentTicker);
     });
   </script>
 </body>

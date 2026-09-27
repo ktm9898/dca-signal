@@ -806,7 +806,17 @@
           if (s.lateThresholdPct !== undefined) activeStrat.lateThresholdPct = s.lateThresholdPct;
           if (s.targetProfitPct) activeStrat.targetProfitPct = s.targetProfitPct;
           if (s.compoundMode) activeStrat.compoundMode = s.compoundMode;
+          if (json.completedCycles && json.completedCycles.length > 0) {
+            activeStrat.completedCycles = json.completedCycles;
+          }
           saveLocalState();
+        }
+        if (json.latestQuote) {
+          currentLatestCandle = {
+            close: json.latestQuote.close,
+            prevClose: json.latestQuote.prevClose,
+            date: json.latestQuote.date
+          };
         }
       } catch (e) {
         console.warn("Fetch cloud strategy error", e);
