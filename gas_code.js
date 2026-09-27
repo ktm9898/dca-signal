@@ -285,10 +285,7 @@ function doGet(e) {
         phaseSplitRound: Number(getCol(r, "phasesplitround", 8, 0)) || 0,
         lateMode: String(getCol(r, "latemode", 9, "cond")),
         lateThresholdPct: Number(getCol(r, "latethresholdpct", 10, 0)) || 0,
-        targetProfitPct: (() => {
-          const raw = Number(getCol(r, "targetprofitpct", 11, 10));
-          return (isNaN(raw) || Math.abs(raw) > 500) ? 10 : raw;
-        })(),
+        targetProfitPct: sanitizeProfitSafe(getCol(r, "targetprofitpct", 11, 10)),
         compoundMode: String(getCol(r, "compoundmode", 12, "simple")),
         currentCycleNo: Number(getCol(r, "currentcycleno", 13, 1)) || 1,
         updatedAt: formatDateVal(getCol(r, "updatedat", 14, ""))
@@ -416,7 +413,7 @@ function doPost(e) {
         Number(p.phaseSplitRound) || 0,
         p.lateMode || "cond",
         p.lateThresholdPct != null ? Number(p.lateThresholdPct) : 0,
-        Number(p.targetProfitPct) || 0,
+        sanitizeProfitSafe(p.targetProfitPct),
         p.compoundMode || "simple",
         Number(p.currentCycleNo) || 1,
         nowStr
@@ -519,4 +516,21 @@ function formatDateVal(val) {
     return Utilities.formatDate(val, "GMT+9", "yyyy-MM-dd HH:mm:ss");
   }
   return String(val || "");
+}
+
+/**
+ * 목표 익절률 정화 함수
+ * 구글 시트의 날짜 서식 오적용으로 인한 1900년 Date 객체 밀리초(-2208328072000)를 원천 복원 및 방어합니다.
+ */
+function sanitizeProfitSafe(val) {
+  if (val == null || val === "") return 10.0;
+  if (val instanceof Date) {
+    const epoch = new Date(1899, 11, 30).getTime();
+    const days = Math.round((val.getTime() - epoch) / (24 * 3600 * 1000));
+    if (days > 0 && days <= 200) return days;
+    return 10.0;
+  }
+  const n = Number(val);
+  if (isNaN(n) || n <= 0 || n > 200) return 10.0;
+  return n;
 }

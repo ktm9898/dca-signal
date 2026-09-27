@@ -1044,16 +1044,29 @@
       renderCyclesTable();
     }
 
+    function sanitizeProfitPct(val) {
+      const n = parseFloat(val);
+      if (isNaN(n) || n <= 0 || n > 200) return 10.0;
+      return n;
+    }
+
     function loadLocalState() {
       try {
         const savedStrat = localStorage.getItem("dca_active_strategy");
-        if (savedStrat) activeStrat = { ...DEFAULT_STRATEGY, ...JSON.parse(savedStrat) };
+        if (savedStrat) {
+          activeStrat = { ...DEFAULT_STRATEGY, ...JSON.parse(savedStrat) };
+          activeStrat.targetProfitPct = sanitizeProfitPct(activeStrat.targetProfitPct);
+          saveLocalState(); // 정화된 값으로 로컬스토리지 덮어쓰기
+        }
       } catch (e) {
         console.warn("Local state load error", e);
       }
     }
 
     function saveLocalState() {
+      if (activeStrat) {
+        activeStrat.targetProfitPct = sanitizeProfitPct(activeStrat.targetProfitPct);
+      }
       localStorage.setItem("dca_active_strategy", JSON.stringify(activeStrat));
     }
 
@@ -1070,7 +1083,7 @@
           if (s.phaseSplitRound) activeStrat.phaseSplitRound = s.phaseSplitRound;
           if (s.lateMode) activeStrat.lateMode = s.lateMode;
           if (s.lateThresholdPct !== undefined) activeStrat.lateThresholdPct = s.lateThresholdPct;
-          if (s.targetProfitPct) activeStrat.targetProfitPct = s.targetProfitPct;
+          if (s.targetProfitPct !== undefined) activeStrat.targetProfitPct = sanitizeProfitPct(s.targetProfitPct);
           if (s.compoundMode) activeStrat.compoundMode = s.compoundMode;
           if (json.completedCycles && json.completedCycles.length > 0) {
             activeStrat.completedCycles = json.completedCycles;
@@ -1538,7 +1551,7 @@
         if (target.phaseSplitRound) activeStrat.phaseSplitRound = target.phaseSplitRound;
         if (target.lateMode) activeStrat.lateMode = target.lateMode;
         if (target.lateThresholdPct !== undefined) activeStrat.lateThresholdPct = target.lateThresholdPct;
-        if (target.targetProfitPct) activeStrat.targetProfitPct = target.targetProfitPct;
+        if (target.targetProfitPct !== undefined) activeStrat.targetProfitPct = sanitizeProfitPct(target.targetProfitPct);
         if (target.compoundMode) activeStrat.compoundMode = target.compoundMode;
         if (target.startDate) activeStrat.startDate = target.startDate;
         saveLocalState();

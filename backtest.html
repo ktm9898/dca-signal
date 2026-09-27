@@ -1376,6 +1376,12 @@
       return `$${val.toFixed(2)}`;
     }
 
+    function sanitizeProfitPct(val) {
+      const n = parseFloat(val);
+      if (isNaN(n) || n <= 0 || n > 200) return 10.0;
+      return n;
+    }
+
     // Initialize UI on Load: Load Current Active Strategy
     document.addEventListener("DOMContentLoaded", async () => {
       initEventListeners();
@@ -1386,6 +1392,8 @@
         if (savedStrat) {
           const s = JSON.parse(savedStrat);
           if (s && s.ticker) {
+            s.targetProfitPct = sanitizeProfitPct(s.targetProfitPct);
+            localStorage.setItem("dca_active_strategy", JSON.stringify(s)); // 오염된 값 즉시 정화
             applyStrategyParams({
               ticker: s.ticker,
               initialCapital: s.seedCapital,
@@ -1428,7 +1436,7 @@
             phaseSplitRound: s.phaseSplitRound,
             secondHalfRule: s.lateMode === "always" ? "always" : "below_threshold",
             secondHalfThresholdPct: s.lateThresholdPct != null ? s.lateThresholdPct : 0,
-            targetProfitPct: s.targetProfitPct,
+            targetProfitPct: sanitizeProfitPct(s.targetProfitPct),
             reinvestProfit: (s.compoundMode === "compound")
           });
         }
@@ -2449,10 +2457,12 @@
         document.getElementById("thresholdRange").value = params.secondHalfThresholdPct;
         updateThresholdDisplay();
       }
-      if (newParams.targetProfitPct) {
-        params.targetProfitPct = newParams.targetProfitPct;
-        document.getElementById("targetProfitRange").value = params.targetProfitPct;
-        document.getElementById("profitDisplay").innerText = `+${params.targetProfitPct.toFixed(1)}%`;
+      if (newParams.targetProfitPct !== undefined) {
+        params.targetProfitPct = sanitizeProfitPct(newParams.targetProfitPct);
+        const r = document.getElementById("targetProfitRange");
+        if (r) r.value = params.targetProfitPct;
+        const d = document.getElementById("profitDisplay");
+        if (d) d.innerText = `+${params.targetProfitPct.toFixed(1)}%`;
       }
       if (newParams.reinvestProfit !== undefined) {
         params.reinvestProfit = newParams.reinvestProfit;
