@@ -400,6 +400,21 @@ function doPost(e) {
       return respondJSON({ success: true, message: "실전 활성 전략이 동기화되었습니다." });
     }
 
+    // 3. 전략 슬롯 삭제 (초기화)
+    if (action === "delete_slot" || action === "clear_slot") {
+      const slotId = Number(body.slotId) || 0;
+      if (slotId > 0) {
+        const sData = slotsSheet.getDataRange().getValues();
+        for (let i = 1; i < sData.length; i++) {
+          if (Number(sData[i][0]) === slotId) {
+            slotsSheet.deleteRow(i + 1);
+            break;
+          }
+        }
+      }
+      return respondJSON({ success: true, message: `슬롯 ${slotId}이 삭제되었습니다.` });
+    }
+
     return respondJSON({ success: false, message: "Unknown action: " + action });
 
   } catch (err) {
