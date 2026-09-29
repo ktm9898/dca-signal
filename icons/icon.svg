@@ -29,7 +29,7 @@
   <path d="M 160 340 A 130 130 0 0 1 352 340" fill="none" stroke="#38bdf8" stroke-width="8" stroke-opacity="0.4"/>
   <path d="M 200 340 A 80 80 0 0 1 312 340" fill="none" stroke="#38bdf8" stroke-width="10" stroke-opacity="0.6"/>
 
-  <!-- Candlestick Trend / Signal Pillars -->
+  <!-- Candlestick Trend / Signal Pillars (Clean without white line) -->
   <!-- Bar 1 -->
   <rect x="136" y="270" width="28" height="70" rx="8" fill="#3b82f6" fill-opacity="0.8"/>
   <line x1="150" y1="240" x2="150" y2="360" stroke="#3b82f6" stroke-width="4" stroke-linecap="round"/>
@@ -45,13 +45,6 @@
   <!-- Bar 4 (Breakout profit) -->
   <rect x="316" y="160" width="28" height="180" rx="8" fill="url(#accentGrad)" filter="url(#glow)"/>
   <line x1="330" y1="130" x2="330" y2="360" stroke="#10b981" stroke-width="5" stroke-linecap="round"/>
-
-  <!-- Dynamic Signal Rising Trendline -->
-  <path d="M 120 310 Q 200 290, 270 230 T 390 120" fill="none" stroke="#ffffff" stroke-width="10" stroke-linecap="round" filter="url(#glow)"/>
-  <circle cx="390" cy="120" r="16" fill="#10b981" stroke="#ffffff" stroke-width="5" filter="url(#glow)"/>
-
-  <!-- Signal Pulse Beacon at apex -->
-  <circle cx="390" cy="120" r="28" fill="none" stroke="#34d399" stroke-width="4" stroke-opacity="0.6"/>
 
   <!-- Text Label DCA -->
   <text x="256" y="435" text-anchor="middle" font-family="'Outfit', 'Noto Sans KR', sans-serif" font-weight="900" font-size="52" fill="#ffffff" letter-spacing="4">DCA SIGNAL</text>

@@ -6,7 +6,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DCA Signal | ETF 가격 데이터 조회</title>
 
-  <!-- App Icons -->
+  <!-- PWA & App Icons -->
+  <meta name="theme-color" content="#ffffff">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="DCA Signal">
+  <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/svg+xml" href="icons/favicon.svg">
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 
@@ -550,6 +555,9 @@
 
     // Auto initialize on load
     window.addEventListener("DOMContentLoaded", () => {
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js').catch(() => {});
+      }
       const urlParams = new URLSearchParams(window.location.search);
       const t = urlParams.get("ticker");
       if (t && window.DCA_PRESETS && window.DCA_PRESETS[t]) {
