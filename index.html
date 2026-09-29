@@ -6,6 +6,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DCA Signal | 실전 투자 대시보드</title>
 
+  <!-- App Icons -->
+  <link rel="icon" type="image/svg+xml" href="icons/favicon.svg">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+
   <!-- Google Fonts & Font Awesome Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -988,7 +992,7 @@
                 <strong id="ticketBuyQty">약 0주</strong>
               </div>
               <div class="ticket-note" id="ticketBuyNote">
-                * 전반부 기계적 매수: 넉넉한 상한선 입력으로 당일 <strong>실제 마감 종가</strong>에 100% 무조건 체결됩니다.
+                * 전반기 기계적 매수: 넉넉한 상한선 입력으로 당일 <strong>실제 마감 종가</strong>에 100% 무조건 체결됩니다.
               </div>
             </div>
           </div>
@@ -1409,13 +1413,13 @@
         signalCard.classList.add("buy");
         signalPulse.style.backgroundColor = "var(--accent-blue)";
         guideBadge.className = "badge badge-blue";
-        guideBadge.innerHTML = `<span class="phase-pc">전반부 ${curRound}/${activeStrat.phaseSplitRound}회차 (정량 매수)</span><span class="phase-mo">전반 ${curRound}/${activeStrat.phaseSplitRound}</span>`;
+        guideBadge.innerHTML = `<span class="phase-pc">전반기 ${curRound}/${activeStrat.phaseSplitRound}회차 (정량 매수)</span><span class="phase-mo">전반 ${curRound}/${activeStrat.phaseSplitRound}</span>`;
 
         const locPrice = closePrice * 1.10;
         document.getElementById("ticketBuyConditionTag").innerText = "100% 체결";
         document.getElementById("ticketBuyPrice").innerText = fmtUSD(locPrice);
         document.getElementById("ticketBuyPriceSub").innerText = "(최근종가 +10%)";
-        document.getElementById("ticketBuyNote").innerHTML = `* 전반부 기계적 매수: 넉넉한 상한선(+10%)을 적어두면 당일 <strong>실제 마감 종가</strong>에 100% 무조건 체결됩니다.`;
+        document.getElementById("ticketBuyNote").innerHTML = `* 전반기 기계적 매수: 넉넉한 상한선(+10%)을 적어두면 당일 <strong>실제 마감 종가</strong>에 100% 무조건 체결됩니다.`;
 
       } else if (curRound <= activeStrat.portions) {
         // [BUY] Second Half (Conditional buy below avgPrice - threshold%)
