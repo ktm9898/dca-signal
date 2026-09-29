@@ -2,12 +2,17 @@
  * Google Apps Script - DCA Signal (정량 분할 적립식 퀀트 시그널 시스템)
  * Repository: ktm9898/dca-signal
  * 
- * [배포 및 트리거 설정]
+ * [배포 및 자동화 설정 가이드]
  * 1. 스프레드시트 [확장 프로그램] -> [Apps Script]에서 본 코드로 덮어쓰기
- * 2. 상단 함수 선택에서 `setupSheets` 선택 후 [실행] (시트 탭 3개 자동 구성)
- * 3. 상단 함수 선택에서 `setupDailyTrigger` 선택 후 [실행]
- *    -> 매일 아침 07:30 KST(미국 장 마감 후) 자동으로 최신 시세를 갱신하는 시간 트리거가 자동 등록됩니다!
- * 4. 우측 상단 [배포] -> [배포 관리] -> 연필(수정) 아이콘 클릭 후
+ * 2. 좌측 톱니바퀴 [프로젝트 설정] -> 하단 [스크립트 속성(Script Properties)] 클릭
+ *    - 속성 추가:
+ *      * 속성: GITHUB_TOKEN
+ *      * 값: 본인의 GitHub Personal Access Token (repo, workflow 권한 포함)
+ * 3. 상단 함수 선택에서 `setupSheets` 선택 후 [실행] (시트 탭 자동 구성)
+ * 4. 상단 함수 선택에서 `setupDailyTrigger` 선택 후 [실행]
+ *    -> 매일 아침 06:45~07:00 KST(미국 장 마감 후) 자동으로 구글 시트 시세 갱신 및
+ *       GitHub Actions(update_data.yml)를 원격으로 깨워 최신 ETF 데이터를 정밀하게 빌드합니다!
+ * 5. 우측 상단 [배포] -> [배포 관리] -> 연필(수정) 아이콘 클릭 후
  *    - 버전: "새 버전" 선택
  *    - [배포] 클릭 (기존 웹앱 URL 유지)
  */
@@ -47,6 +52,14 @@ function setupSheets() {
       "CycleNo", "Ticker", "StartDate", "EndDate", "DurationDays", "Invested", "Profit", "ReturnPct"
     ]]);
     cyclesSheet.getRange("A1:H1").setFontWeight("bold").setBackground("#dcfce7");
+  }
+
+  // 4. 실행 및 트리거 로그 시트 (Execution_Logs)
+  let logSheet = ss.getSheetByName("Execution_Logs");
+  if (!logSheet) {
+    logSheet = ss.insertSheet("Execution_Logs");
+    logSheet.getRange("A1:C1").setValues([["Timestamp", "Status", "Message"]]);
+    logSheet.getRange("A1:C1").setFontWeight("bold").setBackground("#e0e7ff");
   }
 }
 
@@ -158,28 +171,120 @@ function getStandardizedSlotsSheet(ss) {
 }
 
 /**
- * ⏰ 매일 아침 07:00~08:00 KST 자동 실행 시간 트리거 등록 함수
+ * ⏰ 매일 아침 자동 실행 통합 일일 작업
+ * 1) 구글 시트의 DCA_Latest_Quotes 최신 시세 갱신
+ * 2) GitHub Actions update_data.yml 원격 트리거 실행 (ETF 가격 수집 및 data_bundle.js 자동 빌드)
+ */
+function runDailyAutomation() {
+  const nowStr = Utilities.formatDate(new Date(), "GMT+9", "yyyy-MM-dd HH:mm:ss");
+  Logger.log(`[runDailyAutomation] 일일 자동화 시작: ${nowStr}`);
+
+  // 1. 구글 시트 내부 최신 시세 갱신
+  try {
+    updateDailyQuotes();
+  } catch (e) {
+    Logger.log(`[runDailyAutomation] updateDailyQuotes 실패: ${e.toString()}`);
+  }
+
+  // 2. GitHub Actions 원격 트리거 실행
+  try {
+    triggerGitHubDataUpdate();
+  } catch (e) {
+    Logger.log(`[runDailyAutomation] triggerGitHubDataUpdate 실패: ${e.toString()}`);
+  }
+}
+
+/**
+ * ⏰ 매일 아침 06:45~07:00 KST 자동 실행 시간 트리거 등록 함수
  */
 function setupDailyTrigger() {
   // 기존 중복 트리거 삭제
   const triggers = ScriptApp.getProjectTriggers();
   for (let i = 0; i < triggers.length; i++) {
-    if (triggers[i].getHandlerFunction() === "updateDailyQuotes") {
+    const fn = triggers[i].getHandlerFunction();
+    if (fn === "updateDailyQuotes" || fn === "runDailyAutomation" || fn === "triggerGitHubDataUpdate") {
       ScriptApp.deleteTrigger(triggers[i]);
     }
   }
 
-  // 매일 오전 7시~8시 사이에 실행되는 일일 타이머 등록
-  ScriptApp.newTrigger("updateDailyQuotes")
+  // 매일 오전 6시 45분~7시 사이에 실행되는 일일 타이머 등록
+  ScriptApp.newTrigger("runDailyAutomation")
     .timeBased()
-    .atHour(7)
-    .nearMinute(30)
+    .atHour(6)
+    .nearMinute(45)
     .everyDays(1)
     .inTimezone("Asia/Seoul")
     .create();
 
-  Logger.log("매일 아침 07:30 시세 자동 업데이트 트리거 등록 완료!");
-  updateDailyQuotes(); // 즉시 1회 실행
+  Logger.log("매일 아침 시세 갱신 및 GitHub Actions 자동 업데이트 트리거 등록 완료!");
+  runDailyAutomation(); // 즉시 1회 테스트 실행
+}
+
+/**
+ * 🚀 GitHub Actions 'update_data.yml' 워크플로우 원격 트리거 함수
+ * - Google Apps Script 정기 트리거 또는 웹앱 요청 시 실행
+ * - GitHub REST API (dispatches)를 호출하여 GitHub Actions를 정밀하게 실행
+ */
+function triggerGitHubDataUpdate() {
+  const githubToken = PropertiesService.getScriptProperties().getProperty("GITHUB_TOKEN");
+  if (!githubToken) {
+    const msg = "GITHUB_TOKEN이 스크립트 속성(Script Properties)에 설정되지 않았습니다. [프로젝트 설정] -> [스크립트 속성]에 GITHUB_TOKEN을 추가해주세요.";
+    Logger.log("[triggerGitHubDataUpdate] " + msg);
+    logTriggerResult("FAILED", msg);
+    return { success: false, message: msg };
+  }
+
+  const url = "https://api.github.com/repos/ktm9898/dca-signal/actions/workflows/update_data.yml/dispatches";
+  const options = {
+    method: "post",
+    contentType: "application/json",
+    headers: {
+      "Accept": "application/vnd.github+json",
+      "Authorization": "Bearer " + githubToken.trim(),
+      "User-Agent": "GoogleAppsScript"
+    },
+    payload: JSON.stringify({ ref: "main" }),
+    muteHttpExceptions: true
+  };
+
+  try {
+    const response = UrlFetchApp.fetch(url, options);
+    const code = response.getResponseCode();
+    if (code === 204 || code === 200) {
+      Logger.log("[triggerGitHubDataUpdate] GitHub Actions update_data.yml 원격 트리거 성공 (HTTP " + code + ")");
+      logTriggerResult("SUCCESS", "GitHub Actions update_data.yml 원격 트리거 완료 (정상 " + code + ")");
+      return { success: true, message: "GitHub Actions 데이터 업데이트가 성공적으로 시작되었습니다." };
+    } else {
+      const errBody = response.getContentText();
+      Logger.log(`[triggerGitHubDataUpdate] 트리거 실패 (HTTP ${code}): ${errBody}`);
+      logTriggerResult("FAILED", `HTTP ${code}: ${errBody}`);
+      return { success: false, message: `HTTP ${code}: ${errBody}` };
+    }
+  } catch (err) {
+    Logger.log("[triggerGitHubDataUpdate] 예외 발생: " + err.toString());
+    logTriggerResult("ERROR", err.toString());
+    return { success: false, message: err.toString() };
+  }
+}
+
+/**
+ * 트리거 실행 결과를 Execution_Logs 시트에 기록
+ */
+function logTriggerResult(status, message) {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    if (!ss) return;
+    let logSheet = ss.getSheetByName("Execution_Logs");
+    if (!logSheet) {
+      logSheet = ss.insertSheet("Execution_Logs");
+      logSheet.getRange("A1:C1").setValues([["Timestamp", "Status", "Message"]]);
+      logSheet.getRange("A1:C1").setFontWeight("bold").setBackground("#e0e7ff");
+    }
+    const timestamp = Utilities.formatDate(new Date(), "GMT+9", "yyyy-MM-dd HH:mm:ss");
+    logSheet.appendRow([timestamp, status, message]);
+  } catch (e) {
+    Logger.log("logTriggerResult error: " + e.toString());
+  }
 }
 
 /**
@@ -520,6 +625,12 @@ function doPost(e) {
         }
       }
       return respondJSON({ success: true, message: `슬롯 ${slotId}이 삭제되었습니다.` });
+    }
+
+    // 4. GitHub Actions 데이터 업데이트 원격 트리거
+    if (action === "trigger_data_update" || action === "trigger_github_update") {
+      const res = triggerGitHubDataUpdate();
+      return respondJSON(res);
     }
 
     return respondJSON({ success: false, message: "Unknown action: " + action });
