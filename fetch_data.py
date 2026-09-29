@@ -45,11 +45,18 @@ def fetch_ticker_data(ticker: str, range_str: str = "10y") -> dict:
         closes = quote.get("close", [])
         volumes = quote.get("volume", [])
         
+        meta = res0.get("meta", {})
+        reg_price = meta.get("regularMarketPrice")
+        reg_time = meta.get("regularMarketTime")
+
         cleaned = []
         for i in range(len(timestamps)):
             c = closes[i]
             if c is None or c <= 0:
-                continue
+                if i == len(timestamps) - 1 and reg_price and reg_price > 0:
+                    c = reg_price
+                else:
+                    continue
             o = opens[i] if opens[i] is not None else c
             h = highs[i] if highs[i] is not None else max(o, c)
             l = lows[i] if lows[i] is not None else min(o, c)
@@ -64,6 +71,19 @@ def fetch_ticker_data(ticker: str, range_str: str = "10y") -> dict:
                 "close": round(float(c), 4),
                 "volume": int(v)
             })
+
+        # meta의 최신 날짜가 timestamps보다 더 최신인 경우 안전하게 추가 보정
+        if reg_price and reg_price > 0 and reg_time:
+            meta_dt = datetime.utcfromtimestamp(reg_time).strftime("%Y-%m-%d")
+            if not cleaned or meta_dt > cleaned[-1]["date"]:
+                cleaned.append({
+                    "date": meta_dt,
+                    "open": round(float(reg_price), 4),
+                    "high": round(float(reg_price), 4),
+                    "low": round(float(reg_price), 4),
+                    "close": round(float(reg_price), 4),
+                    "volume": 0
+                })
             
         return {
             "ticker": ticker,

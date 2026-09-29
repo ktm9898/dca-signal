@@ -335,17 +335,43 @@ function fetchYahooQuote(ticker) {
     if (chart && chart.timestamp && chart.indicators && chart.indicators.quote) {
       const ts = chart.timestamp;
       const quotes = chart.indicators.quote[0];
+      const meta = chart.meta || {};
+      const regPrice = Number(meta.regularMarketPrice) || 0;
+      const regTime = Number(meta.regularMarketTime) || 0;
+
       const closes = [];
       const highs = [];
       const lows = [];
       let lastDate = "";
 
       for (let i = 0; i < ts.length; i++) {
-        if (quotes.close[i] != null) {
-          closes.push(quotes.close[i]);
-          highs.push(quotes.high[i] || quotes.close[i]);
-          lows.push(quotes.low[i] || quotes.close[i]);
+        let c = quotes.close[i];
+        let h = quotes.high[i];
+        let l = quotes.low[i];
+
+        // 마지막 캔들의 종가가 null일 때 meta의 최신 실시간/장마감 가격으로 보정
+        if ((c == null || c <= 0) && i === ts.length - 1 && regPrice > 0) {
+          c = regPrice;
+          h = (h != null && h > 0) ? Math.max(h, c) : c;
+          l = (l != null && l > 0) ? Math.min(l, c) : c;
+        }
+
+        if (c != null && c > 0) {
+          closes.push(c);
+          highs.push(h || c);
+          lows.push(l || c);
           lastDate = Utilities.formatDate(new Date(ts[i] * 1000), "GMT", "yyyy-MM-dd");
+        }
+      }
+
+      // 만약 meta의 최신 시간이 ts 배열보다 더 최신일 경우 안전하게 추가
+      if (regPrice > 0 && regTime > 0) {
+        const metaDate = Utilities.formatDate(new Date(regTime * 1000), "GMT", "yyyy-MM-dd");
+        if (metaDate > lastDate) {
+          closes.push(regPrice);
+          highs.push(regPrice);
+          lows.push(regPrice);
+          lastDate = metaDate;
         }
       }
 
