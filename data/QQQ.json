@@ -1,7 +1,7 @@
 {
   "ticker": "QQQ",
   "name": "Invesco QQQ Trust (나스닥 1배)",
-  "updated_at": "2026-10-14 22:17:48",
+  "updated_at": "2026-10-15 00:00:46",
   "data_count": 2512,
   "start_date": "2016-10-17",
   "end_date": "2026-10-14",
@@ -20098,9 +20098,9 @@
       "date": "2026-10-14",
       "open": 738.0,
       "high": 740.53,
-      "low": 726.43,
+      "low": 726.39,
       "close": 728.95,
-      "volume": 50226896
+      "volume": 51534028
     }
   ]
 }
