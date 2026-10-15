@@ -592,6 +592,33 @@
       gap: 14px;
     }
 
+    .tab-btn {
+      background: none;
+      border: 1px solid transparent;
+      padding: 6px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+
+    .tab-btn:hover {
+      color: var(--text-main);
+      background: var(--bg-card-hover);
+    }
+
+    .tab-btn.active {
+      color: var(--accent-blue);
+      background: rgba(37, 99, 235, 0.08);
+      border-color: rgba(37, 99, 235, 0.2);
+      font-weight: 700;
+    }
+
     .card-header-row {
       display: flex;
       justify-content: space-between;
@@ -1079,19 +1106,45 @@
       </div>
     </div>
 
-    <!-- Completed Cycles History Table -->
+    <!-- Bottom Section: Current Cycle Trades Log & Completed Cycles -->
     <div class="cycles-card">
-      <div class="card-header-row">
-        <div class="card-title">
-          <i class="fa-solid fa-list-check" style="color:var(--accent-blue);"></i>
-          완료된 사이클 이력 (<span id="cyclesCountBadge">0</span>)
+      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--card-border); padding-bottom:10px; flex-wrap:wrap; gap:10px;">
+        <div style="display:flex; gap:8px; align-items:center;">
+          <button id="btnTabCurrentTrades" class="tab-btn active" onclick="switchDashboardBottomTab('currentTrades')">
+            <i class="fa-solid fa-receipt"></i> 진행 중인 사이클 매매 일지 (<span id="currentTradesCountBadge">0</span>)
+          </button>
+          <button id="btnTabCompletedCycles" class="tab-btn" onclick="switchDashboardBottomTab('completedCycles')">
+            <i class="fa-solid fa-list-check"></i> 완료된 사이클 이력 (<span id="cyclesCountBadge">0</span>)
+          </button>
         </div>
-        <div style="font-size: 11px; color: var(--text-muted);">
-          목표 익절 시 자동 기록
+        <div style="font-size: 11px; color: var(--text-muted);" id="tabDescriptionNote">
+          백테스트 전략 조건 기반 실제 체결 기록
         </div>
       </div>
 
-      <div class="table-container">
+      <!-- Tab 1: Current Cycle Trades Table -->
+      <div id="tabContentCurrentTrades" class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>거래일자</th>
+              <th>체결구분</th>
+              <th>회차</th>
+              <th>체결단가</th>
+              <th>체결수량</th>
+              <th>체결금액(원화)</th>
+              <th>보유평단가</th>
+              <th>체결사유</th>
+            </tr>
+          </thead>
+          <tbody id="currentTradesTableBody">
+            <!-- Populated dynamically -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Tab 2: Completed Cycles History Table -->
+      <div id="tabContentCompletedCycles" class="table-container" style="display:none;">
         <table>
           <thead>
             <tr>
@@ -1166,16 +1219,17 @@
     const GAS_WEBAPP_URL = localStorage.getItem("dca_gas_url") || DEFAULT_GAS_URL;
 
     const DEFAULT_STRATEGY = {
-      name: "TQQQ 100분할 전략",
+      name: "TQQQ 20분할 전략",
       ticker: "TQQQ",
       startDate: new Date().toISOString().substring(0, 10),
-      seedCapital: 10000000,
-      portions: 40,
-      phaseSplitRound: 20,
+      seedCapital: 20000000,
+      portions: 20,
+      phaseSplitRound: 10,
+      firstHalfRule: "split", // split | lump
       lateMode: "cond", // cond | always
-      lateThresholdPct: -5.0,
+      lateThresholdPct: -10.0,
       targetProfitPct: 10.0,
-      compoundMode: "simple", // simple | compound
+      compoundMode: "compound", // simple | compound
       currentCycleNo: 1,
       completedCycles: []
     };
@@ -1235,6 +1289,8 @@
           if (s.seedCapital) activeStrat.seedCapital = s.seedCapital;
           if (s.portions) activeStrat.portions = s.portions;
           if (s.phaseSplitRound) activeStrat.phaseSplitRound = s.phaseSplitRound;
+          if (s.firstHalfRule) activeStrat.firstHalfRule = s.firstHalfRule;
+          if (s.earlyMode) activeStrat.firstHalfRule = s.earlyMode;
           if (s.lateMode) activeStrat.lateMode = s.lateMode;
           if (s.lateThresholdPct !== undefined) activeStrat.lateThresholdPct = s.lateThresholdPct;
           if (s.targetProfitPct) activeStrat.targetProfitPct = s.targetProfitPct;
@@ -1295,13 +1351,141 @@
       evaluateProgressAndSignal();
     }
 
-    // Calculate trading days between start date and now
+    // -------------------------------------------------------------------------
+    // Quantitative DCA Simulation Engine for Dashboard (Synchronized with Backtest)
+    // -------------------------------------------------------------------------
+    function simulateCycleProgress(ticker, startDateStr, strat) {
+      const isUS = !ticker.includes('.KS');
+      const fxRate = isUS ? 1350 : 1;
+      const initialCapital = Number(strat.seedCapital) || 10000000;
+      const portions = Math.max(1, Number(strat.portions) || 20);
+      const phaseSplitRound = Math.max(1, Number(strat.phaseSplitRound) || 10);
+      const firstHalfRule = strat.firstHalfRule || strat.earlyMode || "split";
+      const lateMode = strat.lateMode || "cond";
+      const lateThresholdPct = Number(strat.lateThresholdPct) || -10.0;
+      const targetProfitPct = Number(strat.targetProfitPct) || 10.0;
+      const portionSize = initialCapital / portions;
+
+      let cycleRound = 0;
+      let sharesHeld = 0.0;
+      let totalInvested = 0.0;
+      let avgCost = 0.0;
+      const executedTrades = [];
+      let isTakeProfitReached = false;
+      let exitPrice = 0.0;
+
+      const candles = (window.DCA_PRESETS && window.DCA_PRESETS[ticker] && window.DCA_PRESETS[ticker].candles) || [];
+      const cycleCandles = candles.filter(c => c.date >= startDateStr);
+
+      for (let i = 0; i < cycleCandles.length; i++) {
+        const bar = cycleCandles[i];
+        const date = bar.date;
+        const closeP = bar.close;
+        const highP = bar.high != null ? bar.high : closeP;
+
+        avgCost = sharesHeld > 0 ? ((totalInvested / fxRate) / sharesHeld) : 0.0;
+
+        // 1. Take Profit Check
+        const targetSellPrice = avgCost > 0 ? avgCost * (1.0 + targetProfitPct / 100.0) : 0.0;
+        if (sharesHeld > 0 && targetSellPrice > 0 && highP >= targetSellPrice) {
+          isTakeProfitReached = true;
+          exitPrice = targetSellPrice;
+        }
+
+        // 2. Buy Check
+        const fundsLeft = initialCapital - totalInvested;
+        const canBuyMore = (cycleRound < portions);
+
+        if (canBuyMore && fundsLeft >= (portionSize * 0.1)) {
+          const isFirstHalf = (cycleRound < phaseSplitRound);
+          let budgetToday = 0.0;
+          let roundsPurchasedToday = 1;
+          let buyReason = "";
+
+          if (isFirstHalf) {
+            if (firstHalfRule === "lump") {
+              // 전반기 일시 매수
+              roundsPurchasedToday = Math.min(phaseSplitRound, portions);
+              budgetToday = Math.min(portionSize * roundsPurchasedToday, fundsLeft);
+              buyReason = `전반기 일시 매수 (${roundsPurchasedToday}회차분 일괄)`;
+            } else {
+              // 전반기 분할 매수
+              roundsPurchasedToday = 1;
+              budgetToday = Math.min(portionSize, fundsLeft);
+              buyReason = cycleRound === 0 ? "1회차 사이클 시작 (정량매수)" : "전반기 기계적 분할매수";
+            }
+          } else {
+            // 후반기 조건부 판정 (평단가 대비 조건 만족 시에만 매수)
+            const targetThresholdPrice = avgCost * (1.0 + lateThresholdPct / 100.0);
+            const isBelowThreshold = (avgCost === 0 || closeP <= targetThresholdPrice);
+
+            if (lateMode === "cond" || lateMode === "below_threshold") {
+              if (isBelowThreshold) {
+                budgetToday = Math.min(portionSize, fundsLeft);
+                buyReason = lateThresholdPct === 0 ? "후반기 평단가 이하 매수" : `후반기 평단가 대비 ${lateThresholdPct}% 이하 매수`;
+              } else {
+                budgetToday = 0.0; // 조건 미달 시 매수 스킵 (회차 증가 안 함)
+              }
+            } else if (lateMode === "below_threshold_or_half") {
+              if (isBelowThreshold) {
+                budgetToday = Math.min(portionSize, fundsLeft);
+                buyReason = "후반기 기준 이하 1회분 매수";
+              } else {
+                budgetToday = Math.min(portionSize * 0.5, fundsLeft);
+                buyReason = "후반기 기준 초과 0.5회분 축소매수";
+              }
+            } else {
+              // always: 균등 분할
+              budgetToday = Math.min(portionSize, fundsLeft);
+              buyReason = "후반기 균등분할 지속 매수";
+            }
+          }
+
+          if (budgetToday > 0 && closeP > 0) {
+            const budgetAssetCurrency = budgetToday / fxRate;
+            const boughtShares = budgetAssetCurrency / closeP;
+            if (boughtShares > 0) {
+              sharesHeld += boughtShares;
+              totalInvested += budgetToday;
+              cycleRound += roundsPurchasedToday;
+              avgCost = (totalInvested / fxRate) / sharesHeld;
+
+              const isLump = (firstHalfRule === "lump" && cycleRound === roundsPurchasedToday);
+              executedTrades.push({
+                date: date,
+                round: cycleRound,
+                type: isLump ? "일시매수" : (cycleRound === 1 ? "신규매수" : "분할매수"),
+                price: closeP,
+                shares: boughtShares,
+                cost: budgetToday,
+                avgCost: avgCost,
+                reason: buyReason
+              });
+            }
+          }
+        }
+      }
+
+      return {
+        cycleRound,
+        sharesHeld,
+        totalInvested,
+        avgCost,
+        executedTrades,
+        isTakeProfitReached,
+        exitPrice,
+        fxRate,
+        portionCapital: Math.round(portionSize),
+        tradingDays: cycleCandles.length
+      };
+    }
+
+    // Calculate calendar trading days between start date and now
     function calculateTradingDays(startDateStr) {
       const start = new Date(startDateStr);
       const now = new Date();
       if (isNaN(start.getTime()) || start > now) return 1;
 
-      // Count business days (exclude Sat & Sun)
       let count = 0;
       let cur = new Date(start);
       while (cur <= now) {
@@ -1330,10 +1514,13 @@
       const calDays = Math.max(0, Math.floor((now - sDate) / (1000 * 60 * 60 * 24)));
       document.getElementById("heroDaysCount").innerHTML = `<span class="days-prefix">투자 시작 </span>D+${calDays}일`;
 
+      const firstHalfText = (activeStrat.firstHalfRule === "lump" || activeStrat.earlyMode === "lump")
+        ? `일시 (${activeStrat.phaseSplitRound}회)`
+        : `전환 ${activeStrat.phaseSplitRound}회`;
       const lateModeText = activeStrat.lateMode === "always" ? "균등매수" : `${activeStrat.lateThresholdPct}% 이하`;
       document.getElementById("heroStrategySummary").innerHTML = `
         <span>투자원금: <strong>${fmtKRW(activeStrat.seedCapital)}</strong></span> &bull;
-        <span>${activeStrat.portions}분할 (전환 ${activeStrat.phaseSplitRound}회)</span> &bull;
+        <span>${activeStrat.portions}분할 (${firstHalfText})</span> &bull;
         <span>후반기 ${lateModeText}</span> &bull;
         <span>목표 +${activeStrat.targetProfitPct}%</span> &bull;
         <span>${activeStrat.compoundMode === "compound" ? "복리" : "단리"}</span>
@@ -1349,32 +1536,15 @@
       chgBadge.className = `badge ${chgPct >= 0 ? "badge-green" : "badge-red"}`;
       chgBadge.innerText = `${chgPct >= 0 ? "+" : ""}${chgPct.toFixed(2)}%`;
 
-      // 3. Progress Calculation
-      const tradingDays = calculateTradingDays(sDateStr);
-      const curRound = Math.min(tradingDays, activeStrat.portions);
-      const portionCapital = Math.round(activeStrat.seedCapital / activeStrat.portions);
-      const investedCapital = curRound * portionCapital;
+      // 3. Quantitative Cycle Simulation (백테스트와 100% 동일한 룰 기반 시뮬레이션)
+      const sim = simulateCycleProgress(activeStrat.ticker, sDateStr, activeStrat);
+      const curRound = sim.cycleRound; // 실제 조건 만족 체결된 소진 회차
+      const portionCapital = sim.portionCapital;
+      const investedCapital = sim.totalInvested;
       const remainingCapital = Math.max(0, activeStrat.seedCapital - investedCapital);
-      const progressPct = Math.min(100, Math.round((tradingDays / activeStrat.portions) * 100));
-
-      // Estimate Avg Price from recent candles starting from sDate
-      let avgPrice = closePrice;
-      let totalShares = 0;
-      let costSum = 0;
-      if (window.DCA_PRESETS && window.DCA_PRESETS[activeStrat.ticker]) {
-        const candles = window.DCA_PRESETS[activeStrat.ticker].candles || [];
-        const cycleCandles = candles.filter(c => c.date >= sDateStr);
-        if (cycleCandles.length > 0) {
-          cycleCandles.forEach(c => {
-            const sh = (portionCapital / 1350) / c.close;
-            totalShares += sh;
-            costSum += portionCapital;
-          });
-          if (totalShares > 0) {
-            avgPrice = (costSum / 1350) / totalShares;
-          }
-        }
-      }
+      const progressPct = Math.min(100, Math.round((curRound / activeStrat.portions) * 100));
+      const totalShares = sim.sharesHeld;
+      const avgPrice = sim.avgCost > 0 ? sim.avgCost : closePrice;
 
       const pnlPct = avgPrice > 0 ? ((closePrice - avgPrice) / avgPrice) * 100.0 : 0;
       const targetPrice = avgPrice * (1 + activeStrat.targetProfitPct / 100.0);
@@ -1395,11 +1565,13 @@
       document.getElementById("ticketSellQty").innerText = totalShares > 0 ? `보유 전량 (${Math.round(totalShares)}주)` : "보유 전량";
 
       // Ticket 2: LOC Buy
-      const estBuyShares = Math.max(1, Math.floor((portionCapital / 1350) / closePrice));
+      const estBuyShares = Math.max(1, Math.floor((portionCapital / sim.fxRate) / closePrice));
       document.getElementById("ticketBuyAmount").innerText = `1회분 ${fmtKRW(portionCapital)}`;
       document.getElementById("ticketBuyQty").innerText = `약 ${estBuyShares}주`;
 
-      if (pnlPct >= activeStrat.targetProfitPct) {
+      const nextRound = curRound + 1; // 다음 진행할 매수 회차
+
+      if (pnlPct >= activeStrat.targetProfitPct || sim.isTakeProfitReached) {
         // [SELL] Target Reached!
         signalCard.classList.add("sell");
         signalPulse.style.backgroundColor = "var(--accent-red)";
@@ -1413,33 +1585,7 @@
 
         sellArea.style.display = "block";
 
-      } else if (curRound <= activeStrat.phaseSplitRound) {
-        // [BUY] First Half (Mechanical 100% LOC execution at close +10%)
-        signalCard.classList.add("buy");
-        signalPulse.style.backgroundColor = "var(--accent-blue)";
-        guideBadge.className = "badge badge-blue";
-        guideBadge.innerHTML = `<span class="phase-pc">전반기 ${curRound}/${activeStrat.phaseSplitRound}회차 (정량 매수)</span><span class="phase-mo">전반 ${curRound}/${activeStrat.phaseSplitRound}</span>`;
-
-        const locPrice = closePrice * 1.10;
-        document.getElementById("ticketBuyConditionTag").innerText = "100% 체결";
-        document.getElementById("ticketBuyPrice").innerText = fmtUSD(locPrice);
-        document.getElementById("ticketBuyPriceSub").innerText = "(최근종가 +10%)";
-        document.getElementById("ticketBuyNote").innerHTML = `* 전반기 기계적 매수: 넉넉한 상한선(+10%)을 적어두면 당일 <strong>실제 마감 종가</strong>에 100% 무조건 체결됩니다.`;
-
-      } else if (curRound <= activeStrat.portions) {
-        // [BUY] Second Half (Conditional buy below avgPrice - threshold%)
-        const thresholdPrice = avgPrice * (1 + activeStrat.lateThresholdPct / 100.0);
-        signalCard.classList.add("buy");
-        signalPulse.style.backgroundColor = "var(--accent-green)";
-        guideBadge.className = "badge badge-green";
-        guideBadge.innerHTML = `<span class="phase-pc">후반부 ${curRound}/${activeStrat.portions}회차 (조건부 매수)</span><span class="phase-mo">후반 ${curRound}/${activeStrat.portions}</span>`;
-
-        document.getElementById("ticketBuyConditionTag").innerText = "조건부 체결";
-        document.getElementById("ticketBuyPrice").innerText = fmtUSD(thresholdPrice);
-        document.getElementById("ticketBuyPriceSub").innerText = `(평단가 ${activeStrat.lateThresholdPct}%)`;
-        document.getElementById("ticketBuyNote").innerHTML = `* 후반부 저점 매수: 마감 종가가 기준단가(<strong>${fmtUSD(thresholdPrice)}</strong>) 이하일 때만 당일 종가로 자동 체결됩니다.`;
-
-      } else {
+      } else if (curRound >= activeStrat.portions) {
         // [HOLD] Portions Exhausted
         signalCard.classList.add("wait");
         signalPulse.style.backgroundColor = "var(--accent-purple)";
@@ -1450,15 +1596,42 @@
         document.getElementById("ticketBuyPrice").innerText = "매수 중단";
         document.getElementById("ticketBuyPriceSub").innerText = "(회차 소진)";
         document.getElementById("ticketBuyNote").innerHTML = `* 총 ${activeStrat.portions}회 분할이 모두 진행되었습니다. 추가 매수 없이 목표 익절가(${fmtUSD(targetPrice)})까지 보유합니다.`;
+
+      } else if (nextRound <= activeStrat.phaseSplitRound) {
+        // [BUY] First Half (Mechanical 100% LOC execution at close +10%)
+        signalCard.classList.add("buy");
+        signalPulse.style.backgroundColor = "var(--accent-blue)";
+        guideBadge.className = "badge badge-blue";
+        guideBadge.innerHTML = `<span class="phase-pc">전반기 ${nextRound}/${activeStrat.phaseSplitRound}회차 (정량 매수)</span><span class="phase-mo">전반 ${nextRound}/${activeStrat.phaseSplitRound}</span>`;
+
+        const locPrice = closePrice * 1.10;
+        document.getElementById("ticketBuyConditionTag").innerText = "100% 체결";
+        document.getElementById("ticketBuyPrice").innerText = fmtUSD(locPrice);
+        document.getElementById("ticketBuyPriceSub").innerText = "(최근종가 +10%)";
+        document.getElementById("ticketBuyNote").innerHTML = `* 전반기 기계적 매수: 넉넉한 상한선(+10%)을 적어두면 당일 <strong>실제 마감 종가</strong>에 100% 무조건 체결됩니다.`;
+
+      } else {
+        // [BUY] Second Half (Conditional buy below avgPrice - threshold%)
+        const thresholdPrice = avgPrice * (1 + activeStrat.lateThresholdPct / 100.0);
+        signalCard.classList.add("buy");
+        signalPulse.style.backgroundColor = "var(--accent-green)";
+        guideBadge.className = "badge badge-green";
+        guideBadge.innerHTML = `<span class="phase-pc">후반기 ${nextRound}/${activeStrat.portions}회차 (조건부 매수)</span><span class="phase-mo">후반 ${nextRound}/${activeStrat.portions}</span>`;
+
+        const isCurrentlyBelow = closePrice <= thresholdPrice;
+        document.getElementById("ticketBuyConditionTag").innerText = isCurrentlyBelow ? "조건 충족 (체결 가능)" : "조건 미달 (대기/관망)";
+        document.getElementById("ticketBuyPrice").innerText = fmtUSD(thresholdPrice);
+        document.getElementById("ticketBuyPriceSub").innerText = `(평단가 ${activeStrat.lateThresholdPct}%)`;
+        document.getElementById("ticketBuyNote").innerHTML = `* 후반기 저점 매수: 마감 종가가 기준단가(<strong>${fmtUSD(thresholdPrice)}</strong>) 이하일 때만 당일 종가로 자동 체결됩니다. 미달 시 매수하지 않고 현금을 보존합니다.`;
       }
 
-      document.getElementById("signalProgressLabel").innerText = `사이클 진도: ${curRound} / ${activeStrat.portions}회차`;
+      document.getElementById("signalProgressLabel").innerText = `사이클 진도: ${curRound} / ${activeStrat.portions}회차 (소진 ${progressPct}%)`;
       document.getElementById("signalProgressPercent").innerText = `${progressPct}%`;
       document.getElementById("signalProgressBar").style.width = `${progressPct}%`;
 
       // 5. Update KPI Cards
       document.getElementById("kpiRound").innerText = `${curRound} / ${activeStrat.portions}회`;
-      document.getElementById("kpiRoundPct").innerText = `진행률 ${progressPct}%`;
+      document.getElementById("kpiRoundPct").innerText = `소진율 ${progressPct}%`;
 
       document.getElementById("kpiInvested").innerText = fmtKRW(investedCapital);
       document.getElementById("kpiRemainingCapital").innerText = `잔여: ${fmtKRW(remainingCapital)}`;
@@ -1479,6 +1652,69 @@
       cycles.forEach(c => totalProfit += (c.profit || 0));
       document.getElementById("kpiCumulativeProfit").innerText = fmtKRW(totalProfit);
       document.getElementById("kpiCompletedCycles").innerText = `완료: ${cycles.length}사이클`;
+
+      // 6. Render Current Cycle Trades Table (실제 체결 일지)
+      renderCurrentTradesTable(sim.executedTrades);
+    }
+
+    // -------------------------------------------------------------------------
+    // Bottom Tabs & Current Trades Table Rendering
+    // -------------------------------------------------------------------------
+    function switchDashboardBottomTab(tabName) {
+      const btnCurrent = document.getElementById("btnTabCurrentTrades");
+      const btnCompleted = document.getElementById("btnTabCompletedCycles");
+      const tabCurrent = document.getElementById("tabContentCurrentTrades");
+      const tabCompleted = document.getElementById("tabContentCompletedCycles");
+      const descNote = document.getElementById("tabDescriptionNote");
+
+      if (tabName === "currentTrades") {
+        btnCurrent.classList.add("active");
+        btnCompleted.classList.remove("active");
+        tabCurrent.style.display = "block";
+        tabCompleted.style.display = "none";
+        if (descNote) descNote.innerText = "백테스트 전략 조건 기반 실제 체결 기록";
+      } else {
+        btnCurrent.classList.remove("active");
+        btnCompleted.classList.add("active");
+        tabCurrent.style.display = "none";
+        tabCompleted.style.display = "block";
+        if (descNote) descNote.innerText = "목표 익절 시 자동 기록";
+      }
+    }
+
+    function renderCurrentTradesTable(trades) {
+      const countBadge = document.getElementById("currentTradesCountBadge");
+      if (countBadge) countBadge.innerText = trades.length;
+
+      const tBody = document.getElementById("currentTradesTableBody");
+      if (!tBody) return;
+      tBody.innerHTML = "";
+
+      if (trades.length === 0) {
+        tBody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:24px; color:var(--text-muted);">현재 사이클에서 체결된 매수 내역이 없습니다. (시작일 이후 대기 중)</td></tr>`;
+        return;
+      }
+
+      // 최신 체결일이 위로 오도록 역순 정렬
+      const reversed = [...trades].reverse();
+      reversed.forEach(t => {
+        const tr = document.createElement("tr");
+        const typeBadge = t.round === 1 
+          ? `<span class="badge badge-green">신규매수</span>` 
+          : (t.type === "일시매수" ? `<span class="badge badge-purple">일시매수</span>` : `<span class="badge badge-blue">분할매수</span>`);
+
+        tr.innerHTML = `
+          <td><strong>${t.date}</strong></td>
+          <td>${typeBadge}</td>
+          <td><strong>${t.round}회차</strong></td>
+          <td>${fmtUSD(t.price)}</td>
+          <td>${t.shares.toFixed(2)}주</td>
+          <td style="font-weight:600;">${fmtKRW(t.cost)}</td>
+          <td>${fmtUSD(t.avgCost)}</td>
+          <td style="font-size:11px; color:var(--text-sub);">${t.reason}</td>
+        `;
+        tBody.appendChild(tr);
+      });
     }
 
     // -------------------------------------------------------------------------
@@ -1707,6 +1943,8 @@
         if (target.seedCapital) activeStrat.seedCapital = target.seedCapital;
         if (target.portions) activeStrat.portions = target.portions;
         if (target.phaseSplitRound) activeStrat.phaseSplitRound = target.phaseSplitRound;
+        if (target.firstHalfRule) activeStrat.firstHalfRule = target.firstHalfRule;
+        if (target.earlyMode) activeStrat.firstHalfRule = target.earlyMode;
         if (target.lateMode) activeStrat.lateMode = target.lateMode;
         if (target.lateThresholdPct !== undefined) activeStrat.lateThresholdPct = target.lateThresholdPct;
         if (target.targetProfitPct) activeStrat.targetProfitPct = target.targetProfitPct;
