@@ -1,10 +1,10 @@
 {
   "ticker": "SOXL",
   "name": "Direxion Daily Semiconductor Bull 3X (반도체 3배)",
-  "updated_at": "2026-10-15 00:00:42",
-  "data_count": 2512,
+  "updated_at": "2026-10-15 22:16:30",
+  "data_count": 2513,
   "start_date": "2016-10-17",
-  "end_date": "2026-10-14",
+  "end_date": "2026-10-15",
   "candles": [
     {
       "date": "2016-10-17",
@@ -20100,7 +20100,15 @@
       "high": 120.9,
       "low": 109.0,
       "close": 110.54,
-      "volume": 102344094
+      "volume": 107400700
+    },
+    {
+      "date": "2026-10-15",
+      "open": 98.35,
+      "high": 108.8,
+      "low": 95.23,
+      "close": 107.35,
+      "volume": 136485535
     }
   ]
 }
