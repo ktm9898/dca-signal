@@ -1,7 +1,7 @@
 {
   "ticker": "QLD",
   "name": "ProShares Ultra QQQ (나스닥 2배)",
-  "updated_at": "2026-10-16 23:45:30",
+  "updated_at": "2026-10-17 22:16:30",
   "data_count": 2514,
   "start_date": "2016-10-17",
   "end_date": "2026-10-16",
@@ -20114,9 +20114,9 @@
       "date": "2026-10-16",
       "open": 91.66,
       "high": 91.78,
-      "low": 87.045,
+      "low": 87.05,
       "close": 87.72,
-      "volume": 6539785
+      "volume": 6607100
     }
   ]
 }
