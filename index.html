@@ -1012,10 +1012,7 @@
     <div id="signalCard" class="signal-card">
       <div class="signal-top-row">
         <div class="signal-badge-title">
-          <div class="signal-pulse" id="signalPulse"></div>
-          <div class="signal-status-text" id="signalStatusText">
-            <i class="fa-solid fa-clipboard-check" style="color:var(--accent-blue);"></i> 매매 가이드
-          </div>
+          <div class="signal-status-text" id="signalStatusText">매매 가이드</div>
           <span id="guidePhaseBadge" class="badge badge-blue">진도 계산 중</span>
         </div>
         <div class="price-pill">
@@ -1031,9 +1028,7 @@
           <!-- Ticket 1: Limit Sell Order -->
           <div class="ticket-card ticket-sell">
             <div class="ticket-head">
-              <span class="ticket-tag tag-sell">
-                <i class="fa-solid fa-arrow-trend-up"></i> 지정가 매도 예약
-              </span>
+              <span class="ticket-tag tag-sell">지정가 매도 예약</span>
             </div>
             <div class="ticket-price-box">
               <div class="ticket-price-val">
@@ -1056,9 +1051,7 @@
           <!-- Ticket 2: LOC Buy Order -->
           <div class="ticket-card ticket-buy">
             <div class="ticket-head">
-              <span class="ticket-tag tag-buy">
-                <i class="fa-solid fa-cart-shopping"></i> LOC 종가 매수 예약
-              </span>
+              <span class="ticket-tag tag-buy">LOC 종가 매수 예약</span>
             </div>
             <div class="ticket-price-box">
               <div class="ticket-price-val">
@@ -1092,7 +1085,6 @@
       <div class="kpi-card green">
         <div class="kpi-title">
           <span>현재 진도</span>
-          <i class="fa-solid fa-layer-group"></i>
         </div>
         <div class="kpi-value" id="kpiRound">0 / 40회</div>
       </div>
@@ -1100,7 +1092,6 @@
       <div class="kpi-card">
         <div class="kpi-title">
           <span>누적 배정 원금</span>
-          <i class="fa-solid fa-wallet"></i>
         </div>
         <div class="kpi-value" id="kpiInvested">0원</div>
       </div>
@@ -1108,7 +1099,6 @@
       <div class="kpi-card purple">
         <div class="kpi-title">
           <span>사이클 추정 평단</span>
-          <i class="fa-solid fa-calculator"></i>
         </div>
         <div class="kpi-value" id="kpiAvgCost">-</div>
       </div>
@@ -1116,7 +1106,6 @@
       <div class="kpi-card amber">
         <div class="kpi-title">
           <span>수익률 (추정)</span>
-          <i class="fa-solid fa-chart-line"></i>
         </div>
         <div class="kpi-value" id="kpiPnlPct">0.00%</div>
       </div>
@@ -1124,7 +1113,6 @@
       <div class="kpi-card green">
         <div class="kpi-title">
           <span>목표 익절가</span>
-          <i class="fa-solid fa-bullseye"></i>
         </div>
         <div class="kpi-value" id="kpiTargetPrice">-</div>
       </div>
@@ -1132,7 +1120,6 @@
       <div class="kpi-card">
         <div class="kpi-title">
           <span>누적 실현 손익</span>
-          <i class="fa-solid fa-trophy"></i>
         </div>
         <div class="kpi-value" id="kpiCumulativeProfit">0원</div>
       </div>
@@ -1612,7 +1599,7 @@
       if (pnlPct >= activeStrat.targetProfitPct || sim.isTakeProfitReached) {
         // [SELL] Target Reached!
         signalCard.classList.add("sell");
-        signalPulse.style.backgroundColor = "var(--accent-red)";
+        if (signalPulse) signalPulse.style.backgroundColor = "var(--accent-red)";
         guideBadge.className = "badge badge-red";
         guideBadge.innerHTML = `<span class="phase-pc">목표 달성 (+${pnlPct.toFixed(2)}%)</span><span class="phase-mo">목표 달성</span>`;
 
@@ -1626,7 +1613,7 @@
       } else if (curRound >= activeStrat.portions) {
         // [HOLD] Portions Exhausted
         signalCard.classList.add("wait");
-        signalPulse.style.backgroundColor = "var(--accent-purple)";
+        if (signalPulse) signalPulse.style.backgroundColor = "var(--accent-purple)";
         guideBadge.className = "badge badge-purple";
         guideBadge.innerHTML = `<span class="phase-pc">분할 소진 완료 (${activeStrat.portions}회)</span><span class="phase-mo">소진 완료</span>`;
 
@@ -1638,7 +1625,7 @@
       } else if (nextRound <= activeStrat.phaseSplitRound) {
         // [BUY] First Half (Mechanical 100% LOC execution at close +10%)
         signalCard.classList.add("buy");
-        signalPulse.style.backgroundColor = "var(--accent-blue)";
+        if (signalPulse) signalPulse.style.backgroundColor = "var(--accent-blue)";
         guideBadge.className = "badge badge-blue";
         guideBadge.innerHTML = `<span class="phase-pc">전반기 ${nextRound}/${activeStrat.phaseSplitRound}회차 (정량 매수)</span><span class="phase-mo">전반 ${nextRound}/${activeStrat.phaseSplitRound}</span>`;
 
@@ -1652,7 +1639,7 @@
         // [BUY] Second Half (Conditional buy below avgPrice - threshold%)
         const thresholdPrice = avgPrice * (1 + activeStrat.lateThresholdPct / 100.0);
         signalCard.classList.add("buy");
-        signalPulse.style.backgroundColor = "var(--accent-green)";
+        if (signalPulse) signalPulse.style.backgroundColor = "var(--accent-green)";
         guideBadge.className = "badge badge-green";
         guideBadge.innerHTML = `<span class="phase-pc">후반기 ${nextRound}/${activeStrat.portions}회차 (조건부 매수)</span><span class="phase-mo">후반 ${nextRound}/${activeStrat.portions}</span>`;
 
