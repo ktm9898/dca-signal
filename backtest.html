@@ -353,10 +353,14 @@
 
     @media (max-width: 480px) {
       .config-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px 10px;
       }
       .config-period-group {
-        grid-column: span 1;
+        grid-column: span 2;
+      }
+      .preset-pill {
+        font-size: 11.5px;
       }
       .slots-wrapper {
         padding: 10px 14px;
@@ -1138,13 +1142,13 @@
           <div class="form-group">
             <label for="tickerSelect"><span>대상 종목</span></label>
             <select id="tickerSelect">
-              <option value="TQQQ" selected>TQQQ (나스닥 100 3배)</option>
-              <option value="SOXL">SOXL (반도체 3배)</option>
-              <option value="UPRO">UPRO (S&P 500 3배)</option>
-              <option value="QLD">QLD (나스닥 100 2배)</option>
-              <option value="QQQ">QQQ (나스닥 100 1배)</option>
-              <option value="SPY">SPY (S&P 500 1배)</option>
-              <option value="122630.KS">122630.KS (KODEX 레버리지 2배)</option>
+              <option value="TQQQ" selected>TQQQ</option>
+              <option value="SOXL">SOXL</option>
+              <option value="UPRO">UPRO</option>
+              <option value="QLD">QLD</option>
+              <option value="QQQ">QQQ</option>
+              <option value="SPY">SPY</option>
+              <option value="122630.KS">122630.KS</option>
             </select>
           </div>
 
@@ -1177,7 +1181,7 @@
 
           <!-- Col 6: Second-Half Threshold Condition -->
           <div class="form-group">
-            <label for="thresholdInput"><span>후반기 매수조건 (평단가 대비 %)</span></label>
+            <label for="thresholdInput"><span>후반기 매수조건 (%)</span></label>
             <input type="number" id="thresholdInput" value="-10" step="1" placeholder="예: -10 (% 이하)">
           </div>
 
@@ -1379,17 +1383,16 @@
             <div class="tab-toolbar">
               <div class="tab-toolbar-left">
                 <select id="tradeFilterType" style="width: auto; padding: 6px 10px; font-size: 12px;">
-                  <option value="ALL">전체 체결 구분</option>
+                  <option value="ALL">체결구분</option>
                   <option value="BUY">매수만 (신규/분할)</option>
                   <option value="SELL">매도만 (익절청산)</option>
                 </select>
                 <select id="tradeFilterCycle" style="width: auto; padding: 6px 10px; font-size: 12px;">
-                  <option value="ALL">전체 사이클</option>
+                  <option value="ALL">사이클</option>
                 </select>
-                <input type="text" id="tradeSearchInput" placeholder="날짜 검색 (예: 2024-03)..." style="width: 170px; padding: 6px 10px; font-size: 12px;">
               </div>
               <div style="font-size: 12px; color: var(--text-sub);">
-                총 <strong id="tradeFilteredCount" style="color:var(--accent-blue);">0</strong>건 표시 중
+                총 <strong id="tradeFilteredCount" style="color:var(--accent-blue);">0건</strong>
               </div>
             </div>
 
@@ -2304,7 +2307,7 @@
       // Populate Cycle Filter in Trade Log
       const cycleSelect = document.getElementById("tradeFilterCycle");
       const currentCycleSel = cycleSelect.value;
-      cycleSelect.innerHTML = '<option value="ALL">전체 사이클</option>';
+      cycleSelect.innerHTML = '<option value="ALL">사이클</option>';
       const maxC = latestSimResult.completedCycles.length + 1;
       for (let i = 1; i <= maxC; i++) {
         const opt = document.createElement("option");
@@ -2326,7 +2329,8 @@
     function filterAndRenderTrades() {
       const typeFilter = document.getElementById("tradeFilterType").value;
       const cycleFilter = document.getElementById("tradeFilterCycle").value;
-      const searchTxt = document.getElementById("tradeSearchInput").value.trim().toLowerCase();
+      const searchEl = document.getElementById("tradeSearchInput");
+      const searchTxt = searchEl ? searchEl.value.trim().toLowerCase() : "";
 
       let filtered = allTradesList.filter(t => {
         if (typeFilter === "BUY" && !t.type.includes("매수")) return false;
