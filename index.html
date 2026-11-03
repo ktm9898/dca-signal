@@ -882,8 +882,28 @@
         padding: 14px;
       }
       .signal-top-row {
-        flex-wrap: wrap;
-        gap: 8px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: nowrap;
+        gap: 6px;
+        width: 100%;
+      }
+      .signal-badge-title {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        min-width: 0;
+        flex-shrink: 1;
+      }
+      .signal-status-text {
+        font-size: 15px;
+        white-space: nowrap;
+      }
+      #guidePhaseBadge {
+        font-size: 11px;
+        padding: 2px 6px;
+        white-space: nowrap;
       }
       .phase-pc {
         display: none;
@@ -893,11 +913,18 @@
         font-weight: 700;
         font-size: 11px;
       }
-            .price-pill {
-        padding: 4px 10px;
+      .price-pill {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 8px;
         font-size: 12.5px;
         margin-left: auto;
-        align-self: flex-end;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+      #currentChangeBadge {
+        display: none !important;
       }
       .tickets-grid {
         grid-template-columns: 1fr;
@@ -1613,7 +1640,7 @@
         signalCard.classList.add("buy");
         if (signalPulse) signalPulse.style.backgroundColor = "var(--accent-blue)";
         guideBadge.className = "badge badge-blue";
-        guideBadge.innerHTML = `<span class="phase-pc">전반기 ${nextRound}/${activeStrat.phaseSplitRound}회차 (정량 매수)</span><span class="phase-mo">전반 ${nextRound}/${activeStrat.phaseSplitRound}</span>`;
+        guideBadge.innerHTML = `<span class="phase-pc">전반기 ${nextRound}/${activeStrat.phaseSplitRound}회차 (정량 매수)</span><span class="phase-mo">${nextRound}/${activeStrat.phaseSplitRound}</span>`;
 
         const locPrice = closePrice * 1.10;
         const buyTagEl = document.getElementById("ticketBuyConditionTag"); if (buyTagEl) buyTagEl.innerText = "100% 체결";
@@ -1627,7 +1654,7 @@
         signalCard.classList.add("buy");
         if (signalPulse) signalPulse.style.backgroundColor = "var(--accent-green)";
         guideBadge.className = "badge badge-green";
-        guideBadge.innerHTML = `<span class="phase-pc">후반기 ${nextRound}/${activeStrat.portions}회차 (조건부 매수)</span><span class="phase-mo">후반 ${nextRound}/${activeStrat.portions}</span>`;
+        guideBadge.innerHTML = `<span class="phase-pc">후반기 ${nextRound}/${activeStrat.portions}회차 (조건부 매수)</span><span class="phase-mo">${nextRound}/${activeStrat.portions}</span>`;
 
         const isCurrentlyBelow = closePrice <= thresholdPrice;
         const buyTagEl = document.getElementById("ticketBuyConditionTag"); if (buyTagEl) buyTagEl.innerText = isCurrentlyBelow ? "조건 충족 (체결 가능)" : "조건 미달 (대기/관망)";

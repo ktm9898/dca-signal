@@ -255,6 +255,14 @@
       color: var(--text-main);
     }
 
+    .summary-val.val-positive {
+      color: var(--accent-green);
+    }
+
+    .summary-val.val-negative {
+      color: var(--accent-red);
+    }
+
     /* Table */
     .table-container {
       overflow-x: auto;
@@ -522,7 +530,8 @@
 
       document.getElementById("valClosePrice").innerText = fmtPrice(lastCandle.close);
       const chgEl = document.getElementById("valChangePct");
-      chgEl.innerHTML = `<span class="badge ${dayChgPct >= 0 ? 'badge-green' : 'badge-red'}">${dayChgPct >= 0 ? '+' : ''}${dayChgPct.toFixed(2)}%</span>`;
+      chgEl.className = `summary-val ${dayChgPct >= 0 ? 'val-positive' : 'val-negative'}`;
+      chgEl.innerText = `${dayChgPct >= 0 ? '+' : ''}${dayChgPct.toFixed(2)}%`;
       document.getElementById("valHigh52").innerText = fmtPrice(high52);
       document.getElementById("valLow52").innerText = fmtPrice(low52);
 
