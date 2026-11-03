@@ -343,11 +343,11 @@
       white-space: nowrap;
     }
 
-    /* Signal Alert Banner (Main Highlight) */
+        /* Signal Alert Banner (Main Highlight) */
     .signal-card {
-      background: linear-gradient(135deg, #ffffff 0%, #eff6ff 100%);
-      border: 2px solid #93c5fd;
-      border-radius: 16px;
+      background: var(--bg-surface);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
       padding: 20px;
       box-shadow: var(--shadow-sm);
       display: flex;
@@ -356,19 +356,11 @@
       position: relative;
     }
 
-    .signal-card.buy {
-      background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
-      border-color: #86efac;
-    }
-
-    .signal-card.wait {
-      background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-      border-color: var(--card-border);
-    }
-
+    .signal-card.buy,
+    .signal-card.wait,
     .signal-card.sell {
-      background: linear-gradient(135deg, #ffffff 0%, #fef2f2 100%);
-      border-color: #fca5a5;
+      background: var(--bg-surface);
+      border-color: var(--card-border);
     }
 
     .signal-top-row {
@@ -694,7 +686,8 @@
 
     .table-container {
       overflow-x: auto;
-      max-height: 400px;
+      max-width: 100%;
+      -webkit-overflow-scrolling: touch;
     }
 
     table {
