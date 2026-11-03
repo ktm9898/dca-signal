@@ -202,96 +202,145 @@
       border-color: #047857;
     }
 
-    /* Strategy Active Hero Banner */
+    /* Strategy Active Hero Banner (AssetSignal 3-Section Balanced Row Style) */
     .hero-card {
-      background: var(--bg-surface);
+      background: #ffffff;
       border: 1px solid var(--card-border);
-      border-radius: 14px;
+      border-radius: 10px;
       padding: 16px 20px;
-      box-shadow: var(--shadow-sm);
       display: flex;
       justify-content: space-between;
       align-items: center;
       flex-wrap: wrap;
       gap: 14px;
+      box-shadow: var(--shadow-sm);
+      position: relative;
+      overflow: hidden;
     }
 
-    .hero-strat-info {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
+    .hero-card::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent-blue), var(--accent-indigo), var(--accent-green));
     }
 
-    .hero-top-info {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .hero-title-row {
+    .strategy-bar {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
+      cursor: pointer;
+      padding: 4px 14px 4px 4px;
+      border-radius: 10px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      transition: all 0.2s ease;
+      user-select: none;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+      flex-shrink: 0;
     }
 
-    .hero-date-row {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
+    .strategy-bar:hover {
+      background: #eff6ff;
+      border-color: #bfdbfe;
+      transform: translateY(-1px);
     }
 
-    .hero-change-mobile-btn {
-      display: none;
-    }
-
-    .ticker-badge {
-      font-size: 16px;
-      font-weight: 800;
-      color: var(--accent-blue);
-      background: var(--badge-blue);
-      padding: 3px 10px;
-      border-radius: 6px;
-    }
-
-    .days-badge {
-      font-size: 12px;
+    .btn-strategy-pill {
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: #ffffff;
+      border: none;
+      font-size: 0.82rem;
       font-weight: 700;
-      color: var(--accent-purple);
-      background: var(--badge-purple);
-      padding: 3px 8px;
-      border-radius: 6px;
-    }
-
-    .start-date-box {
+      padding: 6px 13px;
+      border-radius: 8px;
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      background: var(--bg-base);
+      cursor: pointer;
+      box-shadow: 0 2px 5px rgba(37, 99, 235, 0.22);
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .btn-strategy-pill:hover {
+      background: linear-gradient(135deg, #1d4ed8, #1e40af);
+    }
+
+    .strategy-bar-name {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #0f172a;
+      white-space: nowrap;
+    }
+
+    .strategy-tracker-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 14px;
+      background: #f8fafc;
       border: 1px solid var(--card-border);
-      border-radius: 6px;
-      padding: 2px 8px;
-      font-size: 12px;
+      border-radius: 10px;
+      padding: 7px 15px;
+      flex-shrink: 0;
     }
 
     .start-date-input {
-      border: none;
-      background: transparent;
-      font-family: 'Outfit', sans-serif;
-      font-size: 12px;
-      font-weight: 600;
+      width: 130px;
+      padding: 4px 6px;
+      font-size: 12.5px;
+      font-weight: 700;
       color: var(--text-main);
+      background: #ffffff;
+      border: 1px solid var(--card-border);
+      border-radius: 6px;
+      font-family: 'Pretendard', sans-serif;
       outline: none;
       cursor: pointer;
     }
 
-    .hero-summary-text {
-      font-size: 13px;
-      color: var(--text-sub);
-      font-weight: 500;
+    .start-date-input:focus {
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+
+    .hero-stats {
       display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+      margin: 0;
+    }
+
+    .hero-stat-box {
+      background: #f8fafc;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 8px 14px;
+      min-width: 105px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-sub);
+      text-align: left;
+    }
+
+    .stat-value {
+      font-family: 'Outfit', 'Pretendard', sans-serif;
+      font-size: 15.5px;
+      font-weight: 800;
+      color: var(--text-main);
+      text-align: center;
+      width: 100%;
+      white-space: nowrap;
     }
 
     /* Signal Alert Banner (Main Highlight) */
@@ -789,55 +838,59 @@
         gap: 4px;
       }
 
-      /* Hero Banner Mobile */
+      /* Hero Banner Mobile (AssetSignal Style) */
       .hero-card {
-        padding: 12px 14px;
-        gap: 8px;
-        flex-direction: column;
-        align-items: stretch;
+        padding: 16px 14px !important;
+        gap: 12px !important;
       }
-      .hero-strat-info {
+      .strategy-bar {
         width: 100%;
-        gap: 6px;
+        justify-content: flex-start;
+        gap: 10px;
       }
-      .hero-top-info {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 6px;
-      }
-      .hero-title-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        width: 100%;
-      }
-      .hero-change-mobile-btn {
-        display: inline-flex;
-        padding: 5px 9px;
-        font-size: 13px;
-        border-radius: 6px;
-      }
-      .hero-action-desktop {
-        display: none;
-      }
-      .hero-date-row {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-      }
-      .ticker-badge {
-        font-size: 13px;
-        padding: 3px 8px;
-      }
-      .days-badge {
-        font-size: 11px;
-        padding: 3px 6px;
-      }
-      .days-prefix {
-        display: none;
-      }
-      #heroStrategySummary {
+      #heroTickerTag {
         display: none !important;
+      }
+      .strategy-tracker-pill {
+        width: 100% !important;
+        justify-content: space-between !important;
+        gap: 8px !important;
+        padding: 6px 12px !important;
+      }
+      .tracker-date-label,
+      .tracker-prefix-cumulative {
+        display: none !important;
+      }
+      #heroStartDateInput {
+        width: 115px !important;
+        padding: 3px 4px !important;
+        font-size: 12px !important;
+      }
+      .hero-stats {
+        display: grid !important;
+        grid-template-columns: repeat(3, 1fr) !important;
+        width: 100% !important;
+        gap: 6px !important;
+        margin: 0 !important;
+      }
+      .hero-stat-box {
+        min-width: 0 !important;
+        width: 100% !important;
+        padding: 8px 4px !important;
+        align-items: center !important;
+        text-align: center !important;
+      }
+      .stat-label {
+        font-size: 11px !important;
+        text-align: center !important;
+        white-space: nowrap !important;
+        margin-bottom: 2px !important;
+      }
+      .stat-value {
+        font-size: 14px !important;
+        text-align: center !important;
+        white-space: nowrap !important;
+        letter-spacing: -0.3px !important;
       }
 
       /* Signal / Guide Mobile */
@@ -915,37 +968,43 @@
       </div>
     </header>
 
-    <!-- Strategy Hero Banner -->
+    <!-- Strategy Hero Banner (Unified 3-Section Balanced Row - AssetSignal Style) -->
     <div class="hero-card">
-      <div class="hero-strat-info">
-        <div class="hero-top-info">
-          <div class="hero-title-row">
-            <span class="ticker-badge" id="heroTicker">전략 로딩 중...</span>
-            <button class="btn btn-primary hero-change-mobile-btn" onclick="openStrategyChangeModal()" title="전략 변경">
-              <i class="fa-solid fa-repeat"></i>
-            </button>
-          </div>
-          <div class="hero-date-row">
-            <div class="start-date-box" title="투자개시일 수정">
-              <i class="fa-regular fa-calendar" style="color:var(--text-muted);"></i>
-              <span class="date-label" style="color:var(--text-muted); font-size:11px;">개시일:</span>
-              <input type="date" id="heroStartDateInput" class="start-date-input" onchange="updateStartDate(this.value)">
-            </div>
-            <span class="days-badge" id="heroDaysCount"><span class="days-prefix">투자 시작 </span>D+0일</span>
-          </div>
+      <!-- 1. Left: Strategy Selector -->
+      <div class="strategy-bar" onclick="openStrategyChangeModal()" title="클릭하여 전략 선택 및 조건 확인" style="margin-bottom: 0; flex-shrink: 0;">
+        <button type="button" class="btn-strategy-pill"><i class="fa-solid fa-sliders"></i> 전략선택</button>
+        <span class="strategy-bar-name" id="heroTicker">#1. 전략 로딩 중...</span>
+        <span id="heroTickerTag" style="font-size: 12.5px; color: var(--text-sub); font-weight: 500; padding-left: 4px; white-space: nowrap;">(TQQQ)</span>
+      </div>
+
+      <!-- 2. Center: Investment Start Date & Elapsed Days -->
+      <div class="strategy-tracker-pill">
+        <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-sub);">
+          <i class="fa-regular fa-calendar-check" style="color: var(--accent-blue); font-size: 14px;"></i>
+          <span class="tracker-date-label" style="font-weight: 600;">투자시작일</span>
+          <input type="date" id="heroStartDateInput" class="start-date-input" onchange="updateStartDate(this.value)">
         </div>
-        <div class="hero-summary-text" id="heroStrategySummary">
-          <span>투자원금: <strong>10,000,000원</strong></span> &bull;
-          <span>40회 분할 (전환 20회)</span> &bull;
-          <span>후반기 -5% 이하</span> &bull;
-          <span>목표 +10%</span> &bull;
-          <span>단리</span>
+        <div style="width: 1px; height: 18px; background: #cbd5e1;"></div>
+        <div style="display: flex; align-items: center; gap: 8px; font-size: 13px;">
+          <span style="color: var(--text-sub); font-weight: 600;"><span class="tracker-prefix-cumulative">투자</span>기간</span>
+          <span id="heroDaysCount" style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 16px; color: var(--accent-blue);">D+0일</span>
         </div>
       </div>
-      <div class="hero-action-desktop">
-        <button class="btn btn-primary" onclick="openStrategyChangeModal()" style="font-size:12px;">
-          <i class="fa-solid fa-repeat"></i> 전략 변경
-        </button>
+
+      <!-- 3. Right: Strategy Specs (3 Compact Cards) -->
+      <div class="hero-stats" id="heroStrategySummary">
+        <div class="hero-stat-box">
+          <div class="stat-label">투자 원금</div>
+          <div class="stat-value" id="heroStatCapital">1,000만원</div>
+        </div>
+        <div class="hero-stat-box">
+          <div class="stat-label">분할 / 전환</div>
+          <div class="stat-value" id="heroStatPortions">40회 (20회)</div>
+        </div>
+        <div class="hero-stat-box">
+          <div class="stat-label">목표 / 후반기</div>
+          <div class="stat-value" id="heroStatTarget" style="color: var(--accent-green);">+10% / 0%</div>
+        </div>
       </div>
     </div>
 
@@ -1473,8 +1532,11 @@
     // Evaluate Progress & Signal Engine
     // -------------------------------------------------------------------------
     function evaluateProgressAndSignal() {
-      // 1. Hero Info
-      document.getElementById("heroTicker").innerText = activeStrat.name || `${activeStrat.ticker} 전략`;
+      // 1. Hero Info (AssetSignal Unified 3-Section Hero Banner)
+      const slotPrefix = activeStrat.slotId ? `#${activeStrat.slotId}. ` : "";
+      document.getElementById("heroTicker").innerText = `${slotPrefix}${activeStrat.name || `${activeStrat.ticker} 전략`}`;
+      const tickerTagEl = document.getElementById("heroTickerTag");
+      if (tickerTagEl) tickerTagEl.innerText = `(${activeStrat.ticker})`;
       document.getElementById("currentTickerLabel").innerText = activeStrat.ticker;
 
       const sDateStr = activeStrat.startDate || new Date().toISOString().substring(0, 10);
@@ -1483,19 +1545,24 @@
       const sDate = new Date(sDateStr);
       const now = new Date();
       const calDays = Math.max(0, Math.floor((now - sDate) / (1000 * 60 * 60 * 24)));
-      document.getElementById("heroDaysCount").innerHTML = `<span class="days-prefix">투자 시작 </span>D+${calDays}일`;
+      document.getElementById("heroDaysCount").innerText = `D+${calDays}일`;
+
+      const capMan = Math.round((activeStrat.seedCapital || 10000000) / 10000);
+      const capStr = capMan >= 10000 && capMan % 10000 === 0
+        ? `${capMan / 10000}억원`
+        : `${capMan.toLocaleString()}만원`;
+      const statCapEl = document.getElementById("heroStatCapital");
+      if (statCapEl) statCapEl.innerText = capStr;
 
       const firstHalfText = (activeStrat.firstHalfRule === "lump" || activeStrat.earlyMode === "lump")
-        ? `일시 (${activeStrat.phaseSplitRound}회)`
-        : `전환 ${activeStrat.phaseSplitRound}회`;
-      const lateModeText = activeStrat.lateMode === "always" ? "균등매수" : `${activeStrat.lateThresholdPct}% 이하`;
-      document.getElementById("heroStrategySummary").innerHTML = `
-        <span>투자원금: <strong>${fmtKRW(activeStrat.seedCapital)}</strong></span> &bull;
-        <span>${activeStrat.portions}분할 (${firstHalfText})</span> &bull;
-        <span>후반기 ${lateModeText}</span> &bull;
-        <span>목표 +${activeStrat.targetProfitPct}%</span> &bull;
-        <span>${activeStrat.compoundMode === "compound" ? "복리" : "단리"}</span>
-      `;
+        ? `일시${activeStrat.phaseSplitRound}`
+        : `${activeStrat.phaseSplitRound}회`;
+      const statPortEl = document.getElementById("heroStatPortions");
+      if (statPortEl) statPortEl.innerText = `${activeStrat.portions}회 (${firstHalfText})`;
+
+      const lateModeShort = activeStrat.lateMode === "always" ? "균등" : `${activeStrat.lateThresholdPct}%`;
+      const statTgtEl = document.getElementById("heroStatTarget");
+      if (statTgtEl) statTgtEl.innerText = `+${activeStrat.targetProfitPct}% / ${lateModeShort}`;
 
       // 2. Latest Price & Change
       const closePrice = currentLatestCandle ? currentLatestCandle.close : 50.0;

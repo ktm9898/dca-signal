@@ -230,58 +230,140 @@
       background: #1d4ed8;
     }
 
-    /* Main Layout Grid */
+    /* Main Layout Stack (1-Column AssetSignal & StockSignal Style) */
     .dashboard-grid {
-      display: grid;
-      grid-template-columns: 360px 1fr;
+      display: flex;
+      flex-direction: column;
       gap: 16px;
       min-width: 0;
-      max-width: 100%;
+      width: 100%;
     }
 
     .dashboard-grid > * {
       min-width: 0;
-      max-width: 100%;
+      width: 100%;
     }
 
     .main-content {
       min-width: 0;
-      max-width: 100%;
+      width: 100%;
       display: flex;
       flex-direction: column;
       gap: 16px;
     }
 
-    @media (max-width: 1080px) {
-      .dashboard-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    /* Sidebar / Control Panel */
-    .control-panel {
+    /* Strategy Slots Header Bar (AssetSignal Style) */
+    .slots-wrapper {
       background: var(--bg-surface);
       border: 1px solid var(--card-border);
-      border-radius: 16px;
-      padding: 24px;
+      border-radius: 12px;
+      padding: 14px 18px;
       box-shadow: var(--shadow-sm);
       display: flex;
       flex-direction: column;
-      gap: 20px;
+      gap: 10px;
     }
 
-    .panel-section-title {
-      font-size: 14px;
+    .slots-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      width: 100%;
+    }
+
+    .slots-title {
+      font-size: 15px;
       font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.8px;
-      color: var(--accent-blue);
+      color: var(--text-main);
       display: flex;
       align-items: center;
       gap: 8px;
-      padding-bottom: 8px;
-      border-bottom: 1px solid var(--card-border);
-      margin-bottom: 4px;
+    }
+
+    .slot-actions-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .slot-actions-bar .btn {
+      padding: 5px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 6px;
+      gap: 5px;
+    }
+
+    .btn-success {
+      background: #059669;
+      border: 1px solid #059669;
+      color: #ffffff;
+    }
+
+    .btn-success:hover {
+      background: #047857;
+      border-color: #047857;
+      color: #ffffff;
+    }
+
+    /* 1-Column Top Control Panel (AssetSignal config-panel Style) */
+    .control-panel {
+      background: var(--bg-surface);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 18px 20px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      width: 100%;
+    }
+
+    .config-params-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      align-items: start;
+    }
+
+    .config-rules-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      align-items: start;
+      padding-top: 14px;
+      border-top: 1px dashed var(--card-border);
+    }
+
+    @media (max-width: 1080px) {
+      .config-params-grid,
+      .config-rules-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .config-params-grid,
+      .config-rules-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+      .slots-wrapper {
+        padding: 10px 14px;
+      }
+      .slot-actions-bar .btn {
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        justify-content: center;
+      }
+      .slot-actions-bar .btn span {
+        display: none;
+      }
     }
 
     .form-group {
@@ -1012,159 +1094,165 @@
     </header>
 
     <div class="dashboard-grid">
-      <!-- Left Control Panel -->
-      <aside class="control-panel">
-        <div class="panel-section-title" style="display: flex; justify-content: space-between; align-items: center;">
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <i class="fa-solid fa-sliders"></i> 전략 설정
+      <!-- Top Strategy Settings Header & Action Bar (AssetSignal Style) -->
+      <div class="slots-wrapper">
+        <div class="slots-header">
+          <div class="slots-title">
+            <span>전략 설정</span>
           </div>
-          <div style="display: flex; gap: 6px;">
-            <button class="icon-tool-btn" onclick="openSaveModal()" title="전략 저장">
-              <i class="fa-solid fa-floppy-disk"></i>
+          <div class="slot-actions-bar">
+            <button class="btn" style="background: #ffffff; color: #475569; border: 1px solid var(--card-border);" onclick="resetStrategyDefaults()" title="조건 초기화">
+              <i class="fa-solid fa-rotate-left"></i> <span>초기화</span>
             </button>
-            <button class="icon-tool-btn" onclick="openLoadModal()" title="전략 불러오기">
-              <i class="fa-solid fa-folder-open"></i>
+            <button class="btn btn-primary" onclick="openSaveModal()" title="전략 저장">
+              <i class="fa-solid fa-floppy-disk"></i> <span>저장</span>
+            </button>
+            <button class="btn btn-success" onclick="openLoadModal()" title="전략 불러오기">
+              <i class="fa-solid fa-folder-open"></i> <span>불러오기</span>
             </button>
           </div>
         </div>
+      </div>
 
-        <!-- Target Ticker -->
-        <div class="form-group">
-          <label for="tickerSelect">대상 종목</label>
-          <select id="tickerSelect">
-            <option value="TQQQ" selected>TQQQ (나스닥 100 3배)</option>
-            <option value="SOXL">SOXL (반도체 3배)</option>
-            <option value="UPRO">UPRO (S&P 500 3배)</option>
-            <option value="QLD">QLD (나스닥 100 2배)</option>
-            <option value="QQQ">QQQ (나스닥 100 1배)</option>
-            <option value="SPY">SPY (S&P 500 1배)</option>
-            <option value="122630.KS">122630.KS (KODEX 레버리지 2배)</option>
-          </select>
-        </div>
-
-        <!-- Period Presets & Direct Date Input -->
-        <div class="form-group">
-          <label>테스트 기간</label>
-          <div class="preset-pill-group">
-            <button class="preset-pill active" data-period="10y">10년</button>
-            <button class="preset-pill" data-period="5y">5년</button>
-            <button class="preset-pill" data-period="3y">3년</button>
-            <button class="preset-pill" data-period="1y">1년</button>
-            <button class="preset-pill" data-period="custom">직접입력</button>
+      <!-- Top 1-Column Strategy Configuration Panel -->
+      <section class="control-panel">
+        <!-- Row 1: Core Parameters Grid (4 Columns on PC) -->
+        <div class="config-params-grid">
+          <!-- Col 1: Target Ticker -->
+          <div class="form-group">
+            <label for="tickerSelect"><span>대상 종목</span></label>
+            <select id="tickerSelect">
+              <option value="TQQQ" selected>TQQQ (나스닥 100 3배)</option>
+              <option value="SOXL">SOXL (반도체 3배)</option>
+              <option value="UPRO">UPRO (S&P 500 3배)</option>
+              <option value="QLD">QLD (나스닥 100 2배)</option>
+              <option value="QQQ">QQQ (나스닥 100 1배)</option>
+              <option value="SPY">SPY (S&P 500 1배)</option>
+              <option value="122630.KS">122630.KS (KODEX 레버리지 2배)</option>
+            </select>
           </div>
 
-          <!-- Direct Date Pickers -->
-          <div id="customDateBox" class="custom-date-box" style="display: none;">
-            <div>
-              <label>시작일</label>
-              <input type="date" id="startDateInput">
-            </div>
-            <div>
-              <label>종료일</label>
-              <input type="date" id="endDateInput">
-            </div>
-          </div>
-        </div>
-
-        <!-- Capital & Portion Amount (Dual Input) -->
-        <div class="form-group">
-          <label>
-            <span>투자 자금</span>
-            <span class="value-badge" id="capitalSummaryBadge">1회 250,000원 × 40회</span>
-          </label>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-            <div>
-              <label style="font-size: 11px; margin-bottom: 2px;">투자원금</label>
-              <input type="number" id="initialCapital" value="10000000" step="500000" min="100000">
-            </div>
-            <div>
-              <label style="font-size: 11px; margin-bottom: 2px;">매수 금액</label>
-              <input type="number" id="portionAmountInput" value="250000" step="10000" min="10000">
-            </div>
-          </div>
-        </div>
-
-        <!-- Portions (N) up to 100 -->
-        <div class="form-group">
-          <label for="portionsRange">
-            <span>총 분할</span>
-            <span class="value-badge" id="portionsDisplay">40회차</span>
-          </label>
-          <input type="range" id="portionsRange" min="10" max="100" step="5" value="40">
-        </div>
-
-        <!-- Phase Split Round (M) -->
-        <div class="form-group">
-          <label for="splitRoundRange">
-            <span>전환점</span>
-            <span class="value-badge" id="splitRoundDisplay">20회차</span>
-          </label>
-          <input type="range" id="splitRoundRange" min="5" max="100" step="1" value="20">
-        </div>
-
-        <!-- First-Half Rule (Split vs Lump) -->
-        <div class="form-group">
-          <label>전반기 매수</label>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-            <label class="radio-card active" style="padding: 8px 10px; justify-content: center; align-items: center;">
-              <input type="radio" name="firstHalfRule" value="split" checked>
-              <strong>분할</strong>
-            </label>
-            <label class="radio-card" style="padding: 8px 10px; justify-content: center; align-items: center;">
-              <input type="radio" name="firstHalfRule" value="lump">
-              <strong>일시</strong>
-            </label>
-          </div>
-        </div>
-
-        <!-- Second-Half Rule (Condition relative to Average Cost) -->
-        <div class="form-group">
-          <label>후반기 매수</label>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-            <label class="radio-card active" style="padding: 8px 10px; justify-content: center; align-items: center;">
-              <input type="radio" name="secondHalfRule" value="below_threshold" checked>
-              <strong>조건부</strong>
-            </label>
-            <label class="radio-card" style="padding: 8px 10px; justify-content: center; align-items: center;">
-              <input type="radio" name="secondHalfRule" value="always">
-              <strong>균등분할</strong>
-            </label>
-          </div>
-
-          <!-- Dynamic Threshold % Slider Box (Now -30% to +10%) -->
-          <div id="thresholdControlBox" class="threshold-sub-box">
+          <!-- Col 2: Capital & Portion Amount (Dual Input) -->
+          <div class="form-group">
             <label>
-              <span>매수조건</span>
-              <span id="thresholdDisplay" class="value-badge">평단가 대비 0.0% 이하</span>
+              <span>투자 자금</span>
+              <span class="value-badge" id="capitalSummaryBadge">1회 250,000원 × 40회</span>
             </label>
-            <input type="range" id="thresholdRange" min="-30" max="10" step="1" value="0">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+              <div>
+                <input type="number" id="initialCapital" value="10000000" step="500000" min="100000" title="총 투자원금(원)">
+              </div>
+              <div>
+                <input type="number" id="portionAmountInput" value="250000" step="10000" min="10000" title="1회 매수 금액(원)">
+              </div>
+            </div>
+          </div>
+
+          <!-- Col 3: Portions (N) & Phase Split Round (M) -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div class="form-group">
+              <label for="portionsRange">
+                <span>총 분할</span>
+                <span class="value-badge" id="portionsDisplay">40회차</span>
+              </label>
+              <input type="range" id="portionsRange" min="10" max="100" step="5" value="40" style="margin-top: 8px;">
+            </div>
+            <div class="form-group">
+              <label for="splitRoundRange">
+                <span>전환점</span>
+                <span class="value-badge" id="splitRoundDisplay">20회차</span>
+              </label>
+              <input type="range" id="splitRoundRange" min="5" max="100" step="1" value="20" style="margin-top: 8px;">
+            </div>
+          </div>
+
+          <!-- Col 4: Target Profit % -->
+          <div class="form-group">
+            <label for="targetProfitRange">
+              <span>목표 수익률</span>
+              <span class="value-badge" id="profitDisplay">+10.0%</span>
+            </label>
+            <input type="range" id="targetProfitRange" min="3" max="30" step="1" value="10" style="margin-top: 8px;">
           </div>
         </div>
 
-        <!-- Target Profit % -->
-        <div class="form-group">
-          <label for="targetProfitRange">
-            <span>목표 수익률</span>
-            <span class="value-badge" id="profitDisplay">+10.0%</span>
-          </label>
-          <input type="range" id="targetProfitRange" min="3" max="30" step="1" value="10">
-        </div>
+        <!-- Row 2: Execution Rules & Period Grid (4 Columns on PC) -->
+        <div class="config-rules-grid">
+          <!-- Col 1: First-Half Rule (Split vs Lump) -->
+          <div class="form-group">
+            <label><span>전반기 매수</span></label>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+              <label class="radio-card active" style="padding: 8px 10px; justify-content: center; align-items: center;">
+                <input type="radio" name="firstHalfRule" value="split" checked>
+                <strong>분할</strong>
+              </label>
+              <label class="radio-card" style="padding: 8px 10px; justify-content: center; align-items: center;">
+                <input type="radio" name="firstHalfRule" value="lump">
+                <strong>일시</strong>
+              </label>
+            </div>
+          </div>
 
-        <!-- Profit Reinvestment Mode -->
-        <div class="form-group">
-          <label>수익금 운용</label>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-            <label class="radio-card active" style="padding: 8px 10px; justify-content: center; align-items: center;">
-              <input type="radio" name="reinvestProfit" value="false" checked>
-              <strong>단리</strong>
-            </label>
-            <label class="radio-card" style="padding: 8px 10px; justify-content: center; align-items: center;">
-              <input type="radio" name="reinvestProfit" value="true">
-              <strong>복리</strong>
-            </label>
+          <!-- Col 2: Second-Half Rule & Threshold % -->
+          <div class="form-group">
+            <label><span>후반기 매수</span></label>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+              <label class="radio-card active" style="padding: 8px 10px; justify-content: center; align-items: center;">
+                <input type="radio" name="secondHalfRule" value="below_threshold" checked>
+                <strong>조건부</strong>
+              </label>
+              <label class="radio-card" style="padding: 8px 10px; justify-content: center; align-items: center;">
+                <input type="radio" name="secondHalfRule" value="always">
+                <strong>균등분할</strong>
+              </label>
+            </div>
+            <div id="thresholdControlBox" class="threshold-sub-box">
+              <label>
+                <span>매수조건</span>
+                <span id="thresholdDisplay" class="value-badge">평단가 대비 0.0% 이하</span>
+              </label>
+              <input type="range" id="thresholdRange" min="-30" max="10" step="1" value="0">
+            </div>
+          </div>
+
+          <!-- Col 3: Profit Reinvestment Mode -->
+          <div class="form-group">
+            <label><span>수익금 운용</span></label>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+              <label class="radio-card active" style="padding: 8px 10px; justify-content: center; align-items: center;">
+                <input type="radio" name="reinvestProfit" value="false" checked>
+                <strong>단리</strong>
+              </label>
+              <label class="radio-card" style="padding: 8px 10px; justify-content: center; align-items: center;">
+                <input type="radio" name="reinvestProfit" value="true">
+                <strong>복리</strong>
+              </label>
+            </div>
+          </div>
+
+          <!-- Col 4: Test Period Presets & Direct Date Input -->
+          <div class="form-group">
+            <label><span>테스트 기간</span></label>
+            <div class="preset-pill-group">
+              <button class="preset-pill active" data-period="10y">10년</button>
+              <button class="preset-pill" data-period="5y">5년</button>
+              <button class="preset-pill" data-period="3y">3년</button>
+              <button class="preset-pill" data-period="1y">1년</button>
+              <button class="preset-pill" data-period="custom">직접입력</button>
+            </div>
+            <div id="customDateBox" class="custom-date-box" style="display: none;">
+              <div>
+                <label>시작일</label>
+                <input type="date" id="startDateInput">
+              </div>
+              <div>
+                <label>종료일</label>
+                <input type="date" id="endDateInput">
+              </div>
+            </div>
           </div>
         </div>
-      </aside>
+      </section>
 
       <!-- Right Main Content -->
       <main class="main-content">
@@ -2594,6 +2682,20 @@
       alert(`[슬롯 ${slotId}: ${s.name}] 전략 파라미터가 백테스트에 로드되었습니다!`);
     }
 
+    function resetStrategyDefaults() {
+      applyStrategyParams({
+        ticker: "TQQQ",
+        initialCapital: 10000000,
+        portions: 40,
+        phaseSplitRound: 20,
+        firstHalfRule: "split",
+        secondHalfRule: "below_threshold",
+        secondHalfThresholdPct: 0.0,
+        targetProfitPct: 10.0,
+        reinvestProfit: false
+      });
+    }
+
     function applyStrategyParams(newParams) {
       if (newParams.ticker) {
         params.ticker = newParams.ticker;
@@ -2761,7 +2863,7 @@
               ticks: {
                 color: '#64748b',
                 callback: (v) => (v >= 0 ? '+' : '') + v + '%',
-                font: { family: 'JetBrains Mono', size: 10 }
+                font: { family: 'Outfit', size: 10 }
               }
             }
           }
