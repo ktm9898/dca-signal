@@ -663,11 +663,11 @@
       background: var(--bg-surface);
       border: 1px solid var(--card-border);
       border-radius: 12px;
-      padding: 12px 14px;
+      padding: 13px 14px 11px;
       box-shadow: var(--shadow-sm);
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 5px;
       position: relative;
       overflow: hidden;
     }
@@ -705,17 +705,18 @@
 
     .kpi-value {
       font-family: 'Outfit', sans-serif;
-      font-size: 17px;
+      font-size: 19px;
       font-weight: 800;
       color: var(--text-main);
       letter-spacing: -0.5px;
       white-space: nowrap;
       text-align: center;
       width: 100%;
+      margin: 2px 0 1px;
     }
 
     .kpi-subtext {
-      font-size: 10px;
+      font-size: 11.5px;
       color: var(--text-muted);
       display: flex;
       align-items: center;
@@ -726,6 +727,7 @@
       overflow: hidden;
       text-overflow: ellipsis;
       width: 100%;
+      margin-top: 3px;
     }
 
     .val-positive { color: var(--accent-green); }
@@ -1073,10 +1075,15 @@
         gap: 8px;
       }
       .kpi-card {
-        padding: 10px 12px;
+        padding: 11px 12px 10px;
+        gap: 5px;
       }
       .kpi-value {
-        font-size: 15px;
+        font-size: 16.5px;
+      }
+      .kpi-subtext {
+        font-size: 11px;
+        margin-top: 2px;
       }
       .table-container {
         overflow-x: auto;
