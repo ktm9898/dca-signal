@@ -2290,7 +2290,8 @@
 
       // Populate Cycle Filter in Trade Log
       const cycleSelect = document.getElementById("tradeFilterCycle");
-      const currentCycleSel = cycleSelect.value;
+      if (cycleSelect) {
+        const currentCycleSel = cycleSelect.value;
       cycleSelect.innerHTML = '<option value="ALL">사이클</option>';
       const maxC = latestSimResult.completedCycles.length + 1;
       for (let i = 1; i <= maxC; i++) {
@@ -2300,6 +2301,7 @@
         cycleSelect.appendChild(opt);
       }
       cycleSelect.value = currentCycleSel || "ALL";
+      }
 
       // Tab 3: Render Detailed Trade Log
       filterAndRenderTrades();
@@ -2311,8 +2313,10 @@
     // Trade Log Rendering & Filtering
     // -------------------------------------------------------------------------
     function filterAndRenderTrades() {
-      const typeFilter = document.getElementById("tradeFilterType").value;
-      const cycleFilter = document.getElementById("tradeFilterCycle").value;
+      const typeEl = document.getElementById("tradeFilterType");
+      const typeFilter = typeEl ? typeEl.value : "ALL";
+      const cycleEl = document.getElementById("tradeFilterCycle");
+      const cycleFilter = cycleEl ? cycleEl.value : "ALL";
       const searchEl = document.getElementById("tradeSearchInput");
       const searchTxt = searchEl ? searchEl.value.trim().toLowerCase() : "";
 
@@ -2325,7 +2329,8 @@
       });
 
       document.getElementById("tradeCountBadge").innerText = allTradesList.length;
-      document.getElementById("tradeFilteredCount").innerText = `${filtered.length}건`;
+      const countEl = document.getElementById("tradeFilteredCount");
+      if (countEl) countEl.innerText = `${filtered.length}건`;
 
       const tBody = document.getElementById("tradesTableBody");
       tBody.innerHTML = "";
