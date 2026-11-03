@@ -580,22 +580,6 @@
       position: relative;
     }
 
-    .kpi-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 3px;
-      height: 100%;
-      background: var(--accent-blue);
-      border-radius: 3px 0 0 3px;
-    }
-
-    .kpi-card.green::before { background: var(--accent-green); }
-    .kpi-card.purple::before { background: var(--accent-purple); }
-    .kpi-card.amber::before { background: var(--accent-amber); }
-    .kpi-card.red::before { background: var(--accent-red); }
-
     .kpi-title {
       font-size: 11px;
       font-weight: 600;
@@ -1082,7 +1066,7 @@
 
     <!-- KPI Summary Cards Grid - Compact Single-Row -->
     <div class="kpi-grid">
-      <div class="kpi-card green">
+      <div class="kpi-card">
         <div class="kpi-title">
           <span>현재 진도</span>
         </div>
@@ -1096,21 +1080,21 @@
         <div class="kpi-value" id="kpiInvested">0원</div>
       </div>
 
-      <div class="kpi-card purple">
+      <div class="kpi-card">
         <div class="kpi-title">
           <span>사이클 추정 평단</span>
         </div>
         <div class="kpi-value" id="kpiAvgCost">-</div>
       </div>
 
-      <div class="kpi-card amber">
+      <div class="kpi-card">
         <div class="kpi-title">
           <span>수익률 (추정)</span>
         </div>
         <div class="kpi-value" id="kpiPnlPct">0.00%</div>
       </div>
 
-      <div class="kpi-card green">
+      <div class="kpi-card">
         <div class="kpi-title">
           <span>목표 익절가</span>
         </div>
