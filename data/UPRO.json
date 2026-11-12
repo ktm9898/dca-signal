@@ -1,10 +1,10 @@
 {
   "ticker": "UPRO",
   "name": "ProShares UltraPro S&P 500 (S&P 3배)",
-  "updated_at": "2026-11-12 02:23:09",
-  "data_count": 2512,
+  "updated_at": "2026-11-12 22:16:32",
+  "data_count": 2513,
   "start_date": "2016-11-14",
-  "end_date": "2026-11-11",
+  "end_date": "2026-11-12",
   "candles": [
     {
       "date": "2016-11-14",
@@ -20100,7 +20100,15 @@
       "high": 143.22,
       "low": 139.09,
       "close": 141.7,
-      "volume": 2009602
+      "volume": 2136000
+    },
+    {
+      "date": "2026-11-12",
+      "open": 138.43,
+      "high": 143.51,
+      "low": 138.3329,
+      "close": 140.23,
+      "volume": 2524539
     }
   ]
 }
