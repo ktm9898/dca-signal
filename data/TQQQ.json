@@ -1,7 +1,7 @@
 {
   "ticker": "TQQQ",
   "name": "ProShares UltraPro QQQ (나스닥 3배)",
-  "updated_at": "2026-11-23 22:16:30",
+  "updated_at": "2026-11-24 05:25:39",
   "data_count": 2512,
   "start_date": "2016-11-25",
   "end_date": "2026-11-23",
@@ -20092,15 +20092,15 @@
       "high": 48.53,
       "low": 40.12,
       "close": 41.2,
-      "volume": 253507100
+      "volume": 255712700
     },
     {
       "date": "2026-11-23",
-      "open": 50.17,
-      "high": 50.4374,
-      "low": 47.305,
+      "open": 50.14,
+      "high": 50.44,
+      "low": 47.31,
       "close": 49.1,
-      "volume": 153424262
+      "volume": 154240600
     }
   ]
 }
