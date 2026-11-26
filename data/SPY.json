@@ -1,7 +1,7 @@
 {
   "ticker": "SPY",
   "name": "SPDR S&P 500 ETF (S&P 1배)",
-  "updated_at": "2026-11-26 03:42:10",
+  "updated_at": "2026-11-26 22:16:33",
   "data_count": 2513,
   "start_date": "2016-11-28",
   "end_date": "2026-11-25",
@@ -20108,7 +20108,7 @@
       "high": 718.43,
       "low": 695.45,
       "close": 716.7,
-      "volume": 72919200
+      "volume": 73112800
     }
   ]
 }
